@@ -67,13 +67,12 @@ Deno.serve(async (req) => {
         phone: phone || null,
         birth_date: birth_date || null,
         sex: sex || null,
-        user_id: authData.user.id,
+        user_id: userId,
       })
       .select()
       .single();
 
     if (patientError) {
-      await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
       return new Response(JSON.stringify({ error: patientError.message }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
