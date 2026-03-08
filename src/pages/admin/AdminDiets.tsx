@@ -180,13 +180,13 @@ const AdminDiets = () => {
               foods: meal.foods.map((f) => {
                 if (f.id !== foodId) return f;
                 const updated = { ...f, quantity: value };
-                if (f.dbFoodId) {
-                  const dbFood = dbFoods.find((df) => df.id === f.dbFoodId);
-                  if (dbFood) {
-                    const qty = parseFloat(value) || 0;
-                    const macros = calcProportionalMacros(dbFood, qty);
-                    return { ...updated, ...macros };
-                  }
+                const dbFood = f.dbFoodId
+                  ? dbFoods.find((df) => df.id === f.dbFoodId)
+                  : tryMatchFoodByName(f.food);
+                if (dbFood) {
+                  const qty = parseFloat(value) || 0;
+                  const macros = calcProportionalMacros(dbFood, qty);
+                  return { ...updated, dbFoodId: dbFood.id, measure: dbFood.measure as FoodItem["measure"], ...macros };
                 }
                 return updated;
               }),
