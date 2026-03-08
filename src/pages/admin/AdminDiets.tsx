@@ -355,7 +355,7 @@ const AdminDiets = () => {
                           onChange={(e) => handleFoodNameChange(meal.id, food.id, e.target.value)}
                           onFocus={() => {
                             cancelClose();
-                            if (food.food.length >= 1) {
+                            if (food.food.length >= 2) {
                               const matches = dbFoods.filter((df) =>
                                 df.name.toLowerCase().includes(food.food.toLowerCase())
                               ).slice(0, 8);
