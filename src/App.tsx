@@ -10,6 +10,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminPatients from "./pages/admin/AdminPatients";
 import AdminPatientDetail from "./pages/admin/AdminPatientDetail";
 import AdminDiets from "./pages/admin/AdminDiets";
+import AdminFoods from "./pages/admin/AdminFoods";
 import PatientDashboard from "./pages/patient/PatientDashboard";
 import PatientDiet from "./pages/patient/PatientDiet";
 import PatientWorkout from "./pages/patient/PatientWorkout";
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="workouts" element={<AdminDashboard />} />
             <Route path="exams" element={<AdminDashboard />} />
             <Route path="prescriptions" element={<AdminDashboard />} />
+            <Route path="foods" element={<AdminFoods />} />
           </Route>
 
           {/* Patient Routes */}

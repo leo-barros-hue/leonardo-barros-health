@@ -14,7 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      foods: {
+        Row: {
+          carbs_per_unit: number
+          category: string
+          created_at: string
+          fat_per_unit: number
+          id: string
+          measure: string
+          name: string
+          protein_per_unit: number
+        }
+        Insert: {
+          carbs_per_unit?: number
+          category?: string
+          created_at?: string
+          fat_per_unit?: number
+          id?: string
+          measure?: string
+          name: string
+          protein_per_unit?: number
+        }
+        Update: {
+          carbs_per_unit?: number
+          category?: string
+          created_at?: string
+          fat_per_unit?: number
+          id?: string
+          measure?: string
+          name?: string
+          protein_per_unit?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
