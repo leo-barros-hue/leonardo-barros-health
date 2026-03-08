@@ -108,21 +108,32 @@ const AdminDiets = () => {
     };
   };
 
+  const tryMatchFoodByName = (name: string): DbFood | undefined => {
+    return dbFoods.find((df) => df.name.toLowerCase() === name.toLowerCase());
+  };
+
   const handleFoodNameChange = (mealId: string, foodId: string, value: string) => {
     setMeals((prev) =>
       prev.map((meal) =>
         meal.id === mealId
           ? {
               ...meal,
-              foods: meal.foods.map((f) =>
-                f.id === foodId ? { ...f, food: value, dbFoodId: undefined } : f
-              ),
+              foods: meal.foods.map((f) => {
+                if (f.id !== foodId) return f;
+                const exactMatch = tryMatchFoodByName(value);
+                if (exactMatch) {
+                  const qty = parseFloat(f.quantity) || 0;
+                  const macros = calcProportionalMacros(exactMatch, qty);
+                  return { ...f, food: value, dbFoodId: exactMatch.id, measure: exactMatch.measure as FoodItem["measure"], ...macros };
+                }
+                return { ...f, food: value, dbFoodId: undefined };
+              }),
             }
           : meal
       )
     );
 
-    if (value.length >= 1) {
+    if (value.length >= 2) {
       const matches = dbFoods.filter((df) =>
         df.name.toLowerCase().includes(value.toLowerCase())
       ).slice(0, 8);
