@@ -84,6 +84,18 @@ const PatientEvolutionTab = ({ patientId }: Props) => {
     "% Massa Muscular": m.muscle_mass_pct,
   }));
 
+  // Tight Y-axis domains for visual impact
+  const weights = measurements.map((m) => m.weight).filter((v): v is number => v != null);
+  const fats = measurements.map((m) => m.body_fat_pct).filter((v): v is number => v != null);
+  const muscles = measurements.map((m) => m.muscle_mass_pct).filter((v): v is number => v != null);
+  const pctValues = [...fats, ...muscles];
+  const weightDomain: [number, number] = weights.length
+    ? [Math.floor(Math.min(...weights) - 1), Math.ceil(Math.max(...weights) + 1)]
+    : [0, 100];
+  const pctDomain: [number, number] = pctValues.length
+    ? [Math.floor(Math.min(...pctValues) - 2), Math.ceil(Math.max(...pctValues) + 2)]
+    : [0, 50];
+
   const getTrend = (key: "weight" | "body_fat_pct" | "muscle_mass_pct") => {
     if (measurements.length < 2) return null;
     const last = measurements[measurements.length - 1][key];
