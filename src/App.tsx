@@ -9,6 +9,7 @@ import PatientLayout from "./layouts/PatientLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminPatients from "./pages/admin/AdminPatients";
 import AdminPatientDetail from "./pages/admin/AdminPatientDetail";
+import AdminDiets from "./pages/admin/AdminDiets";
 import PatientDashboard from "./pages/patient/PatientDashboard";
 import PatientDiet from "./pages/patient/PatientDiet";
 import PatientWorkout from "./pages/patient/PatientWorkout";
