@@ -342,12 +342,26 @@ const AdminDiets = () => {
                         <Input
                           value={food.food}
                           onChange={(e) => handleFoodNameChange(meal.id, food.id, e.target.value)}
+                          onFocus={() => {
+                            cancelClose();
+                            if (food.food.length >= 1) {
+                              const matches = dbFoods.filter((df) =>
+                                df.name.toLowerCase().includes(food.food.toLowerCase())
+                              ).slice(0, 8);
+                              setSuggestions(matches);
+                              setActiveSuggestion({ mealId: meal.id, foodId: food.id });
+                            }
+                          }}
+                          onBlur={closeSuggestionsDelayed}
                           placeholder="Digite o nome do alimento..."
                           className="h-8 text-sm bg-transparent border-none shadow-none focus-visible:ring-1 px-2"
                         />
                         {/* Autocomplete dropdown */}
                         {activeSuggestion?.mealId === meal.id && activeSuggestion?.foodId === food.id && suggestions.length > 0 && (
-                          <div ref={suggestionsRef} className="absolute z-50 left-2 right-2 top-full bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                          <div
+                            className="absolute z-50 left-2 right-2 top-full bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto"
+                            onMouseDown={cancelClose}
+                          >
                             {suggestions.map((s) => (
                               <button
                                 key={s.id}
