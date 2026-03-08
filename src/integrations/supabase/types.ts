@@ -14,6 +14,124 @@ export type Database = {
   }
   public: {
     Tables: {
+      diet_meal_foods: {
+        Row: {
+          carbs: number
+          diet_meal_id: string
+          fat: number
+          food_id: string | null
+          food_name: string
+          id: string
+          measure: string
+          protein: number
+          quantity: number
+          sort_order: number
+        }
+        Insert: {
+          carbs?: number
+          diet_meal_id: string
+          fat?: number
+          food_id?: string | null
+          food_name: string
+          id?: string
+          measure?: string
+          protein?: number
+          quantity?: number
+          sort_order?: number
+        }
+        Update: {
+          carbs?: number
+          diet_meal_id?: string
+          fat?: number
+          food_id?: string | null
+          food_name?: string
+          id?: string
+          measure?: string
+          protein?: number
+          quantity?: number
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diet_meal_foods_diet_meal_id_fkey"
+            columns: ["diet_meal_id"]
+            isOneToOne: false
+            referencedRelation: "diet_meals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "diet_meal_foods_food_id_fkey"
+            columns: ["food_id"]
+            isOneToOne: false
+            referencedRelation: "foods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      diet_meals: {
+        Row: {
+          diet_id: string
+          id: string
+          name: string
+          sort_order: number
+          time: string | null
+        }
+        Insert: {
+          diet_id: string
+          id?: string
+          name: string
+          sort_order?: number
+          time?: string | null
+        }
+        Update: {
+          diet_id?: string
+          id?: string
+          name?: string
+          sort_order?: number
+          time?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diet_meals_diet_id_fkey"
+            columns: ["diet_id"]
+            isOneToOne: false
+            referencedRelation: "diets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      diets: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          patient_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name?: string
+          patient_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          patient_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diets_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       foods: {
         Row: {
           carbs_per_unit: number
@@ -44,6 +162,36 @@ export type Database = {
           measure?: string
           name?: string
           protein_per_unit?: number
+        }
+        Relationships: []
+      }
+      patients: {
+        Row: {
+          age: number | null
+          created_at: string
+          id: string
+          name: string
+          objective: string | null
+          sex: string | null
+          updated_at: string
+        }
+        Insert: {
+          age?: number | null
+          created_at?: string
+          id?: string
+          name: string
+          objective?: string | null
+          sex?: string | null
+          updated_at?: string
+        }
+        Update: {
+          age?: number | null
+          created_at?: string
+          id?: string
+          name?: string
+          objective?: string | null
+          sex?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
