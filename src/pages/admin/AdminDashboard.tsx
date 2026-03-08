@@ -25,16 +25,15 @@ const AdminDashboard = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetch = async () => {
-      const { data } = await supabase
-        .from("patients")
-        .select("id, name, birth_date, objective, updated_at")
-        .order("created_at", { ascending: false });
-      setPatients((data as Patient[]) || []);
-    };
-    fetch();
-  }, []);
+  const fetchPatients = async () => {
+    const { data } = await supabase
+      .from("patients")
+      .select("id, name, birth_date, objective, updated_at")
+      .order("created_at", { ascending: false });
+    setPatients((data as Patient[]) || []);
+  };
+
+  useEffect(() => { fetchPatients(); }, []);
 
   const calculateAge = (birthDate: string | null) => {
     if (!birthDate) return null;
