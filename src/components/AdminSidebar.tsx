@@ -70,7 +70,7 @@ const AdminSidebar = () => {
           )
           }>
           
-            <item.icon className="w-5 h-5 min-w-[20px] text-secondary-foreground bg-accent-foreground border-sidebar-primary" />
+            <item.icon className="w-5 h-5 min-w-[20px] text-secondary-foreground border-sidebar-primary bg-black/0" />
             {!collapsed && <span className="text-secondary-foreground">{item.label}</span>}
           </NavLink>
         )}
