@@ -1,34 +1,49 @@
 import { Users, Utensils, Dumbbell, FlaskConical, FileText, Search, Plus, TrendingUp, Clock, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
-const mockPatients = [
-  { id: "1", name: "Maria Silva", age: 32, objective: "Emagrecimento", lastUpdate: "2026-03-05", status: "active", planEnd: "2026-04-15" },
-  { id: "2", name: "João Santos", age: 28, objective: "Hipertrofia", lastUpdate: "2026-03-01", status: "active", planEnd: "2026-03-20" },
-  { id: "3", name: "Ana Costa", age: 45, objective: "Saúde Metabólica", lastUpdate: "2026-02-20", status: "needs-update", planEnd: "2026-05-01" },
-  { id: "4", name: "Pedro Lima", age: 35, objective: "Performance", lastUpdate: "2026-03-06", status: "active", planEnd: "2026-06-10" },
-  { id: "5", name: "Carla Mendes", age: 29, objective: "Recomposição Corporal", lastUpdate: "2026-02-15", status: "needs-update", planEnd: "2026-03-30" },
-  { id: "6", name: "Lucas Oliveira", age: 40, objective: "Emagrecimento", lastUpdate: "2026-03-04", status: "active", planEnd: "2026-04-20" },
-];
+interface Patient {
+  id: string;
+  name: string;
+  birth_date: string | null;
+  objective: string | null;
+  updated_at: string;
+}
 
-const stats = [
-  { label: "Pacientes Ativos", value: "47", icon: Users, color: "text-primary" },
-  { label: "Dietas Ativas", value: "42", icon: Utensils, color: "text-success" },
-  { label: "Treinos Ativos", value: "38", icon: Dumbbell, color: "text-warning" },
-  { label: "Exames Pendentes", value: "5", icon: FlaskConical, color: "text-destructive" },
+const getStats = (patientCount: number) => [
+  { label: "Pacientes Ativos", value: String(patientCount), icon: Users, color: "text-primary" },
+  { label: "Dietas Ativas", value: "—", icon: Utensils, color: "text-success" },
+  { label: "Treinos Ativos", value: "—", icon: Dumbbell, color: "text-warning" },
+  { label: "Exames Pendentes", value: "—", icon: FlaskConical, color: "text-destructive" },
 ];
 
 const AdminDashboard = () => {
   const [search, setSearch] = useState("");
+  const [patients, setPatients] = useState<Patient[]>([]);
   const navigate = useNavigate();
 
-  const filteredPatients = mockPatients.filter((p) =>
+  useEffect(() => {
+    const fetch = async () => {
+      const { data } = await supabase
+        .from("patients")
+        .select("id, name, birth_date, objective, updated_at")
+        .order("created_at", { ascending: false });
+      setPatients((data as Patient[]) || []);
+    };
+    fetch();
+  }, []);
+
+  const calculateAge = (birthDate: string | null) => {
+    if (!birthDate) return null;
+    return Math.floor((Date.now() - new Date(birthDate).getTime()) / 31557600000);
+  };
+
+  const filteredPatients = patients.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase())
   );
-
-  const needsUpdate = mockPatients.filter((p) => p.status === "needs-update");
 
   return (
     <div className="space-y-8 stagger-fade-in">
@@ -46,7 +61,7 @@ const AdminDashboard = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
+        {getStats(patients.length).map((stat) => (
           <div key={stat.label} className="glass-card p-5">
             <div className="flex items-center gap-3">
               <div className={`w-10 h-10 rounded-xl bg-secondary flex items-center justify-center ${stat.color}`}>
@@ -113,12 +128,12 @@ const AdminDashboard = () => {
                   </div>
                   <div className="text-left">
                     <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{patient.name}</p>
-                    <p className="text-xs text-muted-foreground">{patient.objective} · {patient.age} anos</p>
+                    <p className="text-xs text-muted-foreground">{patient.objective || "Sem objetivo"} {calculateAge(patient.birth_date) !== null ? `· ${calculateAge(patient.birth_date)} anos` : ""}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-muted-foreground">Plano até</p>
-                  <p className="text-xs font-medium text-foreground">{new Date(patient.planEnd).toLocaleDateString("pt-BR")}</p>
+                  <p className="text-xs text-muted-foreground">Atualizado</p>
+                  <p className="text-xs font-medium text-foreground">{new Date(patient.updated_at).toLocaleDateString("pt-BR")}</p>
                 </div>
               </button>
             ))}
@@ -133,14 +148,17 @@ const AdminDashboard = () => {
               <h2 className="text-lg font-semibold text-foreground">Precisam Atualização</h2>
             </div>
             <div className="space-y-3">
-              {needsUpdate.map((p) => (
+              {patients.filter(p => {
+                const daysSinceUpdate = (Date.now() - new Date(p.updated_at).getTime()) / 86400000;
+                return daysSinceUpdate > 14;
+              }).slice(0, 5).map((p) => (
                 <div key={p.id} className="flex items-center gap-3 p-3 rounded-xl bg-warning/5 border border-warning/10">
                   <div className="w-8 h-8 rounded-full bg-warning/10 flex items-center justify-center text-xs font-bold text-warning">
                     {p.name.charAt(0)}
                   </div>
                   <div>
                     <p className="text-sm font-medium text-foreground">{p.name}</p>
-                    <p className="text-xs text-muted-foreground">Última: {new Date(p.lastUpdate).toLocaleDateString("pt-BR")}</p>
+                    <p className="text-xs text-muted-foreground">Última: {new Date(p.updated_at).toLocaleDateString("pt-BR")}</p>
                   </div>
                 </div>
               ))}
