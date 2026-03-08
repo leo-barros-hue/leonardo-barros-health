@@ -191,7 +191,7 @@ export default function PatientEnergyTab({ patient }: PatientEnergyTabProps) {
           title="Mifflin-St Jeor"
           bmr={results.mifflin}
           tdee={results.tdee.mifflin}
-          description="Geralmente considerada a mais precisa para a população moderna."
+          description="Recomendada para pacientes que estão com sobrepeso ou obesidade."
         />
         <FormulaResultCard
           title="Cunningham"
