@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      body_measurements: {
+        Row: {
+          body_fat_pct: number | null
+          created_at: string
+          id: string
+          measured_at: string
+          muscle_mass_pct: number | null
+          patient_id: string
+          weight: number | null
+        }
+        Insert: {
+          body_fat_pct?: number | null
+          created_at?: string
+          id?: string
+          measured_at?: string
+          muscle_mass_pct?: number | null
+          patient_id: string
+          weight?: number | null
+        }
+        Update: {
+          body_fat_pct?: number | null
+          created_at?: string
+          id?: string
+          measured_at?: string
+          muscle_mass_pct?: number | null
+          patient_id?: string
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "body_measurements_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       diet_meal_foods: {
         Row: {
           carbs: number
