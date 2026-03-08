@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Loader2, Eye, EyeOff } from "lucide-react";
+import { Plus, Loader2, Copy, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -27,25 +27,48 @@ const formatPhone = (value: string) => {
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
 };
 
+const generatePassword = () => {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+  let password = "";
+  for (let i = 0; i < 8; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
+};
+
+const calculateAge = (birthDate: string): number | null => {
+  if (!birthDate) return null;
+  const today = new Date();
+  const birth = new Date(birthDate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age;
+};
+
 const NewPatientDialog = ({ onPatientCreated }: NewPatientDialogProps) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [showResult, setShowResult] = useState(false);
 
   const [name, setName] = useState("");
   const [cpf, setCpf] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [age, setAge] = useState("");
+  const [birthDate, setBirthDate] = useState("");
   const [sex, setSex] = useState("");
-  const [objective, setObjective] = useState("");
-  const [password, setPassword] = useState("");
+  const [generatedPassword, setGeneratedPassword] = useState("");
 
   const resetForm = () => {
     setName(""); setCpf(""); setEmail(""); setPhone("");
-    setAge(""); setSex(""); setObjective(""); setPassword("");
-    setShowPassword(false);
+    setBirthDate(""); setSex(""); setGeneratedPassword("");
+    setShowResult(false); setCopied(false);
   };
+
+  const age = calculateAge(birthDate);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,12 +78,11 @@ const NewPatientDialog = ({ onPatientCreated }: NewPatientDialogProps) => {
       toast.error("CPF deve ter 11 dígitos");
       return;
     }
-    if (password.length < 6) {
-      toast.error("Senha deve ter no mínimo 6 caracteres");
-      return;
-    }
 
+    const password = generatePassword();
+    setGeneratedPassword(password);
     setLoading(true);
+
     try {
       const { data, error } = await supabase.functions.invoke("create-patient", {
         body: {
@@ -69,26 +91,31 @@ const NewPatientDialog = ({ onPatientCreated }: NewPatientDialogProps) => {
           email: email || undefined,
           phone: phone.replace(/\D/g, "") || undefined,
           password,
-          age: age ? parseInt(age) : undefined,
+          birth_date: birthDate || undefined,
           sex: sex || undefined,
-          objective: objective || undefined,
         },
       });
 
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
-      toast.success("Paciente cadastrado com sucesso!", {
-        description: `Login: ${cpfDigits} · Senha definida pelo admin`,
-      });
-      resetForm();
-      setOpen(false);
+      setShowResult(true);
       onPatientCreated();
     } catch (err: any) {
       toast.error("Erro ao cadastrar paciente", { description: err.message });
+      setGeneratedPassword("");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCopy = async () => {
+    const cpfDigits = cpf.replace(/\D/g, "");
+    const text = `Olá ${name.split(" ")[0]}! 🏋️\n\nSeu acesso foi criado:\n📱 Login (CPF): ${cpfDigits}\n🔑 Senha: ${generatedPassword}\n\nAcesse pelo app para ver sua dieta e treino!`;
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    toast.success("Dados copiados! Cole no WhatsApp.");
+    setTimeout(() => setCopied(false), 3000);
   };
 
   return (
@@ -104,82 +131,88 @@ const NewPatientDialog = ({ onPatientCreated }: NewPatientDialogProps) => {
           <DialogTitle className="text-xl font-bold">Cadastrar Novo Paciente</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
-          {/* Nome */}
-          <div className="space-y-1.5">
-            <Label htmlFor="pat-name">Nome completo *</Label>
-            <Input id="pat-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nome completo do paciente" required className="bg-secondary/50 border-glass-border" />
-          </div>
-
-          {/* CPF */}
-          <div className="space-y-1.5">
-            <Label htmlFor="pat-cpf">CPF *</Label>
-            <Input id="pat-cpf" value={cpf} onChange={(e) => setCpf(formatCPF(e.target.value))} placeholder="000.000.000-00" required className="bg-secondary/50 border-glass-border" />
-          </div>
-
-          {/* Email & Telefone */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {!showResult ? (
+          <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+            {/* Nome */}
             <div className="space-y-1.5">
-              <Label htmlFor="pat-email">E-mail</Label>
-              <Input id="pat-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="paciente@email.com" className="bg-secondary/50 border-glass-border" />
+              <Label htmlFor="pat-name">Nome completo *</Label>
+              <Input id="pat-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nome completo do paciente" required className="bg-secondary/50 border-glass-border" />
             </div>
+
+            {/* CPF */}
             <div className="space-y-1.5">
-              <Label htmlFor="pat-phone">Telefone</Label>
-              <Input id="pat-phone" value={phone} onChange={(e) => setPhone(formatPhone(e.target.value))} placeholder="(00) 00000-0000" className="bg-secondary/50 border-glass-border" />
+              <Label htmlFor="pat-cpf">CPF *</Label>
+              <Input id="pat-cpf" value={cpf} onChange={(e) => setCpf(formatCPF(e.target.value))} placeholder="000.000.000-00" required className="bg-secondary/50 border-glass-border" />
             </div>
-          </div>
 
-          {/* Idade, Sexo */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="pat-age">Idade</Label>
-              <Input id="pat-age" type="number" min="0" max="120" value={age} onChange={(e) => setAge(e.target.value)} placeholder="Ex: 30" className="bg-secondary/50 border-glass-border" />
+            {/* Email & Telefone */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="pat-email">E-mail</Label>
+                <Input id="pat-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="paciente@email.com" className="bg-secondary/50 border-glass-border" />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="pat-phone">Telefone</Label>
+                <Input id="pat-phone" value={phone} onChange={(e) => setPhone(formatPhone(e.target.value))} placeholder="(00) 00000-0000" className="bg-secondary/50 border-glass-border" />
+              </div>
             </div>
-            <div className="space-y-1.5">
-              <Label>Sexo</Label>
-              <Select value={sex} onValueChange={setSex}>
-                <SelectTrigger className="bg-secondary/50 border-glass-border">
-                  <SelectValue placeholder="Selecione" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="M">Masculino</SelectItem>
-                  <SelectItem value="F">Feminino</SelectItem>
-                </SelectContent>
-              </Select>
+
+            {/* Data de nascimento & Sexo */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="pat-birth">Data de nascimento</Label>
+                <Input id="pat-birth" type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} className="bg-secondary/50 border-glass-border" />
+                {age !== null && (
+                  <p className="text-xs text-muted-foreground">{age} anos</p>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                <Label>Sexo</Label>
+                <Select value={sex} onValueChange={setSex}>
+                  <SelectTrigger className="bg-secondary/50 border-glass-border">
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="M">Masculino</SelectItem>
+                    <SelectItem value="F">Feminino</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </div>
 
-          {/* Objetivo */}
-          <div className="space-y-1.5">
-            <Label htmlFor="pat-obj">Objetivo</Label>
-            <Input id="pat-obj" value={objective} onChange={(e) => setObjective(e.target.value)} placeholder="Ex: Emagrecimento, Hipertrofia..." className="bg-secondary/50 border-glass-border" />
-          </div>
-
-          {/* Senha */}
-          <div className="space-y-1.5">
-            <Label htmlFor="pat-pass">Senha de acesso *</Label>
-            <div className="relative">
-              <Input
-                id="pat-pass"
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Mínimo 6 caracteres"
-                required
-                minLength={6}
-                className="bg-secondary/50 border-glass-border pr-10"
-              />
-              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
+            <Button type="submit" disabled={loading} className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
+              {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Cadastrando...</> : "Cadastrar Paciente"}
+            </Button>
+          </form>
+        ) : (
+          <div className="space-y-5 mt-2">
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-5 space-y-3">
+              <p className="font-semibold text-foreground text-center">✅ Paciente cadastrado!</p>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Paciente:</span>
+                  <span className="font-medium text-foreground">{name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Login (CPF):</span>
+                  <span className="font-mono font-medium text-foreground">{cpf.replace(/\D/g, "")}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Senha:</span>
+                  <span className="font-mono font-bold text-primary text-lg">{generatedPassword}</span>
+                </div>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground">O paciente usará o CPF + esta senha para fazer login</p>
-          </div>
 
-          <Button type="submit" disabled={loading} className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
-            {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Cadastrando...</> : "Cadastrar Paciente"}
-          </Button>
-        </form>
+            <Button onClick={handleCopy} className="w-full h-11 gap-2" variant={copied ? "outline" : "default"}>
+              {copied ? <><Check className="w-4 h-4" /> Copiado!</> : <><Copy className="w-4 h-4" /> Copiar dados para WhatsApp</>}
+            </Button>
+
+            <Button onClick={() => { resetForm(); }} variant="ghost" className="w-full text-muted-foreground">
+              Cadastrar outro paciente
+            </Button>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

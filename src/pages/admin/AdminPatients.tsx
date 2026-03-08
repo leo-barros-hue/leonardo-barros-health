@@ -8,7 +8,7 @@ import NewPatientDialog from "@/components/NewPatientDialog";
 interface Patient {
   id: string;
   name: string;
-  age: number | null;
+  birth_date: string | null;
   sex: string | null;
   objective: string | null;
   cpf: string | null;
@@ -27,7 +27,7 @@ const AdminPatients = () => {
     setLoading(true);
     const { data } = await supabase
       .from("patients")
-      .select("id, name, age, sex, objective, cpf, email, phone, updated_at")
+      .select("id, name, birth_date, sex, objective, cpf, email, phone, updated_at")
       .order("created_at", { ascending: false });
     setPatients((data as Patient[]) || []);
     setLoading(false);
@@ -81,7 +81,7 @@ const AdminPatients = () => {
                 <div>
                   <p className="font-semibold text-foreground group-hover:text-primary transition-colors">{patient.name}</p>
                   <p className="text-sm text-muted-foreground">
-                    {patient.objective || "Sem objetivo"} · {patient.age ? `${patient.age} anos` : "—"} · {patient.sex || "—"}
+                    {patient.objective || "Sem objetivo"} · {patient.birth_date ? `${Math.floor((Date.now() - new Date(patient.birth_date).getTime()) / 31557600000)} anos` : "—"} · {patient.sex || "—"}
                   </p>
                 </div>
               </div>
