@@ -127,24 +127,32 @@ const PatientEvolutionTab = ({ patientId }: Props) => {
       {measurements.length >= 2 && (
         <div className="glass-card p-6">
           <h3 className="text-sm font-semibold text-foreground mb-4">Gráfico de Evolução</h3>
-          <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+          <ResponsiveContainer width="100%" height={300}>
+            <ComposedChart data={chartData} barCategoryGap="30%">
+              <defs>
+                <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.85} />
+                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
               <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-              <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+              <YAxis yAxisId="left" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" unit=" kg" />
+              <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" unit="%" />
               <Tooltip
                 contentStyle={{
                   backgroundColor: "hsl(var(--card))",
                   border: "1px solid hsl(var(--border))",
-                  borderRadius: "8px",
+                  borderRadius: "12px",
                   fontSize: 12,
+                  boxShadow: "0 8px 24px -8px hsl(var(--primary) / 0.15)",
                 }}
               />
-              <Legend />
-              <Line type="monotone" dataKey="Peso" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 4 }} />
-              <Line type="monotone" dataKey="% Gordura" stroke="hsl(var(--destructive))" strokeWidth={2} dot={{ r: 4 }} />
-              <Line type="monotone" dataKey="% Massa Muscular" stroke="hsl(var(--success))" strokeWidth={2} dot={{ r: 4 }} />
-            </LineChart>
+              <Legend iconType="circle" />
+              <Bar yAxisId="left" dataKey="Peso" fill="url(#barGrad)" radius={[6, 6, 0, 0]} barSize={28} />
+              <Line yAxisId="right" type="monotone" dataKey="% Gordura" stroke="hsl(var(--destructive))" strokeWidth={2.5} dot={{ r: 5, strokeWidth: 2, fill: "hsl(var(--card))" }} activeDot={{ r: 7 }} />
+              <Line yAxisId="right" type="monotone" dataKey="% Massa Muscular" stroke="hsl(var(--success))" strokeWidth={2.5} dot={{ r: 5, strokeWidth: 2, fill: "hsl(var(--card))" }} activeDot={{ r: 7 }} />
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
       )}
