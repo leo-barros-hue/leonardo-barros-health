@@ -22,13 +22,28 @@ const stats = [
 
 const AdminDashboard = () => {
   const [search, setSearch] = useState("");
+  const [patients, setPatients] = useState<Patient[]>([]);
   const navigate = useNavigate();
 
-  const filteredPatients = mockPatients.filter((p) =>
+  useEffect(() => {
+    const fetch = async () => {
+      const { data } = await supabase
+        .from("patients")
+        .select("id, name, birth_date, objective, updated_at")
+        .order("created_at", { ascending: false });
+      setPatients((data as Patient[]) || []);
+    };
+    fetch();
+  }, []);
+
+  const calculateAge = (birthDate: string | null) => {
+    if (!birthDate) return null;
+    return Math.floor((Date.now() - new Date(birthDate).getTime()) / 31557600000);
+  };
+
+  const filteredPatients = patients.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase())
   );
-
-  const needsUpdate = mockPatients.filter((p) => p.status === "needs-update");
 
   return (
     <div className="space-y-8 stagger-fade-in">
