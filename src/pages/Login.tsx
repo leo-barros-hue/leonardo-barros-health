@@ -3,29 +3,61 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Activity, Lock, Mail } from "lucide-react";
+import { Activity, Lock, Mail, CreditCard } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Login = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // Mock login - will be replaced with Supabase auth
-    setTimeout(() => {
-      if (email === "admin@leonardobarros.com") {
-        localStorage.setItem("userRole", "admin");
-        navigate("/admin");
-      } else {
-        localStorage.setItem("userRole", "patient");
-        navigate("/patient");
+
+    try {
+      let authEmail = loginId.trim();
+
+      // If input looks like CPF (digits only or formatted), look up the patient's auth email
+      const digits = loginId.replace(/\D/g, "");
+      if (digits.length === 11 && !loginId.includes("@")) {
+        // It's a CPF - look up patient to get user_id, then build auth email
+        const { data: patient } = await supabase
+          .from("patients")
+          .select("email, cpf")
+          .eq("cpf", digits)
+          .single();
+
+        if (patient?.email) {
+          authEmail = patient.email;
+        } else {
+          // Use the generated fake email pattern
+          authEmail = `${digits}@patient.local`;
+        }
       }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: authEmail,
+        password,
+      });
+
+      if (error) throw error;
+
+      const role = data.user?.user_metadata?.role;
+      if (role === "patient") {
+        navigate("/patient");
+      } else {
+        navigate("/admin");
+      }
+
+      toast.success("Login realizado com sucesso!");
+    } catch (err: any) {
+      toast.error("Erro ao fazer login", { description: "CPF/email ou senha incorretos" });
+    } finally {
       setIsLoading(false);
-    }, 800);
+    }
   };
 
   return (
@@ -57,15 +89,15 @@ const Login = () => {
 
           <form onSubmit={handleLogin} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm text-muted-foreground">E-mail</Label>
+              <Label htmlFor="loginId" className="text-sm text-muted-foreground">CPF ou E-mail</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="loginId"
+                  type="text"
+                  placeholder="000.000.000-00 ou seu@email.com"
+                  value={loginId}
+                  onChange={(e) => setLoginId(e.target.value)}
                   className="pl-10 bg-secondary/50 border-glass-border focus:border-primary/50 h-12"
                   required
                 />

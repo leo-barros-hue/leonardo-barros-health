@@ -168,30 +168,42 @@ export type Database = {
       patients: {
         Row: {
           age: number | null
+          cpf: string | null
           created_at: string
+          email: string | null
           id: string
           name: string
           objective: string | null
+          phone: string | null
           sex: string | null
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           age?: number | null
+          cpf?: string | null
           created_at?: string
+          email?: string | null
           id?: string
           name: string
           objective?: string | null
+          phone?: string | null
           sex?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           age?: number | null
+          cpf?: string | null
           created_at?: string
+          email?: string | null
           id?: string
           name?: string
           objective?: string | null
+          phone?: string | null
           sex?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
