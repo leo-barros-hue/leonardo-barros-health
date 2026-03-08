@@ -8,7 +8,7 @@ import NewPatientDialog from "@/components/NewPatientDialog";
 interface Patient {
   id: string;
   name: string;
-  age: number | null;
+  birth_date: string | null;
   sex: string | null;
   objective: string | null;
   cpf: string | null;

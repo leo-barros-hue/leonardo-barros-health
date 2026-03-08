@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { name, cpf, email, phone, password, age, sex, objective } = await req.json();
+    const { name, cpf, email, phone, password, birth_date, sex } = await req.json();
 
     if (!name || !cpf || !password) {
       return new Response(JSON.stringify({ error: "Nome, CPF e senha são obrigatórios" }), {
@@ -26,10 +26,8 @@ Deno.serve(async (req) => {
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
 
-    // Use CPF as fake email for auth if no email provided
     const authEmail = email || `${cpf.replace(/\D/g, "")}@patient.local`;
 
-    // Create auth user
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email: authEmail,
       password,
@@ -44,7 +42,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Insert patient record
     const { data: patient, error: patientError } = await supabaseAdmin
       .from("patients")
       .insert({
@@ -52,16 +49,14 @@ Deno.serve(async (req) => {
         cpf: cpf.replace(/\D/g, ""),
         email: email || null,
         phone: phone || null,
-        age: age || null,
+        birth_date: birth_date || null,
         sex: sex || null,
-        objective: objective || null,
         user_id: authData.user.id,
       })
       .select()
       .single();
 
     if (patientError) {
-      // Rollback: delete the auth user
       await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
       return new Response(JSON.stringify({ error: patientError.message }), {
         status: 400,
