@@ -122,7 +122,7 @@ const AdminDiets = () => {
       )
     );
 
-    if (value.length >= 2) {
+    if (value.length >= 1) {
       const matches = dbFoods.filter((df) =>
         df.name.toLowerCase().includes(value.toLowerCase())
       ).slice(0, 8);
