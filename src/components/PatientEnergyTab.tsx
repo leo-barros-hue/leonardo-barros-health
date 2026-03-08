@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calculator, Flame, Activity } from "lucide-react";
+import { Calculator, Activity } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PatientEnergyTabProps {
   patient: {
@@ -32,6 +33,26 @@ export default function PatientEnergyTab({ patient }: PatientEnergyTabProps) {
       setAge(calculatedAge.toString());
     }
   }, [patient.birth_date]);
+
+  useEffect(() => {
+    const fetchLatestWeight = async () => {
+      const { data } = await supabase
+        .from("body_measurements")
+        .select("weight, body_fat_pct")
+        .eq("patient_id", patient.id)
+        .order("measured_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (data?.weight) {
+        setWeight(data.weight.toString());
+      }
+      if (data?.body_fat_pct) {
+        setBodyFat(data.body_fat_pct.toString());
+      }
+    };
+    fetchLatestWeight();
+  }, [patient.id]);
 
   const calculateResults = () => {
     const w = parseFloat(weight) || 0;
@@ -170,7 +191,7 @@ export default function PatientEnergyTab({ patient }: PatientEnergyTabProps) {
           title="Mifflin-St Jeor"
           bmr={results.mifflin}
           tdee={results.tdee.mifflin}
-          description="Geralmente considerada a mais precisa para a população moderna."
+          description="Recomendada para pacientes que estão com sobrepeso ou obesidade."
         />
         <FormulaResultCard
           title="Cunningham"
