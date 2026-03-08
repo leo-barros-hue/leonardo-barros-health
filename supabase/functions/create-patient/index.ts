@@ -28,18 +28,34 @@ Deno.serve(async (req) => {
 
     const authEmail = email || `${cpf.replace(/\D/g, "")}@patient.local`;
 
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email: authEmail,
-      password,
-      email_confirm: true,
-      user_metadata: { name, cpf, role: "patient" },
-    });
+    // Check if auth user already exists with this email
+    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
+    const existingUser = existingUsers?.users?.find((u: any) => u.email === authEmail);
 
-    if (authError) {
-      return new Response(JSON.stringify({ error: authError.message }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+    let userId: string;
+
+    if (existingUser) {
+      // Reuse existing auth user, update password
+      await supabaseAdmin.auth.admin.updateUserById(existingUser.id, {
+        password,
+        user_metadata: { name, cpf, role: "patient" },
       });
+      userId = existingUser.id;
+    } else {
+      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+        email: authEmail,
+        password,
+        email_confirm: true,
+        user_metadata: { name, cpf, role: "patient" },
+      });
+
+      if (authError) {
+        return new Response(JSON.stringify({ error: authError.message }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      userId = authData.user.id;
     }
 
     const { data: patient, error: patientError } = await supabaseAdmin
@@ -51,13 +67,12 @@ Deno.serve(async (req) => {
         phone: phone || null,
         birth_date: birth_date || null,
         sex: sex || null,
-        user_id: authData.user.id,
+        user_id: userId,
       })
       .select()
       .single();
 
     if (patientError) {
-      await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
       return new Response(JSON.stringify({ error: patientError.message }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
