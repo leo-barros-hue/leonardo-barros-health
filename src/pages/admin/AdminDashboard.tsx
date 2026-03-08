@@ -1,17 +1,17 @@
 import { Users, Utensils, Dumbbell, FlaskConical, FileText, Search, Plus, TrendingUp, Clock, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
-const mockPatients = [
-  { id: "1", name: "Maria Silva", age: 32, objective: "Emagrecimento", lastUpdate: "2026-03-05", status: "active", planEnd: "2026-04-15" },
-  { id: "2", name: "João Santos", age: 28, objective: "Hipertrofia", lastUpdate: "2026-03-01", status: "active", planEnd: "2026-03-20" },
-  { id: "3", name: "Ana Costa", age: 45, objective: "Saúde Metabólica", lastUpdate: "2026-02-20", status: "needs-update", planEnd: "2026-05-01" },
-  { id: "4", name: "Pedro Lima", age: 35, objective: "Performance", lastUpdate: "2026-03-06", status: "active", planEnd: "2026-06-10" },
-  { id: "5", name: "Carla Mendes", age: 29, objective: "Recomposição Corporal", lastUpdate: "2026-02-15", status: "needs-update", planEnd: "2026-03-30" },
-  { id: "6", name: "Lucas Oliveira", age: 40, objective: "Emagrecimento", lastUpdate: "2026-03-04", status: "active", planEnd: "2026-04-20" },
-];
+interface Patient {
+  id: string;
+  name: string;
+  birth_date: string | null;
+  objective: string | null;
+  updated_at: string;
+}
 
 const stats = [
   { label: "Pacientes Ativos", value: "47", icon: Users, color: "text-primary" },
