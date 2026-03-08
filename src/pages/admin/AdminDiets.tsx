@@ -108,21 +108,32 @@ const AdminDiets = () => {
     };
   };
 
+  const tryMatchFoodByName = (name: string): DbFood | undefined => {
+    return dbFoods.find((df) => df.name.toLowerCase() === name.toLowerCase());
+  };
+
   const handleFoodNameChange = (mealId: string, foodId: string, value: string) => {
     setMeals((prev) =>
       prev.map((meal) =>
         meal.id === mealId
           ? {
               ...meal,
-              foods: meal.foods.map((f) =>
-                f.id === foodId ? { ...f, food: value, dbFoodId: undefined } : f
-              ),
+              foods: meal.foods.map((f) => {
+                if (f.id !== foodId) return f;
+                const exactMatch = tryMatchFoodByName(value);
+                if (exactMatch) {
+                  const qty = parseFloat(f.quantity) || 0;
+                  const macros = calcProportionalMacros(exactMatch, qty);
+                  return { ...f, food: value, dbFoodId: exactMatch.id, measure: exactMatch.measure as FoodItem["measure"], ...macros };
+                }
+                return { ...f, food: value, dbFoodId: undefined };
+              }),
             }
           : meal
       )
     );
 
-    if (value.length >= 1) {
+    if (value.length >= 2) {
       const matches = dbFoods.filter((df) =>
         df.name.toLowerCase().includes(value.toLowerCase())
       ).slice(0, 8);
@@ -169,13 +180,13 @@ const AdminDiets = () => {
               foods: meal.foods.map((f) => {
                 if (f.id !== foodId) return f;
                 const updated = { ...f, quantity: value };
-                if (f.dbFoodId) {
-                  const dbFood = dbFoods.find((df) => df.id === f.dbFoodId);
-                  if (dbFood) {
-                    const qty = parseFloat(value) || 0;
-                    const macros = calcProportionalMacros(dbFood, qty);
-                    return { ...updated, ...macros };
-                  }
+                const dbFood = f.dbFoodId
+                  ? dbFoods.find((df) => df.id === f.dbFoodId)
+                  : tryMatchFoodByName(f.food);
+                if (dbFood) {
+                  const qty = parseFloat(value) || 0;
+                  const macros = calcProportionalMacros(dbFood, qty);
+                  return { ...updated, dbFoodId: dbFood.id, measure: dbFood.measure as FoodItem["measure"], ...macros };
                 }
                 return updated;
               }),
@@ -344,7 +355,7 @@ const AdminDiets = () => {
                           onChange={(e) => handleFoodNameChange(meal.id, food.id, e.target.value)}
                           onFocus={() => {
                             cancelClose();
-                            if (food.food.length >= 1) {
+                            if (food.food.length >= 2) {
                               const matches = dbFoods.filter((df) =>
                                 df.name.toLowerCase().includes(food.food.toLowerCase())
                               ).slice(0, 8);
