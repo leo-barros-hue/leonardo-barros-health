@@ -27,7 +27,7 @@ const AdminPatients = () => {
     setLoading(true);
     const { data } = await supabase
       .from("patients")
-      .select("id, name, age, sex, objective, cpf, email, phone, updated_at")
+      .select("id, name, birth_date, sex, objective, cpf, email, phone, updated_at")
       .order("created_at", { ascending: false });
     setPatients((data as Patient[]) || []);
     setLoading(false);
