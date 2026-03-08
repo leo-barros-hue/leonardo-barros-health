@@ -163,6 +163,10 @@ const AdminPatientDetail = () => {
         </div>
       )}
 
+      {activeTab === "energy" && (
+        <PatientEnergyTab patient={patient} />
+      )}
+
       {activeTab === "diet" && (
         <div className="glass-card p-6">
           <h2 className="text-lg font-bold text-foreground mb-2">Dieta Atual</h2>
