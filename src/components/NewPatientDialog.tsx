@@ -111,7 +111,7 @@ const NewPatientDialog = ({ onPatientCreated }: NewPatientDialogProps) => {
 
   const handleCopy = async () => {
     const cpfDigits = cpf.replace(/\D/g, "");
-    const text = `Olá ${name.split(" ")[0]}! 🏋️\n\nSeu acesso foi criado:\n📱 Login (CPF): ${cpfDigits}\n🔑 Senha: ${generatedPassword}\n\nAcesse pelo app para ver sua dieta e treino!`;
+    const text = `Olá ${name.split(" ")[0]}! 🏋️\n\nSeu acesso foi criado:\n\n📱 Login (CPF): ${cpfDigits}\n\n🔑 Senha: ${generatedPassword}\n\nAcesse pelo app para ver seu plano.`;
     await navigator.clipboard.writeText(text);
     setCopied(true);
     toast.success("Dados copiados! Cole no WhatsApp.");
