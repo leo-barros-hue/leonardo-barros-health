@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Plus, Trash2, Utensils } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,7 +72,7 @@ const AdminDiets = () => {
   const [dbFoods, setDbFoods] = useState<DbFood[]>([]);
   const [activeSuggestion, setActiveSuggestion] = useState<{ mealId: string; foodId: string } | null>(null);
   const [suggestions, setSuggestions] = useState<DbFood[]>([]);
-  const suggestionsRef = useRef<HTMLDivElement>(null);
+  const blurTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
     const fetchFoods = async () => {
@@ -82,15 +82,15 @@ const AdminDiets = () => {
     fetchFoods();
   }, []);
 
-  // Close suggestions on click outside
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (suggestionsRef.current && !suggestionsRef.current.contains(e.target as Node)) {
-        setActiveSuggestion(null);
-      }
-    };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
+  const closeSuggestionsDelayed = useCallback(() => {
+    blurTimeoutRef.current = setTimeout(() => {
+      setActiveSuggestion(null);
+      setSuggestions([]);
+    }, 200);
+  }, []);
+
+  const cancelClose = useCallback(() => {
+    if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
   }, []);
 
   const calcProportionalMacros = (dbFood: DbFood, qty: number): { protein: number; carbs: number; fat: number } => {
@@ -122,7 +122,7 @@ const AdminDiets = () => {
       )
     );
 
-    if (value.length >= 2) {
+    if (value.length >= 1) {
       const matches = dbFoods.filter((df) =>
         df.name.toLowerCase().includes(value.toLowerCase())
       ).slice(0, 8);
@@ -342,12 +342,26 @@ const AdminDiets = () => {
                         <Input
                           value={food.food}
                           onChange={(e) => handleFoodNameChange(meal.id, food.id, e.target.value)}
+                          onFocus={() => {
+                            cancelClose();
+                            if (food.food.length >= 1) {
+                              const matches = dbFoods.filter((df) =>
+                                df.name.toLowerCase().includes(food.food.toLowerCase())
+                              ).slice(0, 8);
+                              setSuggestions(matches);
+                              setActiveSuggestion({ mealId: meal.id, foodId: food.id });
+                            }
+                          }}
+                          onBlur={closeSuggestionsDelayed}
                           placeholder="Digite o nome do alimento..."
                           className="h-8 text-sm bg-transparent border-none shadow-none focus-visible:ring-1 px-2"
                         />
                         {/* Autocomplete dropdown */}
                         {activeSuggestion?.mealId === meal.id && activeSuggestion?.foodId === food.id && suggestions.length > 0 && (
-                          <div ref={suggestionsRef} className="absolute z-50 left-2 right-2 top-full bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                          <div
+                            className="absolute z-50 left-2 right-2 top-full bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto"
+                            onMouseDown={cancelClose}
+                          >
                             {suggestions.map((s) => (
                               <button
                                 key={s.id}
