@@ -72,7 +72,7 @@ const AdminDiets = () => {
   const [dbFoods, setDbFoods] = useState<DbFood[]>([]);
   const [activeSuggestion, setActiveSuggestion] = useState<{ mealId: string; foodId: string } | null>(null);
   const [suggestions, setSuggestions] = useState<DbFood[]>([]);
-  const suggestionsRef = useRef<HTMLDivElement>(null);
+  const blurTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
     const fetchFoods = async () => {
@@ -82,15 +82,15 @@ const AdminDiets = () => {
     fetchFoods();
   }, []);
 
-  // Close suggestions on click outside
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (suggestionsRef.current && !suggestionsRef.current.contains(e.target as Node)) {
-        setActiveSuggestion(null);
-      }
-    };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
+  const closeSuggestionsDelayed = useCallback(() => {
+    blurTimeoutRef.current = setTimeout(() => {
+      setActiveSuggestion(null);
+      setSuggestions([]);
+    }, 200);
+  }, []);
+
+  const cancelClose = useCallback(() => {
+    if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
   }, []);
 
   const calcProportionalMacros = (dbFood: DbFood, qty: number): { protein: number; carbs: number; fat: number } => {
