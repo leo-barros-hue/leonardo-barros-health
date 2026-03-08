@@ -13,11 +13,11 @@ interface Patient {
   updated_at: string;
 }
 
-const stats = [
-  { label: "Pacientes Ativos", value: "47", icon: Users, color: "text-primary" },
-  { label: "Dietas Ativas", value: "42", icon: Utensils, color: "text-success" },
-  { label: "Treinos Ativos", value: "38", icon: Dumbbell, color: "text-warning" },
-  { label: "Exames Pendentes", value: "5", icon: FlaskConical, color: "text-destructive" },
+const getStats = (patientCount: number) => [
+  { label: "Pacientes Ativos", value: String(patientCount), icon: Users, color: "text-primary" },
+  { label: "Dietas Ativas", value: "—", icon: Utensils, color: "text-success" },
+  { label: "Treinos Ativos", value: "—", icon: Dumbbell, color: "text-warning" },
+  { label: "Exames Pendentes", value: "—", icon: FlaskConical, color: "text-destructive" },
 ];
 
 const AdminDashboard = () => {
