@@ -61,7 +61,7 @@ const AdminDashboard = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
+        {getStats(patients.length).map((stat) => (
           <div key={stat.label} className="glass-card p-5">
             <div className="flex items-center gap-3">
               <div className={`w-10 h-10 rounded-xl bg-secondary flex items-center justify-center ${stat.color}`}>
