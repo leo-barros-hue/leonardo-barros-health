@@ -102,7 +102,7 @@ const PatientEvolutionTab = ({ patientId }: Props) => {
     fetchMeasurements();
   };
 
-
+  const chartData = measurements.map((m) => ({
     date: new Date(m.measured_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }),
     Peso: m.weight,
     "% Gordura": m.body_fat_pct,
