@@ -148,14 +148,17 @@ const AdminDashboard = () => {
               <h2 className="text-lg font-semibold text-foreground">Precisam Atualização</h2>
             </div>
             <div className="space-y-3">
-              {needsUpdate.map((p) => (
+              {patients.filter(p => {
+                const daysSinceUpdate = (Date.now() - new Date(p.updated_at).getTime()) / 86400000;
+                return daysSinceUpdate > 14;
+              }).slice(0, 5).map((p) => (
                 <div key={p.id} className="flex items-center gap-3 p-3 rounded-xl bg-warning/5 border border-warning/10">
                   <div className="w-8 h-8 rounded-full bg-warning/10 flex items-center justify-center text-xs font-bold text-warning">
                     {p.name.charAt(0)}
                   </div>
                   <div>
                     <p className="text-sm font-medium text-foreground">{p.name}</p>
-                    <p className="text-xs text-muted-foreground">Última: {new Date(p.lastUpdate).toLocaleDateString("pt-BR")}</p>
+                    <p className="text-xs text-muted-foreground">Última: {new Date(p.updated_at).toLocaleDateString("pt-BR")}</p>
                   </div>
                 </div>
               ))}
