@@ -9,6 +9,7 @@ import PatientLayout from "./layouts/PatientLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminPatients from "./pages/admin/AdminPatients";
 import AdminPatientDetail from "./pages/admin/AdminPatientDetail";
+import AdminDiets from "./pages/admin/AdminDiets";
 import PatientDashboard from "./pages/patient/PatientDashboard";
 import PatientDiet from "./pages/patient/PatientDiet";
 import PatientWorkout from "./pages/patient/PatientWorkout";
@@ -33,7 +34,7 @@ const App = () => (
             <Route index element={<AdminDashboard />} />
             <Route path="patients" element={<AdminPatients />} />
             <Route path="patients/:id" element={<AdminPatientDetail />} />
-            <Route path="diets" element={<AdminDashboard />} />
+            <Route path="diets" element={<AdminDiets />} />
             <Route path="workouts" element={<AdminDashboard />} />
             <Route path="exams" element={<AdminDashboard />} />
             <Route path="prescriptions" element={<AdminDashboard />} />
