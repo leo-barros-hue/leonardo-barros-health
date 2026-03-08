@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Plus, Trash2, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { toast } from "sonner";
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
+  ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
 
 interface Measurement {
