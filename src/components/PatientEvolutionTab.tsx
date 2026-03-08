@@ -81,7 +81,28 @@ const PatientEvolutionTab = ({ patientId }: Props) => {
     fetchMeasurements();
   };
 
-  const chartData = measurements.map((m) => ({
+  const startEdit = (m: Measurement) => {
+    setEditingId(m.id);
+    setEditWeight(m.weight != null ? String(m.weight) : "");
+    setEditFat(m.body_fat_pct != null ? String(m.body_fat_pct) : "");
+    setEditMuscle(m.muscle_mass_pct != null ? String(m.muscle_mass_pct) : "");
+  };
+
+  const handleEditSave = async (id: string) => {
+    setSaving(true);
+    const { error } = await supabase.from("body_measurements").update({
+      weight: editWeight ? parseFloat(editWeight.replace(",", ".")) : null,
+      body_fat_pct: editFat ? parseFloat(editFat.replace(",", ".")) : null,
+      muscle_mass_pct: editMuscle ? parseFloat(editMuscle.replace(",", ".")) : null,
+    }).eq("id", id);
+    setSaving(false);
+    if (error) { toast.error("Erro ao atualizar"); return; }
+    toast.success("Registro atualizado!");
+    setEditingId(null);
+    fetchMeasurements();
+  };
+
+
     date: new Date(m.measured_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }),
     Peso: m.weight,
     "% Gordura": m.body_fat_pct,
