@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { Plus, Trash2, TrendingUp, TrendingDown, Minus, Pencil, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
@@ -32,6 +32,10 @@ const PatientEvolutionTab = ({ patientId }: Props) => {
   const [bodyFat, setBodyFat] = useState("");
   const [muscleMass, setMuscleMass] = useState("");
   const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editWeight, setEditWeight] = useState("");
+  const [editFat, setEditFat] = useState("");
+  const [editMuscle, setEditMuscle] = useState("");
 
   const fetchMeasurements = async () => {
     const { data } = await supabase
@@ -74,6 +78,27 @@ const PatientEvolutionTab = ({ patientId }: Props) => {
   const handleDelete = async (id: string) => {
     await supabase.from("body_measurements").delete().eq("id", id);
     toast.success("Registro removido");
+    fetchMeasurements();
+  };
+
+  const startEdit = (m: Measurement) => {
+    setEditingId(m.id);
+    setEditWeight(m.weight != null ? String(m.weight) : "");
+    setEditFat(m.body_fat_pct != null ? String(m.body_fat_pct) : "");
+    setEditMuscle(m.muscle_mass_pct != null ? String(m.muscle_mass_pct) : "");
+  };
+
+  const handleEditSave = async (id: string) => {
+    setSaving(true);
+    const { error } = await supabase.from("body_measurements").update({
+      weight: editWeight ? parseFloat(editWeight.replace(",", ".")) : null,
+      body_fat_pct: editFat ? parseFloat(editFat.replace(",", ".")) : null,
+      muscle_mass_pct: editMuscle ? parseFloat(editMuscle.replace(",", ".")) : null,
+    }).eq("id", id);
+    setSaving(false);
+    if (error) { toast.error("Erro ao atualizar"); return; }
+    toast.success("Registro atualizado!");
+    setEditingId(null);
     fetchMeasurements();
   };
 
@@ -228,27 +253,50 @@ const PatientEvolutionTab = ({ patientId }: Props) => {
                       <p className="text-xs font-medium text-muted-foreground">
                         {new Date(m.measured_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })}
                       </p>
-                      <button
-                        onClick={() => handleDelete(m.id)}
-                        className="opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive/80 transition-opacity"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        {editingId === m.id ? (
+                          <>
+                            <button onClick={() => handleEditSave(m.id)} disabled={saving} className="text-success hover:text-success/80 transition-opacity">
+                              <Check className="w-3.5 h-3.5" />
+                            </button>
+                            <button onClick={() => setEditingId(null)} className="text-muted-foreground hover:text-foreground transition-opacity">
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button onClick={() => startEdit(m)} className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-primary transition-opacity">
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                            <button onClick={() => handleDelete(m.id)} className="opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive/80 transition-opacity">
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex gap-4 mt-1 text-sm">
-                      {m.weight != null && (
-                        <span className="text-foreground">
-                          <strong>{m.weight}</strong> kg
-                          {weightDiff && Number(weightDiff) !== 0 && (
-                            <span className={`ml-1 text-xs ${Number(weightDiff) > 0 ? "text-destructive" : "text-success"}`}>
-                              ({Number(weightDiff) > 0 ? "+" : ""}{weightDiff})
-                            </span>
-                          )}
-                        </span>
-                      )}
-                      {m.body_fat_pct != null && <span className="text-foreground"><strong>{m.body_fat_pct}</strong>% gordura</span>}
-                      {m.muscle_mass_pct != null && <span className="text-foreground"><strong>{m.muscle_mass_pct}</strong>% massa</span>}
-                    </div>
+                    {editingId === m.id ? (
+                      <div className="flex gap-2 mt-2">
+                        <Input value={editWeight} onChange={(e) => setEditWeight(e.target.value)} placeholder="Peso" className="h-8 text-xs bg-secondary/50 border-glass-border w-24" />
+                        <Input value={editFat} onChange={(e) => setEditFat(e.target.value)} placeholder="% Gord." className="h-8 text-xs bg-secondary/50 border-glass-border w-24" />
+                        <Input value={editMuscle} onChange={(e) => setEditMuscle(e.target.value)} placeholder="% Massa" className="h-8 text-xs bg-secondary/50 border-glass-border w-24" />
+                      </div>
+                    ) : (
+                      <div className="flex gap-4 mt-1 text-sm">
+                        {m.weight != null && (
+                          <span className="text-foreground">
+                            <strong>{m.weight}</strong> kg
+                            {weightDiff && Number(weightDiff) !== 0 && (
+                              <span className={`ml-1 text-xs ${Number(weightDiff) > 0 ? "text-destructive" : "text-success"}`}>
+                                ({Number(weightDiff) > 0 ? "+" : ""}{weightDiff})
+                              </span>
+                            )}
+                          </span>
+                        )}
+                        {m.body_fat_pct != null && <span className="text-foreground"><strong>{m.body_fat_pct}</strong>% gordura</span>}
+                        {m.muscle_mass_pct != null && <span className="text-foreground"><strong>{m.muscle_mass_pct}</strong>% massa</span>}
+                      </div>
+                    )}
                   </div>
                 </div>
               );
