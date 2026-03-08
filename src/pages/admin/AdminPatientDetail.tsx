@@ -2,6 +2,7 @@ import { ArrowLeft, User, Utensils, Dumbbell, FlaskConical, FileText, TrendingUp
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import PatientEvolutionTab from "@/components/PatientEvolutionTab";
 
 const tabs = [
   { id: "overview", label: "Visão Geral", icon: User },
