@@ -52,10 +52,7 @@ const AdminDashboard = () => {
           <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
           <p className="text-muted-foreground mt-1">Visão geral dos seus pacientes</p>
         </div>
-        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2">
-          <Plus className="w-4 h-4" />
-          Novo Paciente
-        </Button>
+        <NewPatientDialog onPatientCreated={fetchPatients} />
       </div>
 
       {/* Stats */}
