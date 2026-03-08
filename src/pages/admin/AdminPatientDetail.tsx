@@ -1,5 +1,7 @@
-import { ArrowLeft, User, Utensils, Dumbbell, FlaskConical, FileText, TrendingUp } from "lucide-react";
+import { ArrowLeft, User, Utensils, Dumbbell, FlaskConical, FileText, TrendingUp, Loader2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const tabs = [
   { id: "overview", label: "Visão Geral", icon: User },
@@ -10,25 +12,101 @@ const tabs = [
   { id: "prescriptions", label: "Prescrições", icon: FileText },
 ];
 
-const mockPatient = {
-  name: "Maria Silva",
-  age: 32,
-  sex: "Feminino",
-  height: "1.65m",
-  weight: "78.5 kg",
-  objective: "Emagrecimento",
-  medications: "Nenhuma",
-  allergies: "Frutos do mar",
-  familyHistory: "Diabetes tipo 2 (mãe), Hipertensão (pai)",
-  previousDiseases: "Nenhuma",
+interface Patient {
+  id: string;
+  name: string;
+  cpf: string | null;
+  email: string | null;
+  phone: string | null;
+  birth_date: string | null;
+  sex: string | null;
+  objective: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+const calculateAge = (birthDate: string | null): string => {
+  if (!birthDate) return "—";
+  const today = new Date();
+  const birth = new Date(birthDate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+  return `${age} anos`;
 };
 
-import { useState } from "react";
+const formatCPF = (cpf: string | null) => {
+  if (!cpf) return "—";
+  const d = cpf.replace(/\D/g, "");
+  if (d.length !== 11) return cpf;
+  return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9)}`;
+};
+
+const formatPhone = (phone: string | null) => {
+  if (!phone) return "—";
+  const d = phone.replace(/\D/g, "");
+  if (d.length === 11) return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
+  if (d.length === 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;
+  return phone;
+};
+
+const formatDate = (date: string | null) => {
+  if (!date) return "—";
+  return new Date(date).toLocaleDateString("pt-BR");
+};
 
 const AdminPatientDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [activeTab, setActiveTab] = useState("overview");
+  const [patient, setPatient] = useState<Patient | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPatient = async () => {
+      if (!id) return;
+      const { data } = await supabase
+        .from("patients")
+        .select("*")
+        .eq("id", id)
+        .single();
+      setPatient(data as Patient | null);
+      setLoading(false);
+    };
+    fetchPatient();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!patient) {
+    return (
+      <div className="space-y-4 stagger-fade-in">
+        <button onClick={() => navigate("/admin/patients")} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm">
+          <ArrowLeft className="w-4 h-4" /> Voltar
+        </button>
+        <div className="text-center py-12 text-muted-foreground">Paciente não encontrado.</div>
+      </div>
+    );
+  }
+
+  const sexLabel = patient.sex === "M" ? "Masculino" : patient.sex === "F" ? "Feminino" : "—";
+
+  const overviewFields = [
+    { label: "Nome", value: patient.name },
+    { label: "CPF", value: formatCPF(patient.cpf) },
+    { label: "E-mail", value: patient.email || "—" },
+    { label: "Telefone", value: formatPhone(patient.phone) },
+    { label: "Data de Nascimento", value: formatDate(patient.birth_date) },
+    { label: "Idade", value: calculateAge(patient.birth_date) },
+    { label: "Sexo", value: sexLabel },
+    { label: "Objetivo", value: patient.objective || "Não definido" },
+  ];
 
   return (
     <div className="space-y-6 stagger-fade-in">
@@ -39,11 +117,13 @@ const AdminPatientDetail = () => {
       {/* Patient Header */}
       <div className="glass-card p-6 flex items-center gap-4">
         <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-2xl font-bold text-primary">
-          {mockPatient.name.charAt(0)}
+          {patient.name.charAt(0)}
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">{mockPatient.name}</h1>
-          <p className="text-muted-foreground">{mockPatient.objective} · {mockPatient.age} anos · {mockPatient.sex}</p>
+          <h1 className="text-2xl font-bold text-foreground">{patient.name}</h1>
+          <p className="text-muted-foreground">
+            {patient.objective || "Sem objetivo"} · {calculateAge(patient.birth_date)} · {sexLabel}
+          </p>
         </div>
       </div>
 
@@ -70,20 +150,9 @@ const AdminPatientDetail = () => {
         <div className="glass-card p-6">
           <h2 className="text-lg font-bold text-foreground mb-4">Dados Básicos</h2>
           <div className="grid sm:grid-cols-2 gap-4">
-            {Object.entries({
-              "Nome": mockPatient.name,
-              "Idade": `${mockPatient.age} anos`,
-              "Sexo": mockPatient.sex,
-              "Altura": mockPatient.height,
-              "Peso Inicial": mockPatient.weight,
-              "Objetivo": mockPatient.objective,
-              "Medicações": mockPatient.medications,
-              "Alergias": mockPatient.allergies,
-              "Histórico Familiar": mockPatient.familyHistory,
-              "Doenças Prévias": mockPatient.previousDiseases,
-            }).map(([key, value]) => (
-              <div key={key} className="bg-secondary/30 rounded-xl p-4">
-                <p className="text-xs text-muted-foreground mb-1">{key}</p>
+            {overviewFields.map(({ label, value }) => (
+              <div key={label} className="bg-secondary/30 rounded-xl p-4">
+                <p className="text-xs text-muted-foreground mb-1">{label}</p>
                 <p className="text-sm font-medium text-foreground">{value}</p>
               </div>
             ))}
@@ -94,16 +163,14 @@ const AdminPatientDetail = () => {
       {activeTab === "diet" && (
         <div className="glass-card p-6">
           <h2 className="text-lg font-bold text-foreground mb-2">Dieta Atual</h2>
-          <p className="text-muted-foreground text-sm">Dieta Hipercalórica - Fase 2</p>
-          <p className="text-sm text-muted-foreground mt-4">Página completa de gerenciamento de dieta será conectada ao backend.</p>
+          <p className="text-sm text-muted-foreground">Página completa de gerenciamento de dieta será conectada ao backend.</p>
         </div>
       )}
 
       {activeTab === "workout" && (
         <div className="glass-card p-6">
           <h2 className="text-lg font-bold text-foreground mb-2">Treino Atual</h2>
-          <p className="text-muted-foreground text-sm">Divisão A/B/C/D — Fase Hipertrofia</p>
-          <p className="text-sm text-muted-foreground mt-4">Página completa de gerenciamento de treinos será conectada ao backend.</p>
+          <p className="text-sm text-muted-foreground">Página completa de gerenciamento de treinos será conectada ao backend.</p>
         </div>
       )}
 
