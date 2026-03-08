@@ -1,11 +1,13 @@
-import { ArrowLeft, User, Utensils, Dumbbell, FlaskConical, FileText, TrendingUp, Loader2 } from "lucide-react";
+import { ArrowLeft, User, Utensils, Dumbbell, FlaskConical, FileText, TrendingUp, Loader2, Calculator } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import PatientEvolutionTab from "@/components/PatientEvolutionTab";
+import PatientEnergyTab from "@/components/PatientEnergyTab";
 
 const tabs = [
   { id: "overview", label: "Visão Geral", icon: User },
+  { id: "energy", label: "Gasto Calórico", icon: Calculator },
   { id: "diet", label: "Dieta", icon: Utensils },
   { id: "workout", label: "Treino", icon: Dumbbell },
   { id: "evolution", label: "Evolução", icon: TrendingUp },
