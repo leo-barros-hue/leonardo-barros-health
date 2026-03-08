@@ -1,9 +1,9 @@
 import { Users, Utensils, Dumbbell, FlaskConical, FileText, Search, Plus, TrendingUp, Clock, AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import NewPatientDialog from "@/components/NewPatientDialog";
 
 interface Patient {
   id: string;
@@ -25,16 +25,15 @@ const AdminDashboard = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetch = async () => {
-      const { data } = await supabase
-        .from("patients")
-        .select("id, name, birth_date, objective, updated_at")
-        .order("created_at", { ascending: false });
-      setPatients((data as Patient[]) || []);
-    };
-    fetch();
-  }, []);
+  const fetchPatients = async () => {
+    const { data } = await supabase
+      .from("patients")
+      .select("id, name, birth_date, objective, updated_at")
+      .order("created_at", { ascending: false });
+    setPatients((data as Patient[]) || []);
+  };
+
+  useEffect(() => { fetchPatients(); }, []);
 
   const calculateAge = (birthDate: string | null) => {
     if (!birthDate) return null;
@@ -53,10 +52,7 @@ const AdminDashboard = () => {
           <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
           <p className="text-muted-foreground mt-1">Visão geral dos seus pacientes</p>
         </div>
-        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2">
-          <Plus className="w-4 h-4" />
-          Novo Paciente
-        </Button>
+        <NewPatientDialog onPatientCreated={fetchPatients} />
       </div>
 
       {/* Stats */}
