@@ -81,7 +81,7 @@ const AdminPatients = () => {
                 <div>
                   <p className="font-semibold text-foreground group-hover:text-primary transition-colors">{patient.name}</p>
                   <p className="text-sm text-muted-foreground">
-                    {patient.objective || "Sem objetivo"} · {patient.age ? `${patient.age} anos` : "—"} · {patient.sex || "—"}
+                    {patient.objective || "Sem objetivo"} · {patient.birth_date ? `${Math.floor((Date.now() - new Date(patient.birth_date).getTime()) / 31557600000)} anos` : "—"} · {patient.sex || "—"}
                   </p>
                 </div>
               </div>
