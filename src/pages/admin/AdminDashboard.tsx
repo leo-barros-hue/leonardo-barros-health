@@ -128,12 +128,12 @@ const AdminDashboard = () => {
                   </div>
                   <div className="text-left">
                     <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{patient.name}</p>
-                    <p className="text-xs text-muted-foreground">{patient.objective} · {patient.age} anos</p>
+                    <p className="text-xs text-muted-foreground">{patient.objective || "Sem objetivo"} {calculateAge(patient.birth_date) !== null ? `· ${calculateAge(patient.birth_date)} anos` : ""}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-muted-foreground">Plano até</p>
-                  <p className="text-xs font-medium text-foreground">{new Date(patient.planEnd).toLocaleDateString("pt-BR")}</p>
+                  <p className="text-xs text-muted-foreground">Atualizado</p>
+                  <p className="text-xs font-medium text-foreground">{new Date(patient.updated_at).toLocaleDateString("pt-BR")}</p>
                 </div>
               </button>
             ))}
