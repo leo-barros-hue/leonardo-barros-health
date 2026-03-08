@@ -32,6 +32,10 @@ const PatientEvolutionTab = ({ patientId }: Props) => {
   const [bodyFat, setBodyFat] = useState("");
   const [muscleMass, setMuscleMass] = useState("");
   const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editWeight, setEditWeight] = useState("");
+  const [editFat, setEditFat] = useState("");
+  const [editMuscle, setEditMuscle] = useState("");
 
   const fetchMeasurements = async () => {
     const { data } = await supabase
