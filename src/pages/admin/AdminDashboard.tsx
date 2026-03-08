@@ -64,15 +64,17 @@ const AdminDashboard = () => {
       {/* Quick Actions */}
       <div className="glass-card p-6">
         <h2 className="text-lg font-semibold text-foreground mb-4">Ações Rápidas</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {[
-            { icon: Utensils, label: "Criar Dieta", color: "bg-success/10 text-success border-success/20" },
-            { icon: Dumbbell, label: "Criar Treino", color: "bg-warning/10 text-warning border-warning/20" },
-            { icon: FlaskConical, label: "Adicionar Exame", color: "bg-primary/10 text-primary border-primary/20" },
-            { icon: FileText, label: "Nova Prescrição", color: "bg-destructive/10 text-destructive border-destructive/20" },
+            { icon: Utensils, label: "Criar Dieta", color: "bg-success/10 text-success border-success/20", path: "/admin/diets" },
+            { icon: Dumbbell, label: "Criar Treino", color: "bg-warning/10 text-warning border-warning/20", path: "/admin/workouts" },
+            { icon: FlaskConical, label: "Adicionar Exame", color: "bg-primary/10 text-primary border-primary/20", path: "/admin/exams" },
+            { icon: FileText, label: "Nova Prescrição", color: "bg-destructive/10 text-destructive border-destructive/20", path: "/admin/prescriptions" },
+            { icon: Search, label: "Cadastro de Alimentos", color: "bg-accent/10 text-accent border-accent/20", path: "/admin/foods" },
           ].map((action) => (
             <button
               key={action.label}
+              onClick={() => navigate(action.path)}
               className={`flex items-center gap-3 p-4 rounded-xl border transition-all duration-200 hover:scale-[1.02] ${action.color}`}
             >
               <action.icon className="w-5 h-5" />
