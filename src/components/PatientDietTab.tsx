@@ -4,8 +4,7 @@ import { Loader2, Plus, Utensils, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import DietDialog from "@/components/diet/DietDialog";
-import MealDialog from "@/components/diet/MealDialog";
-import FoodDialog from "@/components/diet/FoodDialog";
+import InlineMealCard from "@/components/diet/InlineMealCard";
 
 interface Diet {
   id: string;
@@ -54,11 +53,6 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
   // Dialog states
   const [dietDialogOpen, setDietDialogOpen] = useState(false);
   const [editingDiet, setEditingDiet] = useState<Diet | null>(null);
-  const [mealDialogOpen, setMealDialogOpen] = useState(false);
-  const [editingMeal, setEditingMeal] = useState<DietMeal | null>(null);
-  const [foodDialogOpen, setFoodDialogOpen] = useState(false);
-  const [editingFood, setEditingFood] = useState<DietMealFood | null>(null);
-  const [currentMealId, setCurrentMealId] = useState<string>("");
 
   useEffect(() => {
     fetchDiets();
@@ -220,37 +214,30 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
     }
   };
 
-  const handleDeleteFood = async (foodId: string) => {
-    if (!confirm("Excluir este alimento?")) return;
-    const { error } = await supabase.from("diet_meal_foods").delete().eq("id", foodId);
+  const handleAddMeal = async () => {
+    if (!selectedDiet) return;
+    
+    const { data: maxOrder } = await supabase
+      .from("diet_meals")
+      .select("sort_order")
+      .eq("diet_id", selectedDiet.id)
+      .order("sort_order", { ascending: false })
+      .limit(1);
+    
+    const newOrder = maxOrder && maxOrder.length > 0 ? maxOrder[0].sort_order + 1 : 0;
+
+    const { error } = await supabase.from("diet_meals").insert({
+      name: "Nova Refeição",
+      time: null,
+      diet_id: selectedDiet.id,
+      sort_order: newOrder,
+    });
+
     if (error) {
-      toast.error("Erro ao excluir alimento");
+      toast.error("Erro ao adicionar refeição");
     } else {
-      toast.success("Alimento excluído");
-      if (selectedDiet) fetchMeals(selectedDiet.id);
+      fetchMeals(selectedDiet.id);
     }
-  };
-
-  const openAddMeal = () => {
-    setEditingMeal(null);
-    setMealDialogOpen(true);
-  };
-
-  const openEditMeal = (meal: DietMeal) => {
-    setEditingMeal(meal);
-    setMealDialogOpen(true);
-  };
-
-  const openAddFood = (mealId: string) => {
-    setCurrentMealId(mealId);
-    setEditingFood(null);
-    setFoodDialogOpen(true);
-  };
-
-  const openEditFood = (mealId: string, food: DietMealFood) => {
-    setCurrentMealId(mealId);
-    setEditingFood(food);
-    setFoodDialogOpen(true);
   };
 
   const calculateTotals = () => {
@@ -366,7 +353,7 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
 
               {/* Add Meal Button */}
               <div className="flex justify-end">
-                <Button variant="outline" onClick={openAddMeal} className="gap-2">
+                <Button variant="outline" onClick={handleAddMeal} className="gap-2">
                   <Plus className="w-4 h-4" />
                   Adicionar Refeição
                 </Button>
@@ -383,94 +370,15 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {meals.map((meal) => {
-                    const mealTotals = meal.foods.reduce(
-                      (acc, food) => ({
-                        protein: acc.protein + food.protein,
-                        carbs: acc.carbs + food.carbs,
-                        fat: acc.fat + food.fat,
-                      }),
-                      { protein: 0, carbs: 0, fat: 0 }
-                    );
-                    const mealCalories = Math.round(mealTotals.protein * 4 + mealTotals.carbs * 4 + mealTotals.fat * 9);
-
-                    return (
-                      <div key={meal.id} className="glass-card p-5">
-                        {/* Header */}
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center gap-2">
-                            {meal.time && <span className="text-xs font-medium text-primary">{meal.time}</span>}
-                          </div>
-                          <div className="flex gap-1">
-                            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => openEditMeal(meal)}>
-                              <Pencil className="w-3 h-3" />
-                            </Button>
-                            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => handleDeleteMeal(meal.id)}>
-                              <Trash2 className="w-3 h-3" />
-                            </Button>
-                          </div>
-                        </div>
-                        <h3 className="text-lg font-bold text-foreground mb-3">{meal.name}</h3>
-
-                        {/* Foods Table */}
-                        {meal.foods.length === 0 ? (
-                          <p className="text-sm text-muted-foreground mb-3">Nenhum alimento.</p>
-                        ) : (
-                          <div className="overflow-x-auto mb-3">
-                            <table className="w-full text-sm">
-                              <thead>
-                                <tr className="border-b border-border">
-                                  <th className="text-left py-2 text-muted-foreground font-medium text-xs">Alimento</th>
-                                  <th className="text-left py-2 text-muted-foreground font-medium text-xs">Qtd</th>
-                                  <th className="text-right py-2 text-muted-foreground font-medium text-xs">P</th>
-                                  <th className="text-right py-2 text-muted-foreground font-medium text-xs">C</th>
-                                  <th className="text-right py-2 text-muted-foreground font-medium text-xs">G</th>
-                                  <th className="w-14"></th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {meal.foods.map((food) => (
-                                  <tr key={food.id} className="border-b border-border/50 last:border-0">
-                                    <td className="py-2 text-foreground font-medium text-xs">{food.food_name}</td>
-                                    <td className="py-2 text-foreground text-xs">{food.quantity}{food.measure}</td>
-                                    <td className="py-2 text-right text-success text-xs">{food.protein}g</td>
-                                    <td className="py-2 text-right text-warning text-xs">{food.carbs}g</td>
-                                    <td className="py-2 text-right text-destructive text-xs">{food.fat}g</td>
-                                    <td className="py-2 text-right">
-                                      <div className="flex justify-end gap-0.5">
-                                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => openEditFood(meal.id, food)}>
-                                          <Pencil className="w-3 h-3" />
-                                        </Button>
-                                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => handleDeleteFood(food.id)}>
-                                          <Trash2 className="w-3 h-3" />
-                                        </Button>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        )}
-
-                        {/* Meal Totals */}
-                        {meal.foods.length > 0 && (
-                          <div className="flex items-center justify-between bg-secondary/40 rounded-lg px-3 py-2 mb-3 text-xs">
-                            <span className="font-semibold text-foreground">{mealCalories} kcal</span>
-                            <div className="flex gap-3">
-                              <span className="text-success">{Math.round(mealTotals.protein)}p</span>
-                              <span className="text-warning">{Math.round(mealTotals.carbs)}c</span>
-                              <span className="text-destructive">{Math.round(mealTotals.fat)}g</span>
-                            </div>
-                          </div>
-                        )}
-
-                        <Button variant="outline" size="sm" onClick={() => openAddFood(meal.id)} className="gap-1 w-full">
-                          <Plus className="w-3 h-3" /> Alimento
-                        </Button>
-                      </div>
-                    );
-                  })}
+                  {meals.map((meal, index) => (
+                    <InlineMealCard
+                      key={meal.id}
+                      meal={meal}
+                      mealIndex={index}
+                      onUpdate={() => selectedDiet && fetchMeals(selectedDiet.id)}
+                      onDelete={() => handleDeleteMeal(meal.id)}
+                    />
+                  ))}
                 </div>
               )}
             </>
@@ -485,22 +393,6 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
         patientId={patientId}
         diet={editingDiet}
         onSuccess={fetchDiets}
-      />
-      {selectedDiet && (
-        <MealDialog
-          open={mealDialogOpen}
-          onOpenChange={setMealDialogOpen}
-          dietId={selectedDiet.id}
-          meal={editingMeal}
-          onSuccess={() => fetchMeals(selectedDiet.id)}
-        />
-      )}
-      <FoodDialog
-        open={foodDialogOpen}
-        onOpenChange={setFoodDialogOpen}
-        mealId={currentMealId}
-        food={editingFood}
-        onSuccess={() => selectedDiet && fetchMeals(selectedDiet.id)}
       />
     </div>
   );
