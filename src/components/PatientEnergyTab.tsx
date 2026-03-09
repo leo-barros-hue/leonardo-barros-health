@@ -247,6 +247,19 @@ export default function PatientEnergyTab({ patient }: PatientEnergyTabProps) {
             </Select>
           </div>
         </div>
+
+        <div className="flex justify-end pt-4 border-t border-border">
+          <Button onClick={handleSave} disabled={saving} className="gap-2">
+            {saving ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : saved ? (
+              <Check className="w-4 h-4" />
+            ) : (
+              <Save className="w-4 h-4" />
+            )}
+            {saving ? "Salvando..." : saved ? "Salvo!" : "Salvar Informações"}
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
