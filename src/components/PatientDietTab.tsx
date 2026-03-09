@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Plus, Utensils } from "lucide-react";
+import { Loader2, Plus, Utensils, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import DietDialog from "@/components/diet/DietDialog";
+import MealDialog from "@/components/diet/MealDialog";
+import FoodDialog from "@/components/diet/FoodDialog";
 
 interface Diet {
   id: string;
@@ -40,6 +44,15 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
   const [loading, setLoading] = useState(true);
   const [loadingMeals, setLoadingMeals] = useState(false);
 
+  // Dialog states
+  const [dietDialogOpen, setDietDialogOpen] = useState(false);
+  const [editingDiet, setEditingDiet] = useState<Diet | null>(null);
+  const [mealDialogOpen, setMealDialogOpen] = useState(false);
+  const [editingMeal, setEditingMeal] = useState<DietMeal | null>(null);
+  const [foodDialogOpen, setFoodDialogOpen] = useState(false);
+  const [editingFood, setEditingFood] = useState<DietMealFood | null>(null);
+  const [currentMealId, setCurrentMealId] = useState<string>("");
+
   useEffect(() => {
     fetchDiets();
   }, [patientId]);
@@ -56,6 +69,9 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
     if (data && data.length > 0) {
       setSelectedDiet(data[0]);
       fetchMeals(data[0].id);
+    } else {
+      setSelectedDiet(null);
+      setMeals([]);
     }
     setLoading(false);
   };
@@ -89,6 +105,61 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
     fetchMeals(diet.id);
   };
 
+  const handleDeleteDiet = async (dietId: string) => {
+    if (!confirm("Excluir esta dieta?")) return;
+    const { error } = await supabase.from("diets").delete().eq("id", dietId);
+    if (error) {
+      toast.error("Erro ao excluir dieta");
+    } else {
+      toast.success("Dieta excluída");
+      fetchDiets();
+    }
+  };
+
+  const handleDeleteMeal = async (mealId: string) => {
+    if (!confirm("Excluir esta refeição?")) return;
+    const { error } = await supabase.from("diet_meals").delete().eq("id", mealId);
+    if (error) {
+      toast.error("Erro ao excluir refeição");
+    } else {
+      toast.success("Refeição excluída");
+      if (selectedDiet) fetchMeals(selectedDiet.id);
+    }
+  };
+
+  const handleDeleteFood = async (foodId: string) => {
+    if (!confirm("Excluir este alimento?")) return;
+    const { error } = await supabase.from("diet_meal_foods").delete().eq("id", foodId);
+    if (error) {
+      toast.error("Erro ao excluir alimento");
+    } else {
+      toast.success("Alimento excluído");
+      if (selectedDiet) fetchMeals(selectedDiet.id);
+    }
+  };
+
+  const openAddMeal = () => {
+    setEditingMeal(null);
+    setMealDialogOpen(true);
+  };
+
+  const openEditMeal = (meal: DietMeal) => {
+    setEditingMeal(meal);
+    setMealDialogOpen(true);
+  };
+
+  const openAddFood = (mealId: string) => {
+    setCurrentMealId(mealId);
+    setEditingFood(null);
+    setFoodDialogOpen(true);
+  };
+
+  const openEditFood = (mealId: string, food: DietMealFood) => {
+    setCurrentMealId(mealId);
+    setEditingFood(food);
+    setFoodDialogOpen(true);
+  };
+
   const calculateTotals = () => {
     let protein = 0, carbs = 0, fat = 0;
     meals.forEach(meal => {
@@ -110,126 +181,191 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
     );
   }
 
-  if (diets.length === 0) {
-    return (
-      <div className="glass-card p-8 text-center">
-        <Utensils className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-        <h3 className="text-lg font-semibold text-foreground mb-2">Nenhuma dieta cadastrada</h3>
-        <p className="text-sm text-muted-foreground mb-4">
-          Este paciente ainda não possui nenhuma dieta registrada.
-        </p>
-        <Button className="gap-2">
-          <Plus className="w-4 h-4" />
-          Criar Nova Dieta
-        </Button>
-      </div>
-    );
-  }
-
   const totals = calculateTotals();
 
   return (
     <div className="space-y-6">
-      {/* Diet Selector */}
-      {diets.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto pb-2">
-          {diets.map((diet) => (
-            <button
-              key={diet.id}
-              onClick={() => handleSelectDiet(diet)}
-              className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
-                selectedDiet?.id === diet.id
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-secondary/50 text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {diet.name}
-            </button>
-          ))}
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-bold text-foreground">Dietas</h2>
+        <Button onClick={() => { setEditingDiet(null); setDietDialogOpen(true); }} className="gap-2">
+          <Plus className="w-4 h-4" />
+          Nova Dieta
+        </Button>
+      </div>
+
+      {diets.length === 0 ? (
+        <div className="glass-card p-8 text-center">
+          <Utensils className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold text-foreground mb-2">Nenhuma dieta cadastrada</h3>
+          <p className="text-sm text-muted-foreground">
+            Clique em "Nova Dieta" para começar.
+          </p>
         </div>
-      )}
-
-      {selectedDiet && (
+      ) : (
         <>
-          {/* Header */}
-          <div className="glass-card p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <h2 className="text-lg font-bold text-foreground">{selectedDiet.name}</h2>
-                <p className="text-sm text-muted-foreground">
-                  Criada em {new Date(selectedDiet.created_at).toLocaleDateString("pt-BR")}
-                </p>
-              </div>
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-success/10 text-success border border-success/20 w-fit">
-                Dieta Ativa
-              </span>
-            </div>
-          </div>
-
-          {/* Macros */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {[
-              { label: "Calorias", value: `${totals.calories} kcal`, color: "text-primary" },
-              { label: "Proteína", value: `${totals.protein}g`, color: "text-success" },
-              { label: "Carboidrato", value: `${totals.carbs}g`, color: "text-warning" },
-              { label: "Gordura", value: `${totals.fat}g`, color: "text-destructive" },
-            ].map((macro) => (
-              <div key={macro.label} className="glass-card p-4 text-center">
-                <p className={`text-xl font-bold ${macro.color}`}>{macro.value}</p>
-                <p className="text-xs text-muted-foreground mt-1">{macro.label}</p>
-              </div>
+          {/* Diet Selector */}
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {diets.map((diet) => (
+              <button
+                key={diet.id}
+                onClick={() => handleSelectDiet(diet)}
+                className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
+                  selectedDiet?.id === diet.id
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary/50 text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {diet.name}
+              </button>
             ))}
           </div>
 
-          {/* Meals */}
-          {loadingMeals ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-            </div>
-          ) : meals.length === 0 ? (
-            <div className="glass-card p-6 text-center">
-              <p className="text-muted-foreground">Nenhuma refeição cadastrada nesta dieta.</p>
-            </div>
-          ) : (
-            meals.map((meal) => (
-              <div key={meal.id} className="glass-card p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold text-foreground">{meal.name}</h3>
-                  {meal.time && <span className="text-sm text-muted-foreground">{meal.time}</span>}
-                </div>
-                {meal.foods.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Nenhum alimento nesta refeição.</p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b border-border">
-                          <th className="text-left py-2 text-muted-foreground font-medium">Alimento</th>
-                          <th className="text-left py-2 text-muted-foreground font-medium">Quantidade</th>
-                          <th className="text-right py-2 text-muted-foreground font-medium hidden sm:table-cell">P</th>
-                          <th className="text-right py-2 text-muted-foreground font-medium hidden sm:table-cell">C</th>
-                          <th className="text-right py-2 text-muted-foreground font-medium hidden sm:table-cell">G</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {meal.foods.map((food) => (
-                          <tr key={food.id} className="border-b border-border/50 last:border-0">
-                            <td className="py-3 text-foreground font-medium">{food.food_name}</td>
-                            <td className="py-3 text-foreground">{food.quantity}{food.measure}</td>
-                            <td className="py-3 text-right text-success hidden sm:table-cell">{food.protein}g</td>
-                            <td className="py-3 text-right text-warning hidden sm:table-cell">{food.carbs}g</td>
-                            <td className="py-3 text-right text-destructive hidden sm:table-cell">{food.fat}g</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+          {selectedDiet && (
+            <>
+              {/* Diet Header */}
+              <div className="glass-card p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div>
+                    <h2 className="text-lg font-bold text-foreground">{selectedDiet.name}</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Criada em {new Date(selectedDiet.created_at).toLocaleDateString("pt-BR")}
+                    </p>
                   </div>
-                )}
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => { setEditingDiet(selectedDiet); setDietDialogOpen(true); }}>
+                      <Pencil className="w-4 h-4 mr-1" /> Editar
+                    </Button>
+                    <Button variant="destructive" size="sm" onClick={() => handleDeleteDiet(selectedDiet.id)}>
+                      <Trash2 className="w-4 h-4 mr-1" /> Excluir
+                    </Button>
+                  </div>
+                </div>
               </div>
-            ))
+
+              {/* Macros */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {[
+                  { label: "Calorias", value: `${totals.calories} kcal`, color: "text-primary" },
+                  { label: "Proteína", value: `${totals.protein}g`, color: "text-success" },
+                  { label: "Carboidrato", value: `${totals.carbs}g`, color: "text-warning" },
+                  { label: "Gordura", value: `${totals.fat}g`, color: "text-destructive" },
+                ].map((macro) => (
+                  <div key={macro.label} className="glass-card p-4 text-center">
+                    <p className={`text-xl font-bold ${macro.color}`}>{macro.value}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{macro.label}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Add Meal Button */}
+              <div className="flex justify-end">
+                <Button variant="outline" onClick={openAddMeal} className="gap-2">
+                  <Plus className="w-4 h-4" />
+                  Adicionar Refeição
+                </Button>
+              </div>
+
+              {/* Meals */}
+              {loadingMeals ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                </div>
+              ) : meals.length === 0 ? (
+                <div className="glass-card p-6 text-center">
+                  <p className="text-muted-foreground">Nenhuma refeição cadastrada.</p>
+                </div>
+              ) : (
+                meals.map((meal) => (
+                  <div key={meal.id} className="glass-card p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <h3 className="text-lg font-bold text-foreground">{meal.name}</h3>
+                        {meal.time && <span className="text-sm text-muted-foreground">{meal.time}</span>}
+                      </div>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => openEditMeal(meal)}>
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleDeleteMeal(meal.id)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    {meal.foods.length === 0 ? (
+                      <p className="text-sm text-muted-foreground mb-3">Nenhum alimento.</p>
+                    ) : (
+                      <div className="overflow-x-auto mb-3">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b border-border">
+                              <th className="text-left py-2 text-muted-foreground font-medium">Alimento</th>
+                              <th className="text-left py-2 text-muted-foreground font-medium">Quantidade</th>
+                              <th className="text-right py-2 text-muted-foreground font-medium hidden sm:table-cell">P</th>
+                              <th className="text-right py-2 text-muted-foreground font-medium hidden sm:table-cell">C</th>
+                              <th className="text-right py-2 text-muted-foreground font-medium hidden sm:table-cell">G</th>
+                              <th className="w-20"></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {meal.foods.map((food) => (
+                              <tr key={food.id} className="border-b border-border/50 last:border-0">
+                                <td className="py-3 text-foreground font-medium">{food.food_name}</td>
+                                <td className="py-3 text-foreground">{food.quantity}{food.measure}</td>
+                                <td className="py-3 text-right text-success hidden sm:table-cell">{food.protein}g</td>
+                                <td className="py-3 text-right text-warning hidden sm:table-cell">{food.carbs}g</td>
+                                <td className="py-3 text-right text-destructive hidden sm:table-cell">{food.fat}g</td>
+                                <td className="py-3 text-right">
+                                  <div className="flex justify-end gap-1">
+                                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => openEditFood(meal.id, food)}>
+                                      <Pencil className="w-3 h-3" />
+                                    </Button>
+                                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => handleDeleteFood(food.id)}>
+                                      <Trash2 className="w-3 h-3" />
+                                    </Button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                    <Button variant="outline" size="sm" onClick={() => openAddFood(meal.id)} className="gap-1">
+                      <Plus className="w-3 h-3" /> Alimento
+                    </Button>
+                  </div>
+                ))
+              )}
+            </>
           )}
         </>
       )}
+
+      {/* Dialogs */}
+      <DietDialog
+        open={dietDialogOpen}
+        onOpenChange={setDietDialogOpen}
+        patientId={patientId}
+        diet={editingDiet}
+        onSuccess={fetchDiets}
+      />
+      {selectedDiet && (
+        <MealDialog
+          open={mealDialogOpen}
+          onOpenChange={setMealDialogOpen}
+          dietId={selectedDiet.id}
+          meal={editingMeal}
+          onSuccess={() => fetchMeals(selectedDiet.id)}
+        />
+      )}
+      <FoodDialog
+        open={foodDialogOpen}
+        onOpenChange={setFoodDialogOpen}
+        mealId={currentMealId}
+        food={editingFood}
+        onSuccess={() => selectedDiet && fetchMeals(selectedDiet.id)}
+      />
     </div>
   );
 };
