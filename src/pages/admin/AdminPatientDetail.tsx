@@ -176,10 +176,7 @@ const AdminPatientDetail = () => {
       )}
 
       {activeTab === "workout" && (
-        <div className="glass-card p-6">
-          <h2 className="text-lg font-bold text-foreground mb-2">Treino Atual</h2>
-          <p className="text-sm text-muted-foreground">Página completa de gerenciamento de treinos será conectada ao backend.</p>
-        </div>
+        <PatientWorkoutTab patientId={patient.id} />
       )}
 
       {activeTab === "evolution" && (
@@ -187,17 +184,11 @@ const AdminPatientDetail = () => {
       )}
 
       {activeTab === "exams" && (
-        <div className="glass-card p-6">
-          <h2 className="text-lg font-bold text-foreground mb-2">Exames Laboratoriais</h2>
-          <p className="text-sm text-muted-foreground">Exames e interpretações serão conectados ao backend.</p>
-        </div>
+        <PatientExamsTab patientId={patient.id} />
       )}
 
       {activeTab === "prescriptions" && (
-        <div className="glass-card p-6">
-          <h2 className="text-lg font-bold text-foreground mb-2">Prescrições</h2>
-          <p className="text-sm text-muted-foreground">Prescrições médicas serão conectadas ao backend.</p>
-        </div>
+        <PatientPrescriptionsTab patientId={patient.id} />
       )}
     </div>
   );
