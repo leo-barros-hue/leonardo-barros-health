@@ -276,6 +276,38 @@ export type Database = {
           },
         ]
       }
+      patient_energy_profiles: {
+        Row: {
+          activity_factor: number
+          height: number | null
+          id: string
+          patient_id: string
+          updated_at: string
+        }
+        Insert: {
+          activity_factor?: number
+          height?: number | null
+          id?: string
+          patient_id: string
+          updated_at?: string
+        }
+        Update: {
+          activity_factor?: number
+          height?: number | null
+          id?: string
+          patient_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_energy_profiles_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: true
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patients: {
         Row: {
           birth_date: string | null

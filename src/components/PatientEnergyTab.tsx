@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calculator, Activity } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calculator, Activity, Save, Loader2, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 interface PatientEnergyTabProps {
   patient: {
@@ -20,6 +22,10 @@ export default function PatientEnergyTab({ patient }: PatientEnergyTabProps) {
   const [sex, setSex] = useState(patient.sex || "M");
   const [bodyFat, setBodyFat] = useState("");
   const [activityFactor, setActivityFactor] = useState("1.2");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [lastSavedWeight, setLastSavedWeight] = useState<number | null>(null);
+  const [lastSavedBodyFat, setLastSavedBodyFat] = useState<number | null>(null);
 
   useEffect(() => {
     if (patient.birth_date) {
@@ -35,8 +41,9 @@ export default function PatientEnergyTab({ patient }: PatientEnergyTabProps) {
   }, [patient.birth_date]);
 
   useEffect(() => {
-    const fetchLatestWeight = async () => {
-      const { data } = await supabase
+    const fetchData = async () => {
+      // Fetch latest measurements
+      const { data: measurementData } = await supabase
         .from("body_measurements")
         .select("weight, body_fat_pct")
         .eq("patient_id", patient.id)
@@ -44,15 +51,77 @@ export default function PatientEnergyTab({ patient }: PatientEnergyTabProps) {
         .limit(1)
         .single();
 
-      if (data?.weight) {
-        setWeight(data.weight.toString());
+      if (measurementData?.weight) {
+        setWeight(measurementData.weight.toString());
+        setLastSavedWeight(measurementData.weight);
       }
-      if (data?.body_fat_pct) {
-        setBodyFat(data.body_fat_pct.toString());
+      if (measurementData?.body_fat_pct) {
+        setBodyFat(measurementData.body_fat_pct.toString());
+        setLastSavedBodyFat(measurementData.body_fat_pct);
+      }
+
+      // Fetch energy profile
+      const { data: profileData } = await supabase
+        .from("patient_energy_profiles")
+        .select("height, activity_factor")
+        .eq("patient_id", patient.id)
+        .single();
+
+      if (profileData?.height) {
+        setHeight(profileData.height.toString());
+      }
+      if (profileData?.activity_factor) {
+        setActivityFactor(profileData.activity_factor.toString());
       }
     };
-    fetchLatestWeight();
+    fetchData();
   }, [patient.id]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      // Save height and activity factor to patient_energy_profiles
+      const { error: profileError } = await supabase
+        .from("patient_energy_profiles")
+        .upsert({
+          patient_id: patient.id,
+          height: height ? parseFloat(height) : null,
+          activity_factor: parseFloat(activityFactor),
+          updated_at: new Date().toISOString(),
+        }, { onConflict: "patient_id" });
+
+      if (profileError) throw profileError;
+
+      // If weight or body fat changed, add new measurement
+      const w = weight ? parseFloat(weight) : null;
+      const bf = bodyFat ? parseFloat(bodyFat) : null;
+      const weightChanged = w !== lastSavedWeight;
+      const bodyFatChanged = bf !== lastSavedBodyFat;
+
+      if ((w || bf) && (weightChanged || bodyFatChanged)) {
+        const { error: measurementError } = await supabase
+          .from("body_measurements")
+          .insert({
+            patient_id: patient.id,
+            weight: w,
+            body_fat_pct: bf,
+          });
+
+        if (measurementError) throw measurementError;
+        setLastSavedWeight(w);
+        setLastSavedBodyFat(bf);
+      }
+
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+      toast({ title: "Dados salvos com sucesso!" });
+    } catch (error) {
+      console.error(error);
+      toast({ title: "Erro ao salvar", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const calculateResults = () => {
     const w = parseFloat(weight) || 0;
