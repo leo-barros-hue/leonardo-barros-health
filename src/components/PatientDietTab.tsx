@@ -4,8 +4,7 @@ import { Loader2, Plus, Utensils, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import DietDialog from "@/components/diet/DietDialog";
-import MealDialog from "@/components/diet/MealDialog";
-import FoodDialog from "@/components/diet/FoodDialog";
+import InlineMealCard from "@/components/diet/InlineMealCard";
 
 interface Diet {
   id: string;
@@ -54,11 +53,6 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
   // Dialog states
   const [dietDialogOpen, setDietDialogOpen] = useState(false);
   const [editingDiet, setEditingDiet] = useState<Diet | null>(null);
-  const [mealDialogOpen, setMealDialogOpen] = useState(false);
-  const [editingMeal, setEditingMeal] = useState<DietMeal | null>(null);
-  const [foodDialogOpen, setFoodDialogOpen] = useState(false);
-  const [editingFood, setEditingFood] = useState<DietMealFood | null>(null);
-  const [currentMealId, setCurrentMealId] = useState<string>("");
 
   useEffect(() => {
     fetchDiets();
