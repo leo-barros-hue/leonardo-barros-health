@@ -5,6 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import PatientEvolutionTab from "@/components/PatientEvolutionTab";
 import PatientEnergyTab from "@/components/PatientEnergyTab";
 import PatientDietTab from "@/components/PatientDietTab";
+import PatientWorkoutTab from "@/components/PatientWorkoutTab";
+import PatientExamsTab from "@/components/PatientExamsTab";
+import PatientPrescriptionsTab from "@/components/PatientPrescriptionsTab";
 
 const tabs = [
   { id: "overview", label: "Visão Geral", icon: User },
