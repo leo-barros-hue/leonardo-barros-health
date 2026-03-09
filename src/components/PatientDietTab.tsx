@@ -193,6 +193,16 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
     fetchMeals(diet.id);
   };
 
+  const handleMealFoodsChange = (mealId: string, updatedFoods: DietMealFood[]) => {
+    setMeals((prev) =>
+      prev.map((meal) =>
+        meal.id === mealId
+          ? { ...meal, foods: updatedFoods }
+          : meal
+      )
+    );
+  };
+
   const handleDeleteDiet = async (dietId: string) => {
     if (!confirm("Excluir esta dieta?")) return;
     const { error } = await supabase.from("diets").delete().eq("id", dietId);
