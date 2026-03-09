@@ -169,10 +169,7 @@ const AdminPatientDetail = () => {
       )}
 
       {activeTab === "diet" && (
-        <div className="glass-card p-6">
-          <h2 className="text-lg font-bold text-foreground mb-2">Dieta Atual</h2>
-          <p className="text-sm text-muted-foreground">Página completa de gerenciamento de dieta será conectada ao backend.</p>
-        </div>
+        <PatientDietTab patientId={patient.id} />
       )}
 
       {activeTab === "workout" && (
