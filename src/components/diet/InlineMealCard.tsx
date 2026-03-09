@@ -15,10 +15,6 @@ interface DietMealFood {
   carbs: number;
   fat: number;
   sort_order: number;
-  food_id?: string | null;
-  protein_per_unit?: number | null;
-  carbs_per_unit?: number | null;
-  fat_per_unit?: number | null;
 }
 
 interface InlineMealCardProps {
@@ -42,8 +38,6 @@ export default function InlineMealCard({ meal, mealIndex, onUpdate, onDelete }: 
   const nameTimeoutRef = useRef<NodeJS.Timeout>();
   const timeTimeoutRef = useRef<NodeJS.Timeout>();
 
-  const roundMacro = (value: number) => Math.round(value * 100) / 100;
-
   useEffect(() => {
     setFoods(meal.foods);
   }, [meal.foods]);
@@ -64,69 +58,20 @@ export default function InlineMealCard({ meal, mealIndex, onUpdate, onDelete }: 
     }, 500);
   };
 
-  const handleFoodChange = async (foodId: string, field: keyof DietMealFood, value: string | number) => {
-    const currentFood = foods.find((food) => food.id === foodId);
-    if (!currentFood) return;
+  const handleFoodChange = async (foodId: string, field: string, value: string | number) => {
+    const numValue = typeof value === "string" ? parseFloat(value) || 0 : value;
+    
+    setFoods(prev => prev.map(f => 
+      f.id === foodId ? { ...f, [field]: field === "food_name" || field === "measure" ? value : numValue } : f
+    ));
 
-    const parsedValue = field === "food_name" || field === "measure"
-      ? value
-      : typeof value === "string"
-        ? parseFloat(value) || 0
-        : value;
-
-    let updatedFood: DietMealFood = {
-      ...currentFood,
-      [field]: parsedValue,
-    } as DietMealFood;
-
-    let updateData: Record<string, unknown> = {
-      [field]: parsedValue,
-    };
-
-    const hasPerUnitData =
-      currentFood.food_id &&
-      currentFood.protein_per_unit != null &&
-      currentFood.carbs_per_unit != null &&
-      currentFood.fat_per_unit != null;
-
-    if (field === "quantity" && hasPerUnitData) {
-      const quantity = typeof parsedValue === "number" ? parsedValue : 0;
-      const protein = roundMacro(quantity * (currentFood.protein_per_unit || 0));
-      const carbs = roundMacro(quantity * (currentFood.carbs_per_unit || 0));
-      const fat = roundMacro(quantity * (currentFood.fat_per_unit || 0));
-
-      updatedFood = {
-        ...updatedFood,
-        quantity,
-        protein,
-        carbs,
-        fat,
-      };
-
-      updateData = {
-        ...updateData,
-        quantity,
-        protein,
-        carbs,
-        fat,
-      };
+    const updateData: Record<string, unknown> = {};
+    if (field === "food_name" || field === "measure") {
+      updateData[field] = value;
+    } else {
+      updateData[field] = numValue;
     }
-
-    if (field === "food_name" && currentFood.food_id) {
-      updatedFood = {
-        ...updatedFood,
-        food_id: null,
-        protein_per_unit: null,
-        carbs_per_unit: null,
-        fat_per_unit: null,
-      };
-      updateData = {
-        ...updateData,
-        food_id: null,
-      };
-    }
-
-    setFoods((prev) => prev.map((food) => (food.id === foodId ? updatedFood : food)));
+    
     await supabase.from("diet_meal_foods").update(updateData).eq("id", foodId);
   };
 
