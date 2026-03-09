@@ -30,6 +30,10 @@ interface DietMealFood {
   carbs: number;
   fat: number;
   sort_order: number;
+  food_id?: string | null;
+  protein_per_unit?: number | null;
+  carbs_per_unit?: number | null;
+  fat_per_unit?: number | null;
 }
 
 interface PatientDietTabProps {
@@ -164,6 +168,8 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
   };
 
   const fetchMeals = async (dietId: string) => {
+    const roundMacro = (value: number) => Math.round(value * 100) / 100;
+
     setLoadingMeals(true);
     const { data: mealsData } = await supabase
       .from("diet_meals")
@@ -171,19 +177,77 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
       .eq("diet_id", dietId)
       .order("sort_order", { ascending: true });
 
-    if (mealsData) {
-      const mealsWithFoods: DietMeal[] = await Promise.all(
-        mealsData.map(async (meal) => {
-          const { data: foodsData } = await supabase
-            .from("diet_meal_foods")
-            .select("*")
-            .eq("diet_meal_id", meal.id)
-            .order("sort_order", { ascending: true });
-          return { ...meal, foods: foodsData || [] };
-        })
-      );
-      setMeals(mealsWithFoods);
+    if (!mealsData || mealsData.length === 0) {
+      setMeals([]);
+      setLoadingMeals(false);
+      return;
     }
+
+    const mealIds = mealsData.map((meal) => meal.id);
+
+    const { data: mealFoodsData } = await supabase
+      .from("diet_meal_foods")
+      .select("*")
+      .in("diet_meal_id", mealIds)
+      .order("sort_order", { ascending: true });
+
+    const dbFoodIds = [
+      ...new Set((mealFoodsData || []).map((food) => food.food_id).filter((id): id is string => Boolean(id))),
+    ];
+
+    const dbFoodsById = new Map<
+      string,
+      { id: string; name: string; measure: string; protein_per_unit: number; carbs_per_unit: number; fat_per_unit: number }
+    >();
+
+    if (dbFoodIds.length > 0) {
+      const { data: dbFoodsData } = await supabase
+        .from("foods")
+        .select("id, name, measure, protein_per_unit, carbs_per_unit, fat_per_unit")
+        .in("id", dbFoodIds);
+
+      (dbFoodsData || []).forEach((food) => {
+        dbFoodsById.set(food.id, food);
+      });
+    }
+
+    const mealFoodsByMealId = new Map<string, DietMealFood[]>();
+
+    (mealFoodsData || []).forEach((food) => {
+      const linkedFood = food.food_id ? dbFoodsById.get(food.food_id) : undefined;
+      const quantity = Number(food.quantity) || 0;
+      const proteinPerUnit = linkedFood ? Number(linkedFood.protein_per_unit) : null;
+      const carbsPerUnit = linkedFood ? Number(linkedFood.carbs_per_unit) : null;
+      const fatPerUnit = linkedFood ? Number(linkedFood.fat_per_unit) : null;
+
+      const normalizedFood: DietMealFood = {
+        id: food.id,
+        food_name: linkedFood?.name || food.food_name,
+        quantity,
+        measure: linkedFood?.measure || food.measure || "g",
+        protein: linkedFood ? roundMacro(quantity * (proteinPerUnit || 0)) : Number(food.protein) || 0,
+        carbs: linkedFood ? roundMacro(quantity * (carbsPerUnit || 0)) : Number(food.carbs) || 0,
+        fat: linkedFood ? roundMacro(quantity * (fatPerUnit || 0)) : Number(food.fat) || 0,
+        sort_order: food.sort_order,
+        food_id: food.food_id,
+        protein_per_unit: proteinPerUnit,
+        carbs_per_unit: carbsPerUnit,
+        fat_per_unit: fatPerUnit,
+      };
+
+      if (!mealFoodsByMealId.has(food.diet_meal_id)) {
+        mealFoodsByMealId.set(food.diet_meal_id, []);
+      }
+
+      mealFoodsByMealId.get(food.diet_meal_id)?.push(normalizedFood);
+    });
+
+    const mealsWithFoods: DietMeal[] = mealsData.map((meal) => ({
+      ...meal,
+      foods: (mealFoodsByMealId.get(meal.id) || []).sort((a, b) => a.sort_order - b.sort_order),
+    }));
+
+    setMeals(mealsWithFoods);
     setLoadingMeals(false);
   };
 
