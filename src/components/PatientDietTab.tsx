@@ -30,6 +30,10 @@ interface DietMealFood {
   carbs: number;
   fat: number;
   sort_order: number;
+  food_id?: string | null;
+  protein_per_unit?: number | null;
+  carbs_per_unit?: number | null;
+  fat_per_unit?: number | null;
 }
 
 interface PatientDietTabProps {
