@@ -203,6 +203,79 @@ export type Database = {
         }
         Relationships: []
       }
+      lab_exam_results: {
+        Row: {
+          id: string
+          lab_exam_id: string
+          marker_name: string
+          reference_max: number | null
+          reference_min: number | null
+          sort_order: number
+          unit: string
+          value: number
+        }
+        Insert: {
+          id?: string
+          lab_exam_id: string
+          marker_name: string
+          reference_max?: number | null
+          reference_min?: number | null
+          sort_order?: number
+          unit?: string
+          value: number
+        }
+        Update: {
+          id?: string
+          lab_exam_id?: string
+          marker_name?: string
+          reference_max?: number | null
+          reference_min?: number | null
+          sort_order?: number
+          unit?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_exam_results_lab_exam_id_fkey"
+            columns: ["lab_exam_id"]
+            isOneToOne: false
+            referencedRelation: "lab_exams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lab_exams: {
+        Row: {
+          created_at: string
+          exam_date: string
+          id: string
+          notes: string | null
+          patient_id: string
+        }
+        Insert: {
+          created_at?: string
+          exam_date?: string
+          id?: string
+          notes?: string | null
+          patient_id: string
+        }
+        Update: {
+          created_at?: string
+          exam_date?: string
+          id?: string
+          notes?: string | null
+          patient_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_exams_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patients: {
         Row: {
           birth_date: string | null
@@ -244,6 +317,146 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      prescriptions: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          patient_id: string
+          prescribed_at: string
+          title: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          patient_id: string
+          prescribed_at?: string
+          title: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          patient_id?: string
+          prescribed_at?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prescriptions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workout_days: {
+        Row: {
+          id: string
+          name: string
+          program_id: string
+          sort_order: number
+        }
+        Insert: {
+          id?: string
+          name: string
+          program_id: string
+          sort_order?: number
+        }
+        Update: {
+          id?: string
+          name?: string
+          program_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_days_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "workout_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workout_exercises: {
+        Row: {
+          id: string
+          name: string
+          notes: string | null
+          reps: string
+          rest_seconds: number | null
+          sets: number
+          sort_order: number
+          workout_day_id: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          notes?: string | null
+          reps?: string
+          rest_seconds?: number | null
+          sets?: number
+          sort_order?: number
+          workout_day_id: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          notes?: string | null
+          reps?: string
+          rest_seconds?: number | null
+          sets?: number
+          sort_order?: number
+          workout_day_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_exercises_workout_day_id_fkey"
+            columns: ["workout_day_id"]
+            isOneToOne: false
+            referencedRelation: "workout_days"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workout_programs: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          patient_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          patient_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          patient_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_programs_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
