@@ -382,66 +382,58 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                   <p className="text-muted-foreground">Nenhuma refeição cadastrada.</p>
                 </div>
               ) : (
-                meals.map((meal) => (
-                  <div key={meal.id} className="glass-card p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <h3 className="text-lg font-bold text-foreground">{meal.name}</h3>
-                        {meal.time && <span className="text-sm text-muted-foreground">{meal.time}</span>}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {meals.map((meal) => (
+                    <div key={meal.id} className="glass-card p-5">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-base font-bold text-foreground">{meal.name}</h3>
+                          {meal.time && <span className="text-xs text-muted-foreground">{meal.time}</span>}
+                        </div>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => openEditMeal(meal)}>
+                            <Pencil className="w-3 h-3" />
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => handleDeleteMeal(meal.id)}>
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="sm" onClick={() => openEditMeal(meal)}>
-                          <Pencil className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDeleteMeal(meal.id)}>
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
+                      {meal.foods.length === 0 ? (
+                        <p className="text-sm text-muted-foreground mb-3">Nenhum alimento.</p>
+                      ) : (
+                        <div className="space-y-2 mb-3">
+                          {meal.foods.map((food) => (
+                            <div key={food.id} className="flex items-center justify-between bg-secondary/30 rounded-lg px-3 py-2">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-foreground truncate">{food.food_name}</p>
+                                <p className="text-xs text-muted-foreground">{food.quantity}{food.measure}</p>
+                              </div>
+                              <div className="flex items-center gap-3 ml-2">
+                                <div className="hidden sm:flex items-center gap-2 text-xs">
+                                  <span className="text-success">{food.protein}p</span>
+                                  <span className="text-warning">{food.carbs}c</span>
+                                  <span className="text-destructive">{food.fat}g</span>
+                                </div>
+                                <div className="flex gap-0.5">
+                                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => openEditFood(meal.id, food)}>
+                                    <Pencil className="w-3 h-3" />
+                                  </Button>
+                                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => handleDeleteFood(food.id)}>
+                                    <Trash2 className="w-3 h-3" />
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <Button variant="outline" size="sm" onClick={() => openAddFood(meal.id)} className="gap-1 w-full">
+                        <Plus className="w-3 h-3" /> Alimento
+                      </Button>
                     </div>
-                    {meal.foods.length === 0 ? (
-                      <p className="text-sm text-muted-foreground mb-3">Nenhum alimento.</p>
-                    ) : (
-                      <div className="overflow-x-auto mb-3">
-                        <table className="w-full text-sm">
-                          <thead>
-                            <tr className="border-b border-border">
-                              <th className="text-left py-2 text-muted-foreground font-medium">Alimento</th>
-                              <th className="text-left py-2 text-muted-foreground font-medium">Quantidade</th>
-                              <th className="text-right py-2 text-muted-foreground font-medium hidden sm:table-cell">P</th>
-                              <th className="text-right py-2 text-muted-foreground font-medium hidden sm:table-cell">C</th>
-                              <th className="text-right py-2 text-muted-foreground font-medium hidden sm:table-cell">G</th>
-                              <th className="w-20"></th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {meal.foods.map((food) => (
-                              <tr key={food.id} className="border-b border-border/50 last:border-0">
-                                <td className="py-3 text-foreground font-medium">{food.food_name}</td>
-                                <td className="py-3 text-foreground">{food.quantity}{food.measure}</td>
-                                <td className="py-3 text-right text-success hidden sm:table-cell">{food.protein}g</td>
-                                <td className="py-3 text-right text-warning hidden sm:table-cell">{food.carbs}g</td>
-                                <td className="py-3 text-right text-destructive hidden sm:table-cell">{food.fat}g</td>
-                                <td className="py-3 text-right">
-                                  <div className="flex justify-end gap-1">
-                                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => openEditFood(meal.id, food)}>
-                                      <Pencil className="w-3 h-3" />
-                                    </Button>
-                                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => handleDeleteFood(food.id)}>
-                                      <Trash2 className="w-3 h-3" />
-                                    </Button>
-                                  </div>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-                    <Button variant="outline" size="sm" onClick={() => openAddFood(meal.id)} className="gap-1">
-                      <Plus className="w-3 h-3" /> Alimento
-                    </Button>
-                  </div>
-                ))
+                  ))}
+                </div>
               )}
             </>
           )}
