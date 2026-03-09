@@ -128,8 +128,20 @@ export default function PatientEnergyTab({ patient }: PatientEnergyTabProps) {
     }
   };
 
-  const handleSelectFormula = (formula: string) => {
+  const handleSelectFormula = async (formula: string) => {
     setSelectedFormula(formula);
+    // Auto-save selection
+    try {
+      await supabase
+        .from("patient_energy_profiles")
+        .upsert({
+          patient_id: patient.id,
+          selected_formula: formula,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: "patient_id" });
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const calculateResults = () => {
