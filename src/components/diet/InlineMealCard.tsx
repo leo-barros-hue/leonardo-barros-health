@@ -232,7 +232,6 @@ export default function InlineMealCard({ meal, mealIndex, onUpdate, onDelete, on
 
     const nextFoods = foods.filter((food) => food.id !== foodId);
     syncFoodsState(nextFoods);
-    onUpdate();
   };
 
   const mealTotals = foods.reduce(
