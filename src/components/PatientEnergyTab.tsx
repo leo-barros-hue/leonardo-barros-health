@@ -84,13 +84,14 @@ export default function PatientEnergyTab({ patient }: PatientEnergyTabProps) {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Save height and activity factor to patient_energy_profiles
+      // Save height, activity factor and selected formula to patient_energy_profiles
       const { error: profileError } = await supabase
         .from("patient_energy_profiles")
         .upsert({
           patient_id: patient.id,
           height: height ? parseFloat(height) : null,
           activity_factor: parseFloat(activityFactor),
+          selected_formula: selectedFormula,
           updated_at: new Date().toISOString(),
         }, { onConflict: "patient_id" });
 
@@ -125,6 +126,10 @@ export default function PatientEnergyTab({ patient }: PatientEnergyTabProps) {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleSelectFormula = (formula: string) => {
+    setSelectedFormula(formula);
   };
 
   const calculateResults = () => {
