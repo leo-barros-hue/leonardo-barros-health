@@ -214,37 +214,30 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
     }
   };
 
-  const handleDeleteFood = async (foodId: string) => {
-    if (!confirm("Excluir este alimento?")) return;
-    const { error } = await supabase.from("diet_meal_foods").delete().eq("id", foodId);
+  const handleAddMeal = async () => {
+    if (!selectedDiet) return;
+    
+    const { data: maxOrder } = await supabase
+      .from("diet_meals")
+      .select("sort_order")
+      .eq("diet_id", selectedDiet.id)
+      .order("sort_order", { ascending: false })
+      .limit(1);
+    
+    const newOrder = maxOrder && maxOrder.length > 0 ? maxOrder[0].sort_order + 1 : 0;
+
+    const { error } = await supabase.from("diet_meals").insert({
+      name: "Nova Refeição",
+      time: null,
+      diet_id: selectedDiet.id,
+      sort_order: newOrder,
+    });
+
     if (error) {
-      toast.error("Erro ao excluir alimento");
+      toast.error("Erro ao adicionar refeição");
     } else {
-      toast.success("Alimento excluído");
-      if (selectedDiet) fetchMeals(selectedDiet.id);
+      fetchMeals(selectedDiet.id);
     }
-  };
-
-  const openAddMeal = () => {
-    setEditingMeal(null);
-    setMealDialogOpen(true);
-  };
-
-  const openEditMeal = (meal: DietMeal) => {
-    setEditingMeal(meal);
-    setMealDialogOpen(true);
-  };
-
-  const openAddFood = (mealId: string) => {
-    setCurrentMealId(mealId);
-    setEditingFood(null);
-    setFoodDialogOpen(true);
-  };
-
-  const openEditFood = (mealId: string, food: DietMealFood) => {
-    setCurrentMealId(mealId);
-    setEditingFood(food);
-    setFoodDialogOpen(true);
   };
 
   const calculateTotals = () => {
