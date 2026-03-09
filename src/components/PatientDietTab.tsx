@@ -37,12 +37,19 @@ interface PatientDietTabProps {
   patientId: string;
 }
 
+interface EnergyProfile {
+  bmr: number | null;
+  tdee: number | null;
+  formula: string | null;
+}
+
 const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
   const [diets, setDiets] = useState<Diet[]>([]);
   const [selectedDiet, setSelectedDiet] = useState<Diet | null>(null);
   const [meals, setMeals] = useState<DietMeal[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMeals, setLoadingMeals] = useState(false);
+  const [energyProfile, setEnergyProfile] = useState<EnergyProfile>({ bmr: null, tdee: null, formula: null });
 
   // Dialog states
   const [dietDialogOpen, setDietDialogOpen] = useState(false);
@@ -55,7 +62,93 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
 
   useEffect(() => {
     fetchDiets();
+    fetchEnergyProfile();
   }, [patientId]);
+
+  const fetchEnergyProfile = async () => {
+    // Fetch patient data for age and sex
+    const { data: patientData } = await supabase
+      .from("patients")
+      .select("sex, birth_date")
+      .eq("id", patientId)
+      .single();
+
+    // Fetch energy profile
+    const { data: profileData } = await supabase
+      .from("patient_energy_profiles")
+      .select("height, activity_factor, selected_formula")
+      .eq("patient_id", patientId)
+      .single();
+
+    // Fetch latest weight and body fat
+    const { data: measurementData } = await supabase
+      .from("body_measurements")
+      .select("weight, body_fat_pct")
+      .eq("patient_id", patientId)
+      .order("measured_at", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (!profileData?.selected_formula || !measurementData?.weight) {
+      setEnergyProfile({ bmr: null, tdee: null, formula: null });
+      return;
+    }
+
+    const weight = measurementData.weight || 0;
+    const height = profileData.height || 0;
+    const bodyFat = measurementData.body_fat_pct || 0;
+    const activityFactor = profileData.activity_factor || 1.2;
+    const sex = patientData?.sex || "M";
+    
+    // Calculate age
+    let age = 0;
+    if (patientData?.birth_date) {
+      const birthDate = new Date(patientData.birth_date);
+      const today = new Date();
+      age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+    }
+
+    let bmr = 0;
+    const formula = profileData.selected_formula;
+    const lbm = weight * (1 - bodyFat / 100);
+
+    if (formula === "harris") {
+      if (sex === "M") {
+        bmr = 88.362 + 13.397 * weight + 4.799 * height - 5.677 * age;
+      } else {
+        bmr = 447.593 + 9.247 * weight + 3.098 * height - 4.330 * age;
+      }
+    } else if (formula === "mifflin") {
+      if (sex === "M") {
+        bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+      } else {
+        bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+      }
+    } else if (formula === "cunningham" && bodyFat > 0) {
+      bmr = 500 + 22 * lbm;
+    } else if (formula === "tinsley" && bodyFat > 0) {
+      bmr = 284 + 25.9 * lbm;
+    }
+
+    const tdee = bmr * activityFactor;
+
+    const formulaNames: Record<string, string> = {
+      harris: "Harris-Benedict",
+      mifflin: "Mifflin-St Jeor",
+      cunningham: "Cunningham",
+      tinsley: "Tinsley"
+    };
+
+    setEnergyProfile({
+      bmr: bmr > 0 ? Math.round(bmr) : null,
+      tdee: tdee > 0 ? Math.round(tdee) : null,
+      formula: formulaNames[formula] || null
+    });
+  };
 
   const fetchDiets = async () => {
     setLoading(true);
@@ -185,6 +278,26 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
 
   return (
     <div className="space-y-6">
+      {/* Energy Profile Banner */}
+      {energyProfile.bmr && energyProfile.tdee && (
+        <div className="glass-card p-4 bg-green-500/10 border border-green-500/20">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground uppercase font-semibold">TMB</p>
+                <p className="text-xl font-bold text-foreground">{energyProfile.bmr.toLocaleString('pt-BR')} <span className="text-sm font-normal text-muted-foreground">kcal</span></p>
+              </div>
+              <div className="h-8 w-px bg-border" />
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground uppercase font-semibold">Gasto Total</p>
+                <p className="text-xl font-bold text-green-500">{energyProfile.tdee.toLocaleString('pt-BR')} <span className="text-sm font-normal text-green-500/70">kcal</span></p>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">Fórmula: <span className="font-medium text-foreground">{energyProfile.formula}</span></p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-foreground">Dietas</h2>

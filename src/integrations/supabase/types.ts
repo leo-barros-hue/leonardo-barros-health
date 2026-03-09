@@ -282,6 +282,7 @@ export type Database = {
           height: number | null
           id: string
           patient_id: string
+          selected_formula: string | null
           updated_at: string
         }
         Insert: {
@@ -289,6 +290,7 @@ export type Database = {
           height?: number | null
           id?: string
           patient_id: string
+          selected_formula?: string | null
           updated_at?: string
         }
         Update: {
@@ -296,6 +298,7 @@ export type Database = {
           height?: number | null
           id?: string
           patient_id?: string
+          selected_formula?: string | null
           updated_at?: string
         }
         Relationships: [

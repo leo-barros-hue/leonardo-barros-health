@@ -26,6 +26,7 @@ export default function PatientEnergyTab({ patient }: PatientEnergyTabProps) {
   const [saved, setSaved] = useState(false);
   const [lastSavedWeight, setLastSavedWeight] = useState<number | null>(null);
   const [lastSavedBodyFat, setLastSavedBodyFat] = useState<number | null>(null);
+  const [selectedFormula, setSelectedFormula] = useState<string | null>(null);
 
   useEffect(() => {
     if (patient.birth_date) {
@@ -63,7 +64,7 @@ export default function PatientEnergyTab({ patient }: PatientEnergyTabProps) {
       // Fetch energy profile
       const { data: profileData } = await supabase
         .from("patient_energy_profiles")
-        .select("height, activity_factor")
+        .select("height, activity_factor, selected_formula")
         .eq("patient_id", patient.id)
         .single();
 
@@ -73,6 +74,9 @@ export default function PatientEnergyTab({ patient }: PatientEnergyTabProps) {
       if (profileData?.activity_factor) {
         setActivityFactor(profileData.activity_factor.toString());
       }
+      if (profileData?.selected_formula) {
+        setSelectedFormula(profileData.selected_formula);
+      }
     };
     fetchData();
   }, [patient.id]);
@@ -80,13 +84,14 @@ export default function PatientEnergyTab({ patient }: PatientEnergyTabProps) {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Save height and activity factor to patient_energy_profiles
+      // Save height, activity factor and selected formula to patient_energy_profiles
       const { error: profileError } = await supabase
         .from("patient_energy_profiles")
         .upsert({
           patient_id: patient.id,
           height: height ? parseFloat(height) : null,
           activity_factor: parseFloat(activityFactor),
+          selected_formula: selectedFormula,
           updated_at: new Date().toISOString(),
         }, { onConflict: "patient_id" });
 
@@ -121,6 +126,10 @@ export default function PatientEnergyTab({ patient }: PatientEnergyTabProps) {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleSelectFormula = (formula: string) => {
+    setSelectedFormula(formula);
   };
 
   const calculateResults = () => {
@@ -262,41 +271,67 @@ export default function PatientEnergyTab({ patient }: PatientEnergyTabProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="mb-4">
+        <p className="text-sm text-muted-foreground">Escolha a fórmula para utilizar com o seu paciente:</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <FormulaResultCard
           title="Harris-Benedict"
           bmr={results.harris}
           tdee={results.tdee.harris}
           description="Fórmula tradicional, boa para a população em geral."
+          isSelected={selectedFormula === "harris"}
+          onClick={() => handleSelectFormula("harris")}
         />
         <FormulaResultCard
           title="Mifflin-St Jeor"
           bmr={results.mifflin}
           tdee={results.tdee.mifflin}
           description="Recomendada para pacientes que estão com sobrepeso ou obesidade."
+          isSelected={selectedFormula === "mifflin"}
+          onClick={() => handleSelectFormula("mifflin")}
         />
         <FormulaResultCard
           title="Cunningham"
           bmr={results.cunningham}
           tdee={results.tdee.cunningham}
           description="Excelente para atletas e pessoas com muita massa magra. (Requer % Gordura)"
+          isSelected={selectedFormula === "cunningham"}
+          onClick={() => handleSelectFormula("cunningham")}
         />
         <FormulaResultCard
           title="Tinsley"
           bmr={results.tinsley}
           tdee={results.tdee.tinsley}
           description="Ótima alternativa para quem pratica musculação. (Requer % Gordura)"
+          isSelected={selectedFormula === "tinsley"}
+          onClick={() => handleSelectFormula("tinsley")}
         />
       </div>
     </div>
   );
 }
 
-function FormulaResultCard({ title, bmr, tdee, description }: { title: string; bmr: number | null; tdee: number | null; description: string }) {
+function FormulaResultCard({ title, bmr, tdee, description, isSelected, onClick }: { 
+  title: string; 
+  bmr: number | null; 
+  tdee: number | null; 
+  description: string;
+  isSelected?: boolean;
+  onClick?: () => void;
+}) {
   return (
-    <div className="glass-card p-5 relative overflow-hidden group">
+    <div 
+      onClick={onClick}
+      className={`glass-card p-5 relative overflow-hidden group cursor-pointer transition-all ${
+        isSelected 
+          ? "ring-2 ring-green-500 bg-green-500/5" 
+          : "hover:ring-1 hover:ring-border"
+      }`}
+    >
       <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-        <Activity className="w-16 h-16 text-primary" />
+        <Activity className={`w-16 h-16 ${isSelected ? "text-green-500" : "text-primary"}`} />
       </div>
       <h3 className="font-bold text-foreground text-lg mb-1">{title}</h3>
       <p className="text-xs text-muted-foreground mb-4 h-8">{description}</p>
@@ -315,10 +350,10 @@ function FormulaResultCard({ title, bmr, tdee, description }: { title: string; b
         <div>
           <p className="text-xs text-muted-foreground mb-1 uppercase font-semibold">Gasto Total</p>
           <div className="flex items-end gap-1">
-            <span className="text-2xl font-bold text-primary leading-none">
+            <span className={`text-2xl font-bold leading-none ${isSelected ? "text-green-500" : "text-primary"}`}>
               {tdee ? tdee.toLocaleString('pt-BR') : "—"}
             </span>
-            {tdee && <span className="text-sm text-primary/70 mb-0.5">kcal</span>}
+            {tdee && <span className={`text-sm mb-0.5 ${isSelected ? "text-green-500/70" : "text-primary/70"}`}>kcal</span>}
           </div>
         </div>
       </div>
