@@ -271,30 +271,42 @@ export default function PatientEnergyTab({ patient }: PatientEnergyTabProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="mb-4">
+        <p className="text-sm text-muted-foreground">Escolha a fórmula para utilizar com o seu paciente:</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <FormulaResultCard
           title="Harris-Benedict"
           bmr={results.harris}
           tdee={results.tdee.harris}
           description="Fórmula tradicional, boa para a população em geral."
+          isSelected={selectedFormula === "harris"}
+          onClick={() => handleSelectFormula("harris")}
         />
         <FormulaResultCard
           title="Mifflin-St Jeor"
           bmr={results.mifflin}
           tdee={results.tdee.mifflin}
           description="Recomendada para pacientes que estão com sobrepeso ou obesidade."
+          isSelected={selectedFormula === "mifflin"}
+          onClick={() => handleSelectFormula("mifflin")}
         />
         <FormulaResultCard
           title="Cunningham"
           bmr={results.cunningham}
           tdee={results.tdee.cunningham}
           description="Excelente para atletas e pessoas com muita massa magra. (Requer % Gordura)"
+          isSelected={selectedFormula === "cunningham"}
+          onClick={() => handleSelectFormula("cunningham")}
         />
         <FormulaResultCard
           title="Tinsley"
           bmr={results.tinsley}
           tdee={results.tdee.tinsley}
           description="Ótima alternativa para quem pratica musculação. (Requer % Gordura)"
+          isSelected={selectedFormula === "tinsley"}
+          onClick={() => handleSelectFormula("tinsley")}
         />
       </div>
     </div>
