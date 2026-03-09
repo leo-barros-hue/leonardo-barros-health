@@ -221,7 +221,6 @@ export default function InlineMealCard({ meal, mealIndex, onUpdate, onDelete, on
     const nextFoods = [...foods, data as DietMealFood].sort((a, b) => a.sort_order - b.sort_order);
     syncFoodsState(nextFoods);
     setNewFood({ food_name: "", quantity: "", measure: "g" });
-    onUpdate();
   };
 
   const handleDeleteFood = async (foodId: string) => {

@@ -237,17 +237,17 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
     
     const newOrder = maxOrder && maxOrder.length > 0 ? maxOrder[0].sort_order + 1 : 0;
 
-    const { error } = await supabase.from("diet_meals").insert({
+    const { data, error } = await supabase.from("diet_meals").insert({
       name: "Nova Refeição",
       time: null,
       diet_id: selectedDiet.id,
       sort_order: newOrder,
-    });
+    }).select("*").single();
 
     if (error) {
       toast.error("Erro ao adicionar refeição");
-    } else {
-      fetchMeals(selectedDiet.id);
+    } else if (data) {
+      setMeals((prev) => [...prev, { ...data, foods: [] }]);
     }
   };
 
