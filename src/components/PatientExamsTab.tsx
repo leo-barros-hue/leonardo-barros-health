@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Plus, Trash2, FlaskConical } from "lucide-react";
+import { Loader2, Plus, Trash2, FlaskConical, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import ExamDialog from "@/components/exams/ExamDialog";
+import ExamResultDialog from "@/components/exams/ExamResultDialog";
 
 interface ExamResult {
   id: string;
@@ -12,6 +13,7 @@ interface ExamResult {
   unit: string;
   reference_min: number | null;
   reference_max: number | null;
+  sort_order: number;
 }
 
 interface LabExam {
@@ -25,25 +27,16 @@ interface Props {
   patientId: string;
 }
 
-const commonMarkers = [
-  { name: "Glicemia", unit: "mg/dL", min: 70, max: 99 },
-  { name: "Hemoglobina Glicada", unit: "%", min: 4, max: 5.6 },
-  { name: "Insulina", unit: "µU/mL", min: 2.6, max: 24.9 },
-  { name: "Colesterol Total", unit: "mg/dL", min: 0, max: 200 },
-  { name: "HDL", unit: "mg/dL", min: 40, max: 999 },
-  { name: "LDL", unit: "mg/dL", min: 0, max: 100 },
-  { name: "Triglicerídeos", unit: "mg/dL", min: 0, max: 150 },
-  { name: "TSH", unit: "µUI/mL", min: 0.4, max: 4.0 },
-  { name: "T4 Livre", unit: "ng/dL", min: 0.8, max: 1.8 },
-  { name: "Testosterona Total", unit: "ng/dL", min: 300, max: 1000 },
-  { name: "Vitamina D", unit: "ng/mL", min: 30, max: 100 },
-  { name: "Vitamina B12", unit: "pg/mL", min: 200, max: 900 },
-];
-
 const PatientExamsTab = ({ patientId }: Props) => {
   const [loading, setLoading] = useState(true);
   const [exams, setExams] = useState<LabExam[]>([]);
-  const [selectedExam, setSelectedExam] = useState<string | null>(null);
+  const [selectedExam, setSelectedExam] = useState<LabExam | null>(null);
+
+  // Dialog states
+  const [examDialogOpen, setExamDialogOpen] = useState(false);
+  const [editingExam, setEditingExam] = useState<LabExam | null>(null);
+  const [resultDialogOpen, setResultDialogOpen] = useState(false);
+  const [editingResult, setEditingResult] = useState<ExamResult | null>(null);
 
   useEffect(() => {
     fetchExams();
@@ -69,70 +62,34 @@ const PatientExamsTab = ({ patientId }: Props) => {
 
     setExams(examsWithResults);
     if (examsWithResults.length > 0) {
-      setSelectedExam(examsWithResults[0].id);
+      setSelectedExam(examsWithResults[0]);
+    } else {
+      setSelectedExam(null);
     }
     setLoading(false);
   };
 
-  const createExam = async () => {
-    const { data, error } = await supabase
-      .from("lab_exams")
-      .insert({ patient_id: patientId })
-      .select("id")
-      .single();
-
+  const handleDeleteExam = async (examId: string) => {
+    if (!confirm("Excluir este exame?")) return;
+    const { error } = await supabase.from("lab_exams").delete().eq("id", examId);
     if (error) {
-      toast.error("Erro ao criar exame");
-      return;
+      toast.error("Erro ao excluir exame");
+    } else {
+      toast.success("Exame excluído");
+      setSelectedExam(null);
+      fetchExams();
     }
-
-    toast.success("Exame criado!");
-    fetchExams();
-    setSelectedExam(data.id);
   };
 
-  const addResult = async (examId: string, marker: typeof commonMarkers[0]) => {
-    const exam = exams.find(e => e.id === examId);
-    if (!exam) return;
-
-    const { error } = await supabase
-      .from("lab_exam_results")
-      .insert({
-        lab_exam_id: examId,
-        marker_name: marker.name,
-        value: 0,
-        unit: marker.unit,
-        reference_min: marker.min,
-        reference_max: marker.max,
-        sort_order: exam.results.length
-      });
-
+  const handleDeleteResult = async (resultId: string) => {
+    if (!confirm("Excluir este marcador?")) return;
+    const { error } = await supabase.from("lab_exam_results").delete().eq("id", resultId);
     if (error) {
-      toast.error("Erro ao adicionar marcador");
-      return;
+      toast.error("Erro ao excluir marcador");
+    } else {
+      toast.success("Marcador excluído");
+      fetchExams();
     }
-
-    fetchExams();
-  };
-
-  const updateResult = async (resultId: string, value: number) => {
-    await supabase
-      .from("lab_exam_results")
-      .update({ value })
-      .eq("id", resultId);
-    
-    fetchExams();
-  };
-
-  const deleteResult = async (resultId: string) => {
-    await supabase.from("lab_exam_results").delete().eq("id", resultId);
-    fetchExams();
-  };
-
-  const deleteExam = async (examId: string) => {
-    await supabase.from("lab_exams").delete().eq("id", examId);
-    setSelectedExam(null);
-    fetchExams();
   };
 
   const getValueStatus = (result: ExamResult) => {
@@ -149,109 +106,159 @@ const PatientExamsTab = ({ patientId }: Props) => {
     );
   }
 
-  if (exams.length === 0) {
-    return (
-      <div className="glass-card p-6 text-center">
-        <FlaskConical className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-        <h2 className="text-lg font-bold text-foreground mb-2">Nenhum exame cadastrado</h2>
-        <p className="text-sm text-muted-foreground mb-4">Adicione os resultados de exames laboratoriais do paciente.</p>
-        <Button onClick={createExam}>
-          <Plus className="w-4 h-4 mr-2" /> Novo Exame
-        </Button>
-      </div>
-    );
-  }
-
-  const currentExam = exams.find(e => e.id === selectedExam);
-
   return (
-    <div className="space-y-4">
-      {/* Exam Selector */}
-      <div className="glass-card p-4 flex items-center gap-4">
-        <select
-          value={selectedExam || ""}
-          onChange={(e) => setSelectedExam(e.target.value)}
-          className="flex-1 bg-secondary/50 rounded-lg px-3 py-2 text-sm"
-        >
-          {exams.map((exam) => (
-            <option key={exam.id} value={exam.id}>
-              {new Date(exam.exam_date).toLocaleDateString("pt-BR")}
-            </option>
-          ))}
-        </select>
-        <Button variant="outline" size="sm" onClick={createExam}>
-          <Plus className="w-4 h-4 mr-1" /> Novo
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-bold text-foreground">Exames Laboratoriais</h2>
+        <Button onClick={() => { setEditingExam(null); setExamDialogOpen(true); }} className="gap-2">
+          <Plus className="w-4 h-4" />
+          Novo Exame
         </Button>
       </div>
 
-      {/* Results */}
-      {currentExam && (
-        <div className="glass-card p-4 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-bold text-foreground">
-              Exame de {new Date(currentExam.exam_date).toLocaleDateString("pt-BR")}
-            </h3>
-            <Button variant="ghost" size="sm" onClick={() => deleteExam(currentExam.id)} className="text-destructive">
-              <Trash2 className="w-4 h-4" />
-            </Button>
-          </div>
-
-          {currentExam.results.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4 text-center">Nenhum marcador adicionado.</p>
-          ) : (
-            <div className="space-y-2">
-              {currentExam.results.map((result) => {
-                const status = getValueStatus(result);
-                return (
-                  <div key={result.id} className="flex items-center gap-3 bg-secondary/30 rounded-xl p-3">
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-foreground">{result.marker_name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Ref: {result.reference_min} - {result.reference_max} {result.unit}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="number"
-                        value={result.value}
-                        onChange={(e) => updateResult(result.id, parseFloat(e.target.value) || 0)}
-                        className={`w-20 text-center text-sm ${
-                          status === "low" ? "text-blue-500" : 
-                          status === "high" ? "text-red-500" : "text-green-500"
-                        }`}
-                      />
-                      <span className="text-xs text-muted-foreground w-12">{result.unit}</span>
-                      <Button variant="ghost" size="sm" onClick={() => deleteResult(result.id)}>
-                        <Trash2 className="w-4 h-4 text-muted-foreground" />
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Add Marker */}
-          <div className="pt-2 border-t border-border">
-            <p className="text-xs text-muted-foreground mb-2">Adicionar marcador:</p>
-            <div className="flex flex-wrap gap-2">
-              {commonMarkers
-                .filter(m => !currentExam.results.some(r => r.marker_name === m.name))
-                .slice(0, 6)
-                .map((marker) => (
-                  <Button
-                    key={marker.name}
-                    variant="outline"
-                    size="sm"
-                    onClick={() => addResult(currentExam.id, marker)}
-                    className="text-xs"
-                  >
-                    + {marker.name}
-                  </Button>
-                ))}
-            </div>
-          </div>
+      {exams.length === 0 ? (
+        <div className="glass-card p-8 text-center">
+          <FlaskConical className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold text-foreground mb-2">Nenhum exame cadastrado</h3>
+          <p className="text-sm text-muted-foreground">
+            Clique em "Novo Exame" para começar.
+          </p>
         </div>
+      ) : (
+        <>
+          {/* Exam Selector */}
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {exams.map((exam) => (
+              <button
+                key={exam.id}
+                onClick={() => setSelectedExam(exam)}
+                className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
+                  selectedExam?.id === exam.id
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary/50 text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {new Date(exam.exam_date).toLocaleDateString("pt-BR")}
+              </button>
+            ))}
+          </div>
+
+          {selectedExam && (
+            <>
+              {/* Exam Header */}
+              <div className="glass-card p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div>
+                    <h2 className="text-lg font-bold text-foreground">
+                      Exame de {new Date(selectedExam.exam_date).toLocaleDateString("pt-BR")}
+                    </h2>
+                    {selectedExam.notes && (
+                      <p className="text-sm text-muted-foreground">{selectedExam.notes}</p>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => { setEditingExam(selectedExam); setExamDialogOpen(true); }}>
+                      <Pencil className="w-4 h-4 mr-1" /> Editar
+                    </Button>
+                    <Button variant="destructive" size="sm" onClick={() => handleDeleteExam(selectedExam.id)}>
+                      <Trash2 className="w-4 h-4 mr-1" /> Excluir
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Results */}
+              <div className="glass-card p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-foreground">Marcadores</h3>
+                  <Button variant="outline" size="sm" onClick={() => { setEditingResult(null); setResultDialogOpen(true); }} className="gap-1">
+                    <Plus className="w-3 h-3" /> Adicionar
+                  </Button>
+                </div>
+
+                {selectedExam.results.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-4 text-center">Nenhum marcador adicionado.</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-border">
+                          <th className="text-left py-2 text-muted-foreground font-medium">Marcador</th>
+                          <th className="text-center py-2 text-muted-foreground font-medium w-24">Valor</th>
+                          <th className="text-center py-2 text-muted-foreground font-medium w-20">Unidade</th>
+                          <th className="text-center py-2 text-muted-foreground font-medium hidden sm:table-cell">Referência</th>
+                          <th className="text-center py-2 text-muted-foreground font-medium w-20">Status</th>
+                          <th className="w-20"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {selectedExam.results.map((result) => {
+                          const status = getValueStatus(result);
+                          return (
+                            <tr key={result.id} className="border-b border-border/50 last:border-0">
+                              <td className="py-3 font-medium text-foreground">{result.marker_name}</td>
+                              <td className={`py-3 text-center font-bold ${
+                                status === "low" ? "text-blue-500" : 
+                                status === "high" ? "text-destructive" : "text-success"
+                              }`}>
+                                {result.value}
+                              </td>
+                              <td className="py-3 text-center text-muted-foreground">{result.unit}</td>
+                              <td className="py-3 text-center text-muted-foreground hidden sm:table-cell">
+                                {result.reference_min !== null && result.reference_max !== null 
+                                  ? `${result.reference_min} - ${result.reference_max}`
+                                  : "—"
+                                }
+                              </td>
+                              <td className="py-3 text-center">
+                                <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
+                                  status === "low" ? "bg-blue-500/10 text-blue-500" : 
+                                  status === "high" ? "bg-destructive/10 text-destructive" : 
+                                  "bg-success/10 text-success"
+                                }`}>
+                                  {status === "low" ? "Baixo" : status === "high" ? "Alto" : "Normal"}
+                                </span>
+                              </td>
+                              <td className="py-3 text-right">
+                                <div className="flex justify-end gap-1">
+                                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => { setEditingResult(result); setResultDialogOpen(true); }}>
+                                    <Pencil className="w-3 h-3" />
+                                  </Button>
+                                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => handleDeleteResult(result.id)}>
+                                    <Trash2 className="w-3 h-3" />
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </>
+      )}
+
+      {/* Dialogs */}
+      <ExamDialog
+        open={examDialogOpen}
+        onOpenChange={setExamDialogOpen}
+        patientId={patientId}
+        exam={editingExam}
+        onSuccess={fetchExams}
+      />
+      {selectedExam && (
+        <ExamResultDialog
+          open={resultDialogOpen}
+          onOpenChange={setResultDialogOpen}
+          examId={selectedExam.id}
+          result={editingResult}
+          onSuccess={fetchExams}
+        />
       )}
     </div>
   );
