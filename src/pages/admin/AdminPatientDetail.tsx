@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import PatientEvolutionTab from "@/components/PatientEvolutionTab";
 import PatientEnergyTab from "@/components/PatientEnergyTab";
+import PatientDietTab from "@/components/PatientDietTab";
 
 const tabs = [
   { id: "overview", label: "Visão Geral", icon: User },
