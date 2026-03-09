@@ -23,6 +23,7 @@ interface DietMeal {
 
 interface DietMealFood {
   id: string;
+  food_id?: string | null;
   food_name: string;
   quantity: number;
   measure: string;
@@ -190,6 +191,16 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
   const handleSelectDiet = (diet: Diet) => {
     setSelectedDiet(diet);
     fetchMeals(diet.id);
+  };
+
+  const handleMealFoodsChange = (mealId: string, updatedFoods: DietMealFood[]) => {
+    setMeals((prev) =>
+      prev.map((meal) =>
+        meal.id === mealId
+          ? { ...meal, foods: updatedFoods }
+          : meal
+      )
+    );
   };
 
   const handleDeleteDiet = async (dietId: string) => {
@@ -377,6 +388,7 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                       mealIndex={index}
                       onUpdate={() => selectedDiet && fetchMeals(selectedDiet.id)}
                       onDelete={() => handleDeleteMeal(meal.id)}
+                      onFoodsChange={handleMealFoodsChange}
                     />
                   ))}
                 </div>
