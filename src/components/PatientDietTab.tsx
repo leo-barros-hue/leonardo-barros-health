@@ -388,6 +388,7 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                       mealIndex={index}
                       onUpdate={() => selectedDiet && fetchMeals(selectedDiet.id)}
                       onDelete={() => handleDeleteMeal(meal.id)}
+                      onFoodsChange={handleMealFoodsChange}
                     />
                   ))}
                 </div>
