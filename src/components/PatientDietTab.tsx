@@ -23,6 +23,7 @@ interface DietMeal {
 
 interface DietMealFood {
   id: string;
+  food_id?: string | null;
   food_name: string;
   quantity: number;
   measure: string;
