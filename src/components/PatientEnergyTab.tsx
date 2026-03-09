@@ -313,11 +313,25 @@ export default function PatientEnergyTab({ patient }: PatientEnergyTabProps) {
   );
 }
 
-function FormulaResultCard({ title, bmr, tdee, description }: { title: string; bmr: number | null; tdee: number | null; description: string }) {
+function FormulaResultCard({ title, bmr, tdee, description, isSelected, onClick }: { 
+  title: string; 
+  bmr: number | null; 
+  tdee: number | null; 
+  description: string;
+  isSelected?: boolean;
+  onClick?: () => void;
+}) {
   return (
-    <div className="glass-card p-5 relative overflow-hidden group">
+    <div 
+      onClick={onClick}
+      className={`glass-card p-5 relative overflow-hidden group cursor-pointer transition-all ${
+        isSelected 
+          ? "ring-2 ring-green-500 bg-green-500/5" 
+          : "hover:ring-1 hover:ring-border"
+      }`}
+    >
       <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-        <Activity className="w-16 h-16 text-primary" />
+        <Activity className={`w-16 h-16 ${isSelected ? "text-green-500" : "text-primary"}`} />
       </div>
       <h3 className="font-bold text-foreground text-lg mb-1">{title}</h3>
       <p className="text-xs text-muted-foreground mb-4 h-8">{description}</p>
@@ -336,10 +350,10 @@ function FormulaResultCard({ title, bmr, tdee, description }: { title: string; b
         <div>
           <p className="text-xs text-muted-foreground mb-1 uppercase font-semibold">Gasto Total</p>
           <div className="flex items-end gap-1">
-            <span className="text-2xl font-bold text-primary leading-none">
+            <span className={`text-2xl font-bold leading-none ${isSelected ? "text-green-500" : "text-primary"}`}>
               {tdee ? tdee.toLocaleString('pt-BR') : "—"}
             </span>
-            {tdee && <span className="text-sm text-primary/70 mb-0.5">kcal</span>}
+            {tdee && <span className={`text-sm mb-0.5 ${isSelected ? "text-green-500/70" : "text-primary/70"}`}>kcal</span>}
           </div>
         </div>
       </div>

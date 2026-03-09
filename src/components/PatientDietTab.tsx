@@ -278,6 +278,26 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
 
   return (
     <div className="space-y-6">
+      {/* Energy Profile Banner */}
+      {energyProfile.bmr && energyProfile.tdee && (
+        <div className="glass-card p-4 bg-green-500/10 border border-green-500/20">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground uppercase font-semibold">TMB</p>
+                <p className="text-xl font-bold text-foreground">{energyProfile.bmr.toLocaleString('pt-BR')} <span className="text-sm font-normal text-muted-foreground">kcal</span></p>
+              </div>
+              <div className="h-8 w-px bg-border" />
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground uppercase font-semibold">Gasto Total</p>
+                <p className="text-xl font-bold text-green-500">{energyProfile.tdee.toLocaleString('pt-BR')} <span className="text-sm font-normal text-green-500/70">kcal</span></p>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">Fórmula: <span className="font-medium text-foreground">{energyProfile.formula}</span></p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-foreground">Dietas</h2>
