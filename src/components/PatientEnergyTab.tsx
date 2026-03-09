@@ -26,6 +26,7 @@ export default function PatientEnergyTab({ patient }: PatientEnergyTabProps) {
   const [saved, setSaved] = useState(false);
   const [lastSavedWeight, setLastSavedWeight] = useState<number | null>(null);
   const [lastSavedBodyFat, setLastSavedBodyFat] = useState<number | null>(null);
+  const [selectedFormula, setSelectedFormula] = useState<string | null>(null);
 
   useEffect(() => {
     if (patient.birth_date) {
@@ -63,7 +64,7 @@ export default function PatientEnergyTab({ patient }: PatientEnergyTabProps) {
       // Fetch energy profile
       const { data: profileData } = await supabase
         .from("patient_energy_profiles")
-        .select("height, activity_factor")
+        .select("height, activity_factor, selected_formula")
         .eq("patient_id", patient.id)
         .single();
 
@@ -72,6 +73,9 @@ export default function PatientEnergyTab({ patient }: PatientEnergyTabProps) {
       }
       if (profileData?.activity_factor) {
         setActivityFactor(profileData.activity_factor.toString());
+      }
+      if (profileData?.selected_formula) {
+        setSelectedFormula(profileData.selected_formula);
       }
     };
     fetchData();
