@@ -279,9 +279,9 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
     <div className="space-y-6">
       {/* Energy Balance Block */}
       {energyProfile.tdee && (() => {
-        const balance = energyProfile.tdee! - totals.calories;
-        const isDeficit = balance > 0;
-        const isSurplus = balance < 0;
+        const balance = totals.calories - energyProfile.tdee!;
+        const isSurplus = balance > 0;
+        const isDeficit = balance < 0;
         const chartData = [
           { name: "Gasto (TDEE)", value: energyProfile.tdee! },
           { name: "Ingestão", value: totals.calories },
@@ -303,20 +303,20 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Cards */}
               <div className="grid grid-cols-3 gap-3">
-                <div className="flex flex-col items-center gap-1 p-3 rounded-xl bg-secondary/40">
+                <div className="flex flex-col items-center justify-center gap-1 p-3 rounded-xl bg-secondary/40 text-center">
                   <p className="text-xs text-muted-foreground">Gasto (TDEE)</p>
                   <p className="text-lg font-bold text-primary">{energyProfile.tdee!.toLocaleString('pt-BR')}</p>
                   <p className="text-xs text-muted-foreground">kcal</p>
                 </div>
-                <div className="flex flex-col items-center gap-1 p-3 rounded-xl bg-secondary/40">
+                <div className="flex flex-col items-center justify-center gap-1 p-3 rounded-xl bg-secondary/40 text-center">
                   <p className="text-xs text-muted-foreground">Ingestão</p>
                   <p className="text-lg font-bold text-foreground">{totals.calories.toLocaleString('pt-BR')}</p>
                   <p className="text-xs text-muted-foreground">kcal</p>
                 </div>
-                <div className={`flex flex-col items-center gap-1 p-3 rounded-xl ${isDeficit ? 'bg-destructive/10' : isSurplus ? 'bg-success/10' : 'bg-secondary/40'}`}>
+                <div className={`flex flex-col items-center justify-center gap-1 p-3 rounded-xl text-center ${isDeficit ? 'bg-destructive/10' : isSurplus ? 'bg-success/10' : 'bg-secondary/40'}`}>
                   <p className="text-xs text-muted-foreground">Balanço</p>
                   <p className={`text-lg font-bold ${isDeficit ? 'text-destructive' : isSurplus ? 'text-success' : 'text-foreground'}`}>
-                    {isDeficit ? '-' : isSurplus ? '+' : ''}{Math.abs(balance).toLocaleString('pt-BR')}
+                    {isSurplus ? '+' : ''}{balance.toLocaleString('pt-BR')}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {isDeficit ? 'Déficit' : isSurplus ? 'Superávit' : 'Equilíbrio'}
