@@ -280,40 +280,69 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
       {/* Energy Balance Block */}
       {energyProfile.tdee && (() => {
         const balance = energyProfile.tdee! - totals.calories;
+        const isDeficit = balance > 0;
+        const isSurplus = balance < 0;
         const chartData = [
-          { name: "Gasto (TDEE)", value: energyProfile.tdee!, fill: "hsl(var(--primary))" },
-          { name: "Ingestão", value: totals.calories, fill: "hsl(50, 90%, 60%)" },
-          { name: "Balanço", value: balance, fill: balance > 0 ? "hsl(var(--destructive))" : balance < 0 ? "hsl(var(--success, 142 71% 45%))" : "hsl(var(--muted-foreground))" },
+          { name: "Gasto (TDEE)", value: energyProfile.tdee! },
+          { name: "Ingestão", value: totals.calories },
+          { name: "Balanço", value: balance },
         ];
-        const balanceLabel = balance > 0 ? "Déficit" : balance < 0 ? "Superávit" : "Equilíbrio";
+        const chartColors = [
+          "hsl(var(--primary))",
+          "hsl(50, 90%, 60%)",
+          isDeficit ? "hsl(var(--destructive))" : isSurplus ? "hsl(142, 71%, 45%)" : "hsl(var(--muted-foreground))",
+        ];
         return (
           <div className="glass-card p-5 border border-border">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">Balanço Energético</h3>
               <p className="text-xs text-muted-foreground">Fórmula: <span className="font-medium text-foreground">{energyProfile.formula}</span></p>
             </div>
-            <p className="text-xs text-muted-foreground mb-4">
-              {balanceLabel}: <span className={`font-bold ${balance > 0 ? 'text-destructive' : balance < 0 ? 'text-success' : 'text-foreground'}`}>
-                {balance > 0 ? '-' : balance < 0 ? '+' : ''}{Math.abs(balance).toLocaleString('pt-BR')} kcal
-              </span>
-            </p>
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={chartData} barSize={60}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                <Tooltip
-                  formatter={(value: number) => [`${Math.abs(value).toLocaleString('pt-BR')} kcal`, '']}
-                  contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
-                />
-                <Bar dataKey="value" radius={[6, 6, 0, 0]}>
-                  {chartData.map((entry, index) => (
-                    <Cell key={index} fill={entry.fill} />
-                  ))}
-                  <LabelList dataKey="value" position="top" formatter={(v: number) => `${v < 0 ? '' : ''}${v.toLocaleString('pt-BR')}`} style={{ fontSize: 13, fontWeight: 700, fill: "hsl(var(--foreground))" }} />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+
+            {/* Info cards + Chart side by side */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Cards */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="flex flex-col items-center gap-1 p-3 rounded-xl bg-secondary/40">
+                  <p className="text-xs text-muted-foreground">Gasto (TDEE)</p>
+                  <p className="text-lg font-bold text-primary">{energyProfile.tdee!.toLocaleString('pt-BR')}</p>
+                  <p className="text-xs text-muted-foreground">kcal</p>
+                </div>
+                <div className="flex flex-col items-center gap-1 p-3 rounded-xl bg-secondary/40">
+                  <p className="text-xs text-muted-foreground">Ingestão</p>
+                  <p className="text-lg font-bold text-foreground">{totals.calories.toLocaleString('pt-BR')}</p>
+                  <p className="text-xs text-muted-foreground">kcal</p>
+                </div>
+                <div className={`flex flex-col items-center gap-1 p-3 rounded-xl ${isDeficit ? 'bg-destructive/10' : isSurplus ? 'bg-success/10' : 'bg-secondary/40'}`}>
+                  <p className="text-xs text-muted-foreground">Balanço</p>
+                  <p className={`text-lg font-bold ${isDeficit ? 'text-destructive' : isSurplus ? 'text-success' : 'text-foreground'}`}>
+                    {isDeficit ? '-' : isSurplus ? '+' : ''}{Math.abs(balance).toLocaleString('pt-BR')}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {isDeficit ? 'Déficit' : isSurplus ? 'Superávit' : 'Equilíbrio'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Chart */}
+              <ResponsiveContainer width="100%" height={180}>
+                <BarChart data={chartData} barCategoryGap={0} barGap={0}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} width={40} />
+                  <Tooltip
+                    formatter={(value: number) => [`${Math.abs(value).toLocaleString('pt-BR')} kcal`, '']}
+                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
+                  />
+                  <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                    {chartData.map((_, index) => (
+                      <Cell key={index} fill={chartColors[index]} />
+                    ))}
+                    <LabelList dataKey="value" position="top" formatter={(v: number) => v.toLocaleString('pt-BR')} style={{ fontSize: 12, fontWeight: 700, fill: "hsl(var(--foreground))" }} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         );
       })()}
