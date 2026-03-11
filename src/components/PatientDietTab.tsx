@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Plus, Utensils, Pencil, Trash2 } from "lucide-react";
+import { Loader2, Plus, Utensils, Pencil, Trash2, Flame, UtensilsCrossed, Scale } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import DietDialog from "@/components/diet/DietDialog";
