@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Plus, Utensils, Pencil, Trash2 } from "lucide-react";
+import { Loader2, Plus, Utensils, Pencil, Trash2, Flame, UtensilsCrossed, Scale } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import DietDialog from "@/components/diet/DietDialog";
@@ -276,15 +276,46 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
 
   return (
     <div className="space-y-6">
-      {/* Energy Profile Banner */}
+      {/* Energy Balance Block */}
       {energyProfile.tdee && (
-        <div className="glass-card p-4 bg-green-500/10 border border-green-500/20">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <p className="text-sm text-muted-foreground">Gasto Calórico Total:</p>
-              <p className="text-xl font-bold text-green-500">{energyProfile.tdee.toLocaleString('pt-BR')} <span className="text-sm font-normal text-green-500/70">kcal</span></p>
-            </div>
+        <div className="glass-card p-5 border border-border">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">Balanço Energético</h3>
             <p className="text-xs text-muted-foreground">Fórmula: <span className="font-medium text-foreground">{energyProfile.formula}</span></p>
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            {/* TDEE */}
+            <div className="flex flex-col items-center gap-1 p-3 rounded-xl bg-secondary/40">
+              <Flame className="w-5 h-5 text-warning" />
+              <p className="text-xs text-muted-foreground">Gasto (TDEE)</p>
+              <p className="text-lg font-bold text-foreground">{energyProfile.tdee.toLocaleString('pt-BR')}</p>
+              <p className="text-xs text-muted-foreground">kcal</p>
+            </div>
+            {/* Intake */}
+            <div className="flex flex-col items-center gap-1 p-3 rounded-xl bg-secondary/40">
+              <UtensilsCrossed className="w-5 h-5 text-primary" />
+              <p className="text-xs text-muted-foreground">Ingestão</p>
+              <p className="text-lg font-bold text-foreground">{totals.calories.toLocaleString('pt-BR')}</p>
+              <p className="text-xs text-muted-foreground">kcal</p>
+            </div>
+            {/* Balance */}
+            {(() => {
+              const balance = energyProfile.tdee! - totals.calories;
+              const isDeficit = balance > 0;
+              const isSurplus = balance < 0;
+              return (
+                <div className={`flex flex-col items-center gap-1 p-3 rounded-xl ${isDeficit ? 'bg-destructive/10' : isSurplus ? 'bg-primary/10' : 'bg-secondary/40'}`}>
+                  <Scale className="w-5 h-5 text-accent-foreground" />
+                  <p className="text-xs text-muted-foreground">Balanço</p>
+                  <p className={`text-lg font-bold ${isDeficit ? 'text-destructive' : isSurplus ? 'text-primary' : 'text-foreground'}`}>
+                    {balance > 0 ? '-' : balance < 0 ? '+' : ''}{Math.abs(balance).toLocaleString('pt-BR')}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {isDeficit ? 'Déficit' : isSurplus ? 'Superávit' : 'Equilíbrio'}
+                  </p>
+                </div>
+              );
+            })()}
           </div>
         </div>
       )}
