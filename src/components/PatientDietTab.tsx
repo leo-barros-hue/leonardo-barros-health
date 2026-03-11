@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Plus, Utensils, Pencil, Trash2 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, ResponsiveContainer, LabelList } from "recharts";
+import iconFire from "@/assets/icon-fire.png";
+import iconPlate from "@/assets/icon-plate.png";
+import iconScale from "@/assets/icon-scale.png";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import DietDialog from "@/components/diet/DietDialog";
@@ -304,16 +307,20 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
               {/* Cards */}
               <div className="grid grid-cols-3 gap-3">
                 <div className="flex flex-col items-center justify-center gap-1 p-3 rounded-xl bg-secondary/40 text-center">
+                  <img src={iconFire} alt="Gasto energético" className="w-8 h-8 mb-1" />
                   <p className="text-xs text-muted-foreground">Gasto (TDEE)</p>
                   <p className="text-lg font-bold text-primary">{energyProfile.tdee!.toLocaleString('pt-BR')}</p>
                   <p className="text-xs text-muted-foreground">kcal</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">{energyProfile.formula}</p>
                 </div>
                 <div className="flex flex-col items-center justify-center gap-1 p-3 rounded-xl bg-secondary/40 text-center">
+                  <img src={iconPlate} alt="Ingestão calórica" className="w-8 h-8 mb-1" />
                   <p className="text-xs text-muted-foreground">Ingestão</p>
                   <p className="text-lg font-bold text-foreground">{totals.calories.toLocaleString('pt-BR')}</p>
                   <p className="text-xs text-muted-foreground">kcal</p>
                 </div>
                 <div className={`flex flex-col items-center justify-center gap-1 p-3 rounded-xl text-center ${isDeficit ? 'bg-destructive/10' : isSurplus ? 'bg-success/10' : 'bg-secondary/40'}`}>
+                  <img src={iconScale} alt="Balanço energético" className="w-8 h-8 mb-1" />
                   <p className="text-xs text-muted-foreground">Balanço</p>
                   <p className={`text-lg font-bold ${isDeficit ? 'text-destructive' : isSurplus ? 'text-success' : 'text-foreground'}`}>
                     {isSurplus ? '+' : ''}{balance.toLocaleString('pt-BR')}
