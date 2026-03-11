@@ -323,7 +323,6 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                   </p>
                 </div>
               </div>
-              </div>
 
               {/* Chart */}
               <ResponsiveContainer width="100%" height={180}>
