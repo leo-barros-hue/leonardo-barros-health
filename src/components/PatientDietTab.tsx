@@ -325,23 +325,29 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
               </div>
 
               {/* Chart */}
-              <ResponsiveContainer width="100%" height={180}>
-                <BarChart data={chartData} barCategoryGap={0} barGap={0}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} width={50} label={{ value: "Calorias", angle: -90, position: "insideLeft", style: { fontSize: 11, fill: "hsl(var(--muted-foreground))", textAnchor: "middle" } }} />
-                  <Tooltip
-                    formatter={(value: number) => [`${Math.abs(value).toLocaleString('pt-BR')} kcal`, '']}
-                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
-                  />
-                  <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                    {chartData.map((_, index) => (
-                      <Cell key={index} fill={chartColors[index]} />
-                    ))}
-                    <LabelList dataKey="value" position="top" formatter={(v: number) => v.toLocaleString('pt-BR')} style={{ fontSize: 12, fontWeight: 700, fill: "hsl(var(--foreground))" }} />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              {(() => {
+                const maxVal = Math.max(energyProfile.tdee!, totals.calories, Math.abs(balance));
+                const yMax = Math.ceil(maxVal * 1.15 / 100) * 100;
+                return (
+                  <ResponsiveContainer width="100%" height={180}>
+                    <BarChart data={chartData} barCategoryGap={0} barGap={0}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                      <XAxis dataKey="name" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                      <YAxis domain={[0, yMax]} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} width={50} label={{ value: "Calorias", angle: -90, position: "insideLeft", style: { fontSize: 11, fill: "hsl(var(--muted-foreground))", textAnchor: "middle" } }} />
+                      <Tooltip
+                        formatter={(value: number) => [`${Math.abs(value).toLocaleString('pt-BR')} kcal`, '']}
+                        contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
+                      />
+                      <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                        {chartData.map((_, index) => (
+                          <Cell key={index} fill={chartColors[index]} />
+                        ))}
+                        <LabelList dataKey="value" position="center" formatter={(v: number) => v.toLocaleString('pt-BR')} style={{ fontSize: 13, fontWeight: 700, fill: "#fff" }} />
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                );
+              })()}
             </div>
           </div>
         );
