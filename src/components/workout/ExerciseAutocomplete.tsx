@@ -16,23 +16,38 @@ interface ExerciseAutocompleteProps {
   onKeyDown?: (e: React.KeyboardEvent) => void;
 }
 
+const MUSCLE_GROUP_ORDER = [
+  "PEITO", "DORSAL", "OMBROS", "BRAÇOS", "ANTEBRAÇO",
+  "QUADRÍCEPS", "ISQUIOTIBIAIS", "ADUTORES", "GLÚTEOS", "ABDOME", "PANTURRILHA",
+];
+
 export default function ExerciseAutocomplete({
   value,
   onChange,
   onSelect,
   exerciseCatalog,
-  placeholder = "Nome do exercício...",
+  placeholder = "Adicionar exercício...",
   onKeyDown,
 }: ExerciseAutocompleteProps) {
   const [open, setOpen] = useState(false);
   const [highlightIndex, setHighlightIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
-  const suggestions =
-    value.length >= 2
-      ? exerciseCatalog
-          .filter((ex) => ex.name.toLowerCase().includes(value.toLowerCase()))
-      : [];
+  // Show all when no filter, or filter by typed text
+  const filtered = value.length >= 1
+    ? exerciseCatalog.filter((ex) => ex.name.toLowerCase().includes(value.toLowerCase()))
+    : exerciseCatalog;
+
+  // Group by muscle group
+  const grouped = MUSCLE_GROUP_ORDER.reduce((acc, group) => {
+    const items = filtered.filter((ex) => ex.muscle_group === group);
+    if (items.length > 0) acc.push({ group, items });
+    return acc;
+  }, [] as { group: string; items: ExerciseCatalogItem[] }[]);
+
+  // Flat list for keyboard navigation
+  const flatList = grouped.flatMap((g) => g.items);
 
   useEffect(() => {
     setHighlightIndex(-1);
@@ -48,23 +63,38 @@ export default function ExerciseAutocomplete({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Scroll highlighted item into view
+  useEffect(() => {
+    if (highlightIndex >= 0 && listRef.current) {
+      const items = listRef.current.querySelectorAll("[data-exercise-item]");
+      items[highlightIndex]?.scrollIntoView({ block: "nearest" });
+    }
+  }, [highlightIndex]);
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (suggestions.length > 0 && open) {
+    if (flatList.length > 0 && open) {
       if (e.key === "ArrowDown") {
         e.preventDefault();
-        setHighlightIndex((prev) => (prev + 1) % suggestions.length);
+        setHighlightIndex((prev) => (prev + 1) % flatList.length);
+        return;
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
-        setHighlightIndex((prev) => (prev <= 0 ? suggestions.length - 1 : prev - 1));
+        setHighlightIndex((prev) => (prev <= 0 ? flatList.length - 1 : prev - 1));
+        return;
       } else if (e.key === "Enter" && highlightIndex >= 0) {
         e.preventDefault();
-        onSelect(suggestions[highlightIndex]);
+        onSelect(flatList[highlightIndex]);
+        setOpen(false);
+        return;
+      } else if (e.key === "Escape") {
         setOpen(false);
         return;
       }
     }
     onKeyDown?.(e);
   };
+
+  let flatIdx = -1;
 
   return (
     <div ref={containerRef} className="relative">
@@ -75,29 +105,43 @@ export default function ExerciseAutocomplete({
           onChange(e.target.value);
           setOpen(true);
         }}
-        onFocus={() => value.length >= 2 && setOpen(true)}
+        onFocus={() => setOpen(true)}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         className="h-8 text-sm border-0 bg-transparent px-1 focus-visible:ring-0"
       />
-      {open && suggestions.length > 0 && (
-        <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
-          {suggestions.map((ex, idx) => (
-            <button
-              key={ex.id}
-              type="button"
-              className={`w-full text-left px-3 py-2 text-sm flex items-center justify-between hover:bg-accent transition-colors ${
-                idx === highlightIndex ? "bg-accent" : ""
-              }`}
-              onMouseDown={(e) => {
-                e.preventDefault();
-                onSelect(ex);
-                setOpen(false);
-              }}
-            >
-              <span className="text-foreground">{ex.name}</span>
-              <span className="text-[10px] text-muted-foreground uppercase">{ex.muscle_group}</span>
-            </button>
+      {open && flatList.length > 0 && (
+        <div
+          ref={listRef}
+          className="absolute z-50 top-full left-0 w-[360px] mt-1 bg-popover border border-border rounded-lg shadow-lg max-h-64 overflow-y-auto"
+        >
+          {grouped.map(({ group, items }) => (
+            <div key={group}>
+              <div className="px-3 py-1.5 text-[10px] font-bold uppercase text-primary bg-muted/50 sticky top-0">
+                {group}
+              </div>
+              {items.map((ex) => {
+                flatIdx++;
+                const idx = flatIdx;
+                return (
+                  <button
+                    key={ex.id}
+                    type="button"
+                    data-exercise-item
+                    className={`w-full text-left px-3 py-1.5 text-sm hover:bg-accent transition-colors ${
+                      idx === highlightIndex ? "bg-accent" : ""
+                    }`}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      onSelect(ex);
+                      setOpen(false);
+                    }}
+                  >
+                    <span className="text-foreground">{ex.name}</span>
+                  </button>
+                );
+              })}
+            </div>
           ))}
         </div>
       )}
