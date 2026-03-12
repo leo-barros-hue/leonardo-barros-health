@@ -12,7 +12,7 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const { mode, patientProfile, foods, currentDiet } = await req.json();
+    const { mode, patientProfile, foods, currentDiet, customInstructions } = await req.json();
 
     let systemPrompt = "";
     let userPrompt = "";
