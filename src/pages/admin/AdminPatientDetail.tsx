@@ -8,6 +8,7 @@ import PatientDietTab from "@/components/PatientDietTab";
 import PatientWorkoutTab from "@/components/PatientWorkoutTab";
 import PatientExamsTab from "@/components/PatientExamsTab";
 import PatientPrescriptionsTab from "@/components/PatientPrescriptionsTab";
+import PatientInfoHeader from "@/components/PatientInfoHeader";
 
 const tabs = [
   { id: "overview", label: "Visão Geral", icon: User },
