@@ -371,7 +371,7 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                       { name: "Balanço", value: balance, fill: isDeficit ? "hsl(var(--destructive))" : "hsl(142, 71%, 45%)" },
                     ]}
                     margin={{ top: 10, right: 5, bottom: 5, left: 5 }}
-                    barCategoryGap="8%"
+                    barCategoryGap="4%"
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                     <XAxis dataKey="name" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
@@ -381,7 +381,7 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                       formatter={(value: number) => [`${value.toLocaleString('pt-BR')} kcal`]}
                       contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
                     />
-                    <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={36} label={{ position: 'inside', fontSize: 11, fontWeight: 600, fill: '#fff' }}>
+                    <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={52} label={{ position: 'inside', fontSize: 11, fontWeight: 600, fill: '#fff' }}>
                       {[
                         { fill: "hsl(var(--primary))" },
                         { fill: "hsl(50, 90%, 55%)" },
