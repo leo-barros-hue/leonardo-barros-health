@@ -27,17 +27,20 @@ interface Food {
 
 const CATEGORIES = ["Carboidratos", "Frutas", "Proteína", "Gorduras", "Outros"];
 
-const emptyFood = { name: "", category: "Outros", measure: "g", protein_per_unit: 0, carbs_per_unit: 0, fat_per_unit: 0, kcal_per_unit: 0, fiber_per_unit: 0 };
+const emptyFoodStr = { name: "", category: "Outros", measure: "g", protein_per_unit: "", carbs_per_unit: "", fat_per_unit: "", kcal_per_unit: "", fiber_per_unit: "" };
+
+const parseNum = (v: string) => { const n = parseFloat(v.replace(",", ".")); return isNaN(n) ? 0 : n; };
+const isValidDecimal = (v: string) => v === "" || /^[\d]*[.,]?[\d]*$/.test(v);
 
 const AdminFoods = () => {
   const [foods, setFoods] = useState<Food[]>([]);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [loading, setLoading] = useState(true);
-  const [newFood, setNewFood] = useState({ ...emptyFood });
+  const [newFood, setNewFood] = useState({ ...emptyFoodStr });
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editData, setEditData] = useState({ ...emptyFood });
+  const [editData, setEditData] = useState({ ...emptyFoodStr });
   const [showImport, setShowImport] = useState(false);
 
   const fetchFoods = async () => {
