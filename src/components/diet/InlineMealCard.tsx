@@ -280,14 +280,14 @@ export default function InlineMealCard({ meal, mealIndex, onUpdate, onDelete, on
       </div>
 
       {/* Table Header */}
-      <div className="bg-muted/30 px-4 py-2 grid grid-cols-12 gap-2 text-xs font-medium uppercase">
-        <div className="col-span-5 text-muted-foreground">Alimento</div>
-        <div className="col-span-1 text-muted-foreground text-center">Quant</div>
-        <div className="col-span-1 text-muted-foreground text-center">Med</div>
-        <div className="col-span-1 text-success text-center">Ptn</div>
-        <div className="col-span-1 text-warning text-center">Carb</div>
-        <div className="col-span-1 text-destructive text-center">Gor</div>
-        <div className="col-span-2"></div>
+      <div className="bg-muted/30 px-4 py-2 grid gap-2 text-xs font-medium uppercase" style={{ gridTemplateColumns: "1fr 70px 70px 50px 50px 50px 60px" }}>
+        <div className="text-muted-foreground">Alimento</div>
+        <div className="text-muted-foreground text-center">Quant</div>
+        <div className="text-muted-foreground text-center">Med</div>
+        <div className="text-success text-center">Ptn</div>
+        <div className="text-warning text-center">Carb</div>
+        <div className="text-destructive text-center">Gor</div>
+        <div></div>
       </div>
 
       {/* Food Rows */}
