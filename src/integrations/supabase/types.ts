@@ -475,6 +475,76 @@ export type Database = {
           },
         ]
       }
+      patient_plans: {
+        Row: {
+          diet_active: boolean
+          id: string
+          medical_active: boolean
+          patient_id: string
+          plan_expires_at: string | null
+          updated_at: string
+          workout_active: boolean
+        }
+        Insert: {
+          diet_active?: boolean
+          id?: string
+          medical_active?: boolean
+          patient_id: string
+          plan_expires_at?: string | null
+          updated_at?: string
+          workout_active?: boolean
+        }
+        Update: {
+          diet_active?: boolean
+          id?: string
+          medical_active?: boolean
+          patient_id?: string
+          plan_expires_at?: string | null
+          updated_at?: string
+          workout_active?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_plans_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: true
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patient_schedule_dates: {
+        Row: {
+          created_at: string
+          id: string
+          label: string
+          patient_id: string
+          scheduled_date: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label?: string
+          patient_id: string
+          scheduled_date: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string
+          patient_id?: string
+          scheduled_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_schedule_dates_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patients: {
         Row: {
           birth_date: string | null
