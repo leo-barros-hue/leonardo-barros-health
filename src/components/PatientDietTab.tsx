@@ -279,94 +279,12 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
 
   return (
     <div className="space-y-6">
-      {/* Energy Balance Block */}
+      {/* Combined Energy & Macros Dashboard */}
       {energyProfile.tdee && (() => {
         const balance = totals.calories - energyProfile.tdee!;
         const isSurplus = balance > 0;
         const isDeficit = balance < 0;
-        const chartData = [
-          { name: "Gasto (TDEE)", value: energyProfile.tdee! },
-          { name: "Ingestão", value: totals.calories },
-          { name: "Balanço", value: balance },
-        ];
-        const chartColors = [
-          "hsl(var(--primary))",
-          "hsl(50, 90%, 60%)",
-          isDeficit ? "hsl(var(--destructive))" : isSurplus ? "hsl(142, 71%, 45%)" : "hsl(var(--muted-foreground))",
-        ];
-        return (
-          <div className="glass-card p-5 border border-border">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">Balanço Energético</h3>
-              <p className="text-xs text-muted-foreground">Fórmula: <span className="font-medium text-foreground">{energyProfile.formula}</span></p>
-            </div>
 
-            {/* Info cards + Chart side by side */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Cards */}
-              <div className="grid grid-cols-3 gap-3">
-                <div className="flex flex-col items-center justify-center gap-1 p-3 rounded-xl bg-secondary/40 text-center">
-                  <div className="flex items-center gap-1.5">
-                    <Flame className="w-4 h-4 text-primary" />
-                    <p className="text-xs text-muted-foreground">Gasto (TDEE)</p>
-                  </div>
-                  <p className="text-lg font-bold text-primary">{energyProfile.tdee!.toLocaleString('pt-BR')}</p>
-                  <p className="text-xs text-muted-foreground">kcal</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">{energyProfile.formula}</p>
-                </div>
-                <div className="flex flex-col items-center justify-center gap-1 p-3 rounded-xl bg-secondary/40 text-center">
-                  <div className="flex items-center gap-1.5">
-                    <UtensilsCrossed className="w-4 h-4 text-foreground" />
-                    <p className="text-xs text-muted-foreground">Ingestão</p>
-                  </div>
-                  <p className="text-lg font-bold text-foreground">{totals.calories.toLocaleString('pt-BR')}</p>
-                  <p className="text-xs text-muted-foreground">kcal</p>
-                </div>
-                <div className={`flex flex-col items-center justify-center gap-1 p-3 rounded-xl text-center ${isDeficit ? 'bg-destructive/10' : isSurplus ? 'bg-success/10' : 'bg-secondary/40'}`}>
-                  <div className="flex items-center gap-1.5">
-                    <Scale className={`w-4 h-4 ${isDeficit ? 'text-destructive' : isSurplus ? 'text-success' : 'text-muted-foreground'}`} />
-                    <p className="text-xs text-muted-foreground">Balanço</p>
-                  </div>
-                  <p className={`text-lg font-bold ${isDeficit ? 'text-destructive' : isSurplus ? 'text-success' : 'text-foreground'}`}>
-                    {isSurplus ? '+' : ''}{balance.toLocaleString('pt-BR')}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {isDeficit ? 'Déficit' : isSurplus ? 'Superávit' : 'Equilíbrio'}
-                  </p>
-                </div>
-              </div>
-
-              {/* Chart */}
-              {(() => {
-                const maxVal = Math.max(energyProfile.tdee!, totals.calories, Math.abs(balance));
-                const yMax = Math.ceil(maxVal * 1.15 / 100) * 100;
-                return (
-                  <ResponsiveContainer width="100%" height={180}>
-                    <BarChart data={chartData} barCategoryGap={0} barGap={0}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                      <XAxis dataKey="name" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                      <YAxis domain={[0, yMax]} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} width={50} label={{ value: "Calorias", angle: -90, position: "insideLeft", style: { fontSize: 11, fill: "hsl(var(--muted-foreground))", textAnchor: "middle" } }} />
-                      <Tooltip
-                        formatter={(value: number) => [`${Math.abs(value).toLocaleString('pt-BR')} kcal`, '']}
-                        contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
-                      />
-                      <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                        {chartData.map((_, index) => (
-                          <Cell key={index} fill={chartColors[index]} />
-                        ))}
-                        <LabelList dataKey="value" position="center" formatter={(v: number) => v.toLocaleString('pt-BR')} style={{ fontSize: 13, fontWeight: 700, fill: "#fff" }} />
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                );
-              })()}
-            </div>
-          </div>
-        );
-      })()}
-
-      {/* Macronutrient Distribution Block */}
-      {(() => {
         const weight = energyProfile.weight || 0;
         const protPerKg = weight > 0 ? (totals.protein / weight) : 0;
         const carbsPerKg = weight > 0 ? (totals.carbs / weight) : 0;
@@ -386,51 +304,82 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
           { name: "Carboidrato", value: carbsCal, pct: carbsPct },
           { name: "Gordura", value: fatCal, pct: fatPct },
         ];
-        const pieColors = [
-          "hsl(142, 71%, 45%)",
-          "hsl(50, 90%, 55%)",
-          "hsl(var(--destructive))",
-        ];
+        const pieColors = ["hsl(142, 71%, 45%)", "hsl(50, 90%, 55%)", "hsl(var(--destructive))"];
 
         return (
           <div className="glass-card p-5 border border-border">
-            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide mb-4">Macronutrientes</h3>
+            {/* Header row */}
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">Painel Nutricional</h3>
+              <p className="text-xs text-muted-foreground">
+                Fórmula: <span className="font-medium text-foreground">{energyProfile.formula}</span>
+                {weight > 0 && <> · Peso: <span className="font-medium text-foreground">{weight}kg</span></>}
+              </p>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Cards g/kg */}
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { label: "Proteína", value: protPerKg, color: "text-success", total: `${totals.protein}g` },
-                  { label: "Carboidrato", value: carbsPerKg, color: "text-warning", total: `${totals.carbs}g` },
-                  { label: "Gordura", value: fatPerKg, color: "text-destructive", total: `${totals.fat}g` },
-                ].map((macro) => (
-                  <div key={macro.label} className="flex flex-col items-center justify-center gap-1 p-3 rounded-xl bg-secondary/40 text-center">
-                    <p className="text-xs text-muted-foreground">{macro.label}</p>
-                    <p className={`text-lg font-bold ${macro.color}`}>
-                      {weight > 0 ? macro.value.toFixed(1) : "—"}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground">g/kg/dia</p>
-                    <p className="text-xs text-muted-foreground mt-1">{macro.total} total</p>
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-6 items-center">
+              {/* Left: Energy Balance */}
+              <div className="space-y-4">
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="flex flex-col items-center gap-0.5 p-3 rounded-xl bg-secondary/40">
+                    <Flame className="w-4 h-4 text-primary mb-1" />
+                    <p className="text-lg font-bold text-primary">{energyProfile.tdee!.toLocaleString('pt-BR')}</p>
+                    <p className="text-[10px] text-muted-foreground">TDEE (kcal)</p>
                   </div>
-                ))}
+                  <div className="flex flex-col items-center gap-0.5 p-3 rounded-xl bg-secondary/40">
+                    <UtensilsCrossed className="w-4 h-4 text-foreground mb-1" />
+                    <p className="text-lg font-bold text-foreground">{totals.calories.toLocaleString('pt-BR')}</p>
+                    <p className="text-[10px] text-muted-foreground">Ingestão (kcal)</p>
+                  </div>
+                  <div className={`flex flex-col items-center gap-0.5 p-3 rounded-xl ${isDeficit ? 'bg-destructive/10' : isSurplus ? 'bg-success/10' : 'bg-secondary/40'}`}>
+                    <Scale className={`w-4 h-4 mb-1 ${isDeficit ? 'text-destructive' : isSurplus ? 'text-success' : 'text-muted-foreground'}`} />
+                    <p className={`text-lg font-bold ${isDeficit ? 'text-destructive' : isSurplus ? 'text-success' : 'text-foreground'}`}>
+                      {isSurplus ? '+' : ''}{balance.toLocaleString('pt-BR')}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {isDeficit ? 'Déficit' : isSurplus ? 'Superávit' : 'Equilíbrio'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Macro g/kg cards */}
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { label: "Proteína", value: protPerKg, color: "text-success", total: `${totals.protein}g`, pct: `${protPct}%` },
+                    { label: "Carboidrato", value: carbsPerKg, color: "text-warning", total: `${totals.carbs}g`, pct: `${carbsPct}%` },
+                    { label: "Gordura", value: fatPerKg, color: "text-destructive", total: `${totals.fat}g`, pct: `${fatPct}%` },
+                  ].map((macro) => (
+                    <div key={macro.label} className="flex flex-col items-center gap-0.5 p-3 rounded-xl bg-secondary/40">
+                      <p className="text-[10px] text-muted-foreground">{macro.label}</p>
+                      <p className={`text-lg font-bold ${macro.color}`}>
+                        {weight > 0 ? macro.value.toFixed(1) : "—"}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">g/kg/dia</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{macro.total} · {macro.pct}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              {/* Donut Chart */}
+              {/* Divider */}
+              <div className="hidden lg:block w-px h-full bg-border" />
+
+              {/* Right: Donut Chart */}
               <div className="flex items-center justify-center">
-                <ResponsiveContainer width="100%" height={200}>
-                  <PieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                <ResponsiveContainer width="100%" height={220}>
+                  <PieChart>
                     <Pie
                       data={pieData}
                       cx="50%"
                       cy="50%"
-                      innerRadius={40}
-                      outerRadius={65}
+                      innerRadius={55}
+                      outerRadius={85}
                       paddingAngle={3}
                       dataKey="value"
                       stroke="none"
-                      label={({ cx, cy, midAngle, outerRadius, pct }) => {
+                      label={({ cx, cy, midAngle, outerRadius, pct, name }) => {
                         const RADIAN = Math.PI / 180;
-                        const radius = outerRadius + 14;
+                        const radius = outerRadius + 18;
                         const x = cx + radius * Math.cos(-midAngle * RADIAN);
                         const y = cy + radius * Math.sin(-midAngle * RADIAN);
                         return (
@@ -448,10 +397,10 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                       formatter={(value: number, name: string) => [`${value.toLocaleString('pt-BR')} kcal`, name]}
                       contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
                     />
-                    <text x="50%" y="46%" textAnchor="middle" dominantBaseline="central" style={{ fontSize: 16, fontWeight: 700, fill: "hsl(var(--foreground))" }}>
+                    <text x="50%" y="46%" textAnchor="middle" dominantBaseline="central" style={{ fontSize: 20, fontWeight: 700, fill: "hsl(var(--foreground))" }}>
                       {totalCal.toLocaleString('pt-BR')}
                     </text>
-                    <text x="50%" y="58%" textAnchor="middle" dominantBaseline="central" style={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}>
+                    <text x="50%" y="57%" textAnchor="middle" dominantBaseline="central" style={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}>
                       kcal
                     </text>
                   </PieChart>
