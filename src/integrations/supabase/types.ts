@@ -221,6 +221,152 @@ export type Database = {
         }
         Relationships: []
       }
+      form_assignments: {
+        Row: {
+          assigned_at: string
+          completed_at: string | null
+          form_template_id: string
+          id: string
+          patient_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          completed_at?: string | null
+          form_template_id: string
+          id?: string
+          patient_id: string
+        }
+        Update: {
+          assigned_at?: string
+          completed_at?: string | null
+          form_template_id?: string
+          id?: string
+          patient_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_assignments_form_template_id_fkey"
+            columns: ["form_template_id"]
+            isOneToOne: false
+            referencedRelation: "form_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "form_assignments_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      form_questions: {
+        Row: {
+          form_template_id: string
+          id: string
+          options: Json | null
+          question_text: string
+          question_type: string
+          scale_max: number | null
+          scale_min: number | null
+          sort_order: number
+        }
+        Insert: {
+          form_template_id: string
+          id?: string
+          options?: Json | null
+          question_text: string
+          question_type?: string
+          scale_max?: number | null
+          scale_min?: number | null
+          sort_order?: number
+        }
+        Update: {
+          form_template_id?: string
+          id?: string
+          options?: Json | null
+          question_text?: string
+          question_type?: string
+          scale_max?: number | null
+          scale_min?: number | null
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_questions_form_template_id_fkey"
+            columns: ["form_template_id"]
+            isOneToOne: false
+            referencedRelation: "form_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      form_responses: {
+        Row: {
+          answer_number: number | null
+          answer_text: string | null
+          created_at: string
+          form_assignment_id: string
+          form_question_id: string
+          id: string
+        }
+        Insert: {
+          answer_number?: number | null
+          answer_text?: string | null
+          created_at?: string
+          form_assignment_id: string
+          form_question_id: string
+          id?: string
+        }
+        Update: {
+          answer_number?: number | null
+          answer_text?: string | null
+          created_at?: string
+          form_assignment_id?: string
+          form_question_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_responses_form_assignment_id_fkey"
+            columns: ["form_assignment_id"]
+            isOneToOne: false
+            referencedRelation: "form_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "form_responses_form_question_id_fkey"
+            columns: ["form_question_id"]
+            isOneToOne: false
+            referencedRelation: "form_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      form_templates: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       lab_exam_results: {
         Row: {
           id: string

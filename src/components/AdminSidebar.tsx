@@ -14,6 +14,7 @@ import {
   Apple,
   Database,
   PackageOpen,
+  ClipboardList,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -31,6 +32,7 @@ const cadastroItems = [
   { to: "/admin/foods", icon: Apple, label: "Alimentos" },
   { to: "/admin/exercises", icon: Dumbbell, label: "Exercícios" },
   { to: "/admin/extras", icon: PackageOpen, label: "Materiais Extras" },
+  { to: "/admin/forms", icon: ClipboardList, label: "Formulários" },
 ];
 
 const AdminSidebar = () => {
