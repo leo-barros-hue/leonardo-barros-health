@@ -1,5 +1,6 @@
 import { Outlet } from "react-router-dom";
 import AdminSidebar from "@/components/AdminSidebar";
+import MobilePreviewPanel from "@/components/MobilePreviewPanel";
 
 const AdminLayout = () => {
   return (
@@ -10,6 +11,7 @@ const AdminLayout = () => {
           <Outlet />
         </div>
       </main>
+      <MobilePreviewPanel />
     </div>
   );
 };
