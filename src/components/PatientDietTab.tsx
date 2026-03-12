@@ -428,6 +428,17 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                       paddingAngle={3}
                       dataKey="value"
                       stroke="none"
+                      label={({ cx, cy, midAngle, outerRadius, pct }) => {
+                        const RADIAN = Math.PI / 180;
+                        const radius = outerRadius + 16;
+                        const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                        const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                        return (
+                          <text x={x} y={y} textAnchor="middle" dominantBaseline="central" style={{ fontSize: 11, fontWeight: 600, fill: "hsl(var(--foreground))" }}>
+                            {pct}%
+                          </text>
+                        );
+                      }}
                     >
                       {pieData.map((_, index) => (
                         <Cell key={index} fill={pieColors[index]} />
@@ -446,16 +457,6 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-            </div>
-
-            {/* Legend */}
-            <div className="flex items-center justify-center gap-6 mt-4">
-              {pieData.map((item, index) => (
-                <div key={item.name} className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: pieColors[index] }} />
-                  <span className="text-xs text-muted-foreground">{item.name} {item.pct}%</span>
-                </div>
-              ))}
             </div>
           </div>
         );
