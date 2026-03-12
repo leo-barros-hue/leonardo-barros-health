@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import DietDialog from "@/components/diet/DietDialog";
 import InlineMealCard from "@/components/diet/InlineMealCard";
+import DietNotesEditor from "@/components/diet/DietNotesEditor";
 
 interface Diet {
   id: string;
