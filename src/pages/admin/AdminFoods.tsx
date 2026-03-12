@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Plus, Trash2, Search, Check, X, Pencil } from "lucide-react";
+import { Plus, Trash2, Search, Check, X, Pencil, FileDown } from "lucide-react";
+import ImportFoodDialog from "@/components/foods/ImportFoodDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -35,6 +36,7 @@ const AdminFoods = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState({ ...emptyFood });
+  const [showImport, setShowImport] = useState(false);
 
   const fetchFoods = async () => {
     const { data, error } = await supabase.from("foods").select("*").order("category").order("name");
@@ -83,7 +85,10 @@ const AdminFoods = () => {
           <h1 className="text-2xl font-bold text-foreground">Cadastro de Alimentos</h1>
           <p className="text-muted-foreground text-sm mt-1">Gerencie a base de alimentos com informações nutricionais</p>
         </div>
-        <Button onClick={() => setShowForm(!showForm)} className="gap-2"><Plus className="w-4 h-4" />Novo Alimento</Button>
+        <div className="flex gap-2">
+          <Button onClick={() => setShowImport(true)} variant="outline" className="gap-2"><FileDown className="w-4 h-4" />Importar Tabela</Button>
+          <Button onClick={() => setShowForm(!showForm)} className="gap-2"><Plus className="w-4 h-4" />Novo Alimento</Button>
+        </div>
       </div>
 
       {showForm && (
@@ -176,6 +181,7 @@ const AdminFoods = () => {
           {filtered.length} alimento(s) encontrado(s)
         </div>
       </div>
+      <ImportFoodDialog open={showImport} onOpenChange={setShowImport} onImported={fetchFoods} />
     </div>
   );
 };
