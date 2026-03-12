@@ -140,28 +140,37 @@ export type Database = {
       }
       diets: {
         Row: {
+          calories_snapshot: number | null
           created_at: string
           id: string
           name: string
           notes: string
           patient_id: string
+          released_at: string | null
           updated_at: string
+          weight_snapshot: number | null
         }
         Insert: {
+          calories_snapshot?: number | null
           created_at?: string
           id?: string
           name?: string
           notes?: string
           patient_id: string
+          released_at?: string | null
           updated_at?: string
+          weight_snapshot?: number | null
         }
         Update: {
+          calories_snapshot?: number | null
           created_at?: string
           id?: string
           name?: string
           notes?: string
           patient_id?: string
+          released_at?: string | null
           updated_at?: string
+          weight_snapshot?: number | null
         }
         Relationships: [
           {

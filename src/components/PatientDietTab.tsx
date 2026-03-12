@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Plus, Utensils, Pencil, Trash2, Flame, UtensilsCrossed, Scale } from "lucide-react";
+import { Loader2, Plus, Utensils, Pencil, Trash2, Flame, UtensilsCrossed, Scale, Save, History } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, ReferenceLine } from "recharts";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import DietDialog from "@/components/diet/DietDialog";
 import InlineMealCard from "@/components/diet/InlineMealCard";
 import DietNotesEditor from "@/components/diet/DietNotesEditor";
+import DietHistoryPanel from "@/components/diet/DietHistoryPanel";
 
 interface Diet {
   id: string;
@@ -58,6 +60,9 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
   // Dialog states
   const [dietDialogOpen, setDietDialogOpen] = useState(false);
   const [editingDiet, setEditingDiet] = useState<Diet | null>(null);
+  const [dietTitle, setDietTitle] = useState("");
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchDiets();
@@ -161,9 +166,11 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
     setDiets(data || []);
     if (data && data.length > 0) {
       setSelectedDiet(data[0]);
+      setDietTitle(data[0].name);
       fetchMeals(data[0].id);
     } else {
       setSelectedDiet(null);
+      setDietTitle("");
       setMeals([]);
     }
     setLoading(false);
@@ -195,6 +202,7 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
 
   const handleSelectDiet = (diet: Diet) => {
     setSelectedDiet(diet);
+    setDietTitle(diet.name);
     fetchMeals(diet.id);
   };
 
@@ -269,18 +277,69 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
     return { calories: Math.round(calories), protein: Math.round(protein), carbs: Math.round(carbs), fat: Math.round(fat) };
   };
 
+  const handleSaveAndRelease = async () => {
+    if (!selectedDiet) return;
+    setSaving(true);
+    const totals = calculateTotals();
+    const { error } = await supabase.from("diets").update({
+      name: dietTitle || selectedDiet.name,
+      released_at: new Date().toISOString(),
+      calories_snapshot: totals.calories,
+      weight_snapshot: energyProfile.weight,
+      updated_at: new Date().toISOString(),
+    }).eq("id", selectedDiet.id);
+    setSaving(false);
+    if (error) {
+      toast.error("Erro ao salvar dieta");
+    } else {
+      toast.success("Dieta salva e liberada para o paciente!");
+      fetchDiets();
+    }
+  };
+
+  const handleSaveAdjustments = async () => {
+    if (!selectedDiet) return;
+    setSaving(true);
+    const totals = calculateTotals();
+    const { error } = await supabase.from("diets").update({
+      name: dietTitle || selectedDiet.name,
+      calories_snapshot: totals.calories,
+      updated_at: new Date().toISOString(),
+    }).eq("id", selectedDiet.id);
+    setSaving(false);
+    if (error) {
+      toast.error("Erro ao salvar ajustes");
+    } else {
+      toast.success("Ajustes salvos com sucesso!");
+      fetchDiets();
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
       </div>);
-
   }
+
 
   const totals = calculateTotals();
 
   return (
     <div className="space-y-6">
+      {/* Diet Title Input */}
+      {selectedDiet && (
+        <div className="glass-card p-4 border border-border">
+          <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">Título da Dieta</label>
+          <Input
+            value={dietTitle}
+            onChange={(e) => setDietTitle(e.target.value)}
+            placeholder="Ex: Dieta Hipercalórica - Fase 1"
+            className="text-lg font-semibold bg-transparent border-none shadow-none focus-visible:ring-0 px-0 h-auto"
+          />
+        </div>
+      )}
+
       {/* Combined Energy & Macros Dashboard */}
       {energyProfile.tdee && (() => {
         const balance = totals.calories - energyProfile.tdee!;
@@ -538,6 +597,39 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
         </>
       }
 
+      {/* Action Buttons */}
+      {selectedDiet && (
+        <div className="glass-card p-5 border border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+          <Button
+            variant="outline"
+            onClick={() => setHistoryOpen(true)}
+            className="gap-2"
+          >
+            <History className="w-4 h-4" />
+            Histórico de Dietas
+          </Button>
+          <div className="flex gap-3">
+            <Button
+              variant="secondary"
+              onClick={handleSaveAdjustments}
+              disabled={saving}
+              className="gap-2"
+            >
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              SALVAR AJUSTES
+            </Button>
+            <Button
+              onClick={handleSaveAndRelease}
+              disabled={saving}
+              className="gap-2"
+            >
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              SALVAR ALTERAÇÕES
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Dialogs */}
       <DietDialog
         open={dietDialogOpen}
@@ -545,6 +637,12 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
         patientId={patientId}
         diet={editingDiet}
         onSuccess={fetchDiets} />
+
+      {/* History Panel */}
+      <DietHistoryPanel
+        patientId={patientId}
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)} />
       
     </div>);
 
