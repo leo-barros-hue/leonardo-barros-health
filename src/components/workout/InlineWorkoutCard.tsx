@@ -148,7 +148,7 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
   const gridCols = "1fr 70px 55px 55px 55px 55px 55px 55px 130px 120px 40px";
 
   return (
-    <div className="glass-card overflow-hidden">
+    <div className="glass-card overflow-visible">
       {/* Header - TREINO X (Nome) */}
       <div className="bg-muted/50 px-4 py-3 flex items-center gap-3">
         <Dumbbell className="w-4 h-4 text-primary" />
