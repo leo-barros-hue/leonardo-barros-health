@@ -425,10 +425,10 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                       formatter={(value: number, name: string) => [`${value.toLocaleString('pt-BR')} kcal`, name]}
                       contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
                     />
-                    <text x="50%" y="46%" textAnchor="middle" dominantBaseline="central" style={{ fontSize: 20, fontWeight: 700, fill: "hsl(var(--foreground))" }}>
+                    <text x="50%" y="46%" textAnchor="middle" dominantBaseline="central" style={{ fontSize: 24, fontWeight: 700, fill: "hsl(var(--foreground))" }}>
                       {totalCal.toLocaleString('pt-BR')}
                     </text>
-                    <text x="50%" y="57%" textAnchor="middle" dominantBaseline="central" style={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}>
+                    <text x="50%" y="58%" textAnchor="middle" dominantBaseline="central" style={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}>
                       kcal
                     </text>
                   </PieChart>
