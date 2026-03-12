@@ -320,40 +320,7 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_auto] gap-4 items-center">
-              {/* Left: Bar Chart */}
-              <div className="w-[220px]">
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart
-                    data={[
-                    { name: "TDEE", value: energyProfile.tdee!, fill: "hsl(var(--primary))" },
-                    { name: "Ingestão", value: totals.calories, fill: "hsl(50, 90%, 55%)" },
-                    { name: "Balanço", value: balance, fill: isDeficit ? "hsl(var(--destructive))" : "hsl(142, 71%, 45%)" }]
-                    }
-                    margin={{ top: 10, right: 5, bottom: 5, left: 5 }}
-                    barCategoryGap="4%">
-                    
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                    <XAxis dataKey="name" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} width={40} />
-                    {balance < 0 && <ReferenceLine y={0} stroke="hsl(var(--border))" />}
-                    <Tooltip
-                      formatter={(value: number) => [`${value.toLocaleString('pt-BR')} kcal`]}
-                      contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }} />
-                    
-                    <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={52} label={{ position: 'inside', fontSize: 11, fontWeight: 600, fill: '#fff' }}>
-                      {[
-                      { fill: "hsl(var(--primary))" },
-                      { fill: "hsl(50, 90%, 55%)" },
-                      { fill: isDeficit ? "hsl(var(--destructive))" : "hsl(142, 71%, 45%)" }].
-                      map((entry, index) =>
-                      <Cell key={index} fill={entry.fill} />
-                      )}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-
-              {/* Center: Cards */}
+              {/* Left: Cards */}
               <div className="grid grid-cols-3 grid-rows-2 gap-3">
                 <div className="flex flex-col items-center justify-center gap-0.5 p-3 rounded-xl bg-secondary/40">
                   <Flame className="w-4 h-4 text-primary mb-1" />
@@ -388,6 +355,39 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                     <p className="text-[10px] text-muted-foreground mt-0.5">{macro.total} · {macro.pct}</p>
                   </div>
                 )}
+              </div>
+
+              {/* Center: Bar Chart */}
+              <div className="w-[220px]">
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart
+                    data={[
+                    { name: "TDEE", value: energyProfile.tdee!, fill: "hsl(var(--primary))" },
+                    { name: "Ingestão", value: totals.calories, fill: "hsl(50, 90%, 55%)" },
+                    { name: "Balanço", value: balance, fill: isDeficit ? "hsl(var(--destructive))" : "hsl(142, 71%, 45%)" }]
+                    }
+                    margin={{ top: 10, right: 5, bottom: 5, left: 5 }}
+                    barCategoryGap="4%">
+                    
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                    <XAxis dataKey="name" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} width={40} />
+                    {balance < 0 && <ReferenceLine y={0} stroke="hsl(var(--border))" />}
+                    <Tooltip
+                      formatter={(value: number) => [`${value.toLocaleString('pt-BR')} kcal`]}
+                      contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }} />
+                    
+                    <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={52} label={{ position: 'inside', fontSize: 11, fontWeight: 600, fill: '#fff' }}>
+                      {[
+                      { fill: "hsl(var(--primary))" },
+                      { fill: "hsl(50, 90%, 55%)" },
+                      { fill: isDeficit ? "hsl(var(--destructive))" : "hsl(142, 71%, 45%)" }].
+                      map((entry, index) =>
+                      <Cell key={index} fill={entry.fill} />
+                      )}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
 
               {/* Right: Donut Chart */}
