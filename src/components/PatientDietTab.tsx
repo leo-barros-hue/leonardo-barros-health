@@ -64,6 +64,7 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
   const [dietTitle, setDietTitle] = useState("");
   const [historyOpen, setHistoryOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [aiDialogOpen, setAiDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchDiets();
