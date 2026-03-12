@@ -381,7 +381,7 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                       formatter={(value: number) => [`${value.toLocaleString('pt-BR')} kcal`]}
                       contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
                     />
-                    <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={36} label={{ position: 'inside', fontSize: 11, fontWeight: 600, fill: '#fff' }}>
+                    <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={52} label={{ position: 'inside', fontSize: 11, fontWeight: 600, fill: '#fff' }}>
                       {[
                         { fill: "hsl(var(--primary))" },
                         { fill: "hsl(50, 90%, 55%)" },
