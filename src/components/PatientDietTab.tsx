@@ -87,7 +87,7 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
       .single();
 
     if (!profileData?.selected_formula || !measurementData?.weight) {
-      setEnergyProfile({ bmr: null, tdee: null, formula: null });
+      setEnergyProfile({ bmr: null, tdee: null, formula: null, weight: null });
       return;
     }
 
