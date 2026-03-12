@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Sparkles, Wand2, Mic, MicOff } from "lucide-react";
+import { Loader2, Sparkles, Wand2, Mic, MicOff, SendHorizonal } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -287,20 +287,36 @@ export default function AIDietDialog({ open, onOpenChange, patientId, dietId, td
                 placeholder="Ex: Paciente não come glúten, prefere alimentos naturais, incluir whey no pós-treino..."
                 value={instructions}
                 onChange={(e) => setInstructions(e.target.value)}
-                className="min-h-[80px] pr-12 resize-none"
+                className="min-h-[80px] pr-24 resize-none"
                 disabled={generating}
               />
-              <Button
-                type="button"
-                variant={isRecording ? "destructive" : "ghost"}
-                size="icon"
-                className="absolute right-2 bottom-2 h-8 w-8"
-                onClick={toggleRecording}
-                disabled={generating}
-                title={isRecording ? "Parar gravação" : "Gravar orientações por voz"}
-              >
-                {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-              </Button>
+              <div className="absolute right-2 bottom-2 flex gap-1">
+                <Button
+                  type="button"
+                  variant={isRecording ? "destructive" : "ghost"}
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={toggleRecording}
+                  disabled={generating}
+                  title={isRecording ? "Parar gravação" : "Gravar orientações por voz"}
+                >
+                  {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                </Button>
+                <Button
+                  type="button"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => handleGenerate("generate")}
+                  disabled={generating || !tdee || !instructions.replace(/🎤.*$/, "").trim()}
+                  title="Enviar orientações e gerar dieta"
+                >
+                  {generating && mode === "generate" ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <SendHorizonal className="w-4 h-4" />
+                  )}
+                </Button>
+              </div>
             </div>
             {isRecording && (
               <p className="text-xs text-destructive animate-pulse">🔴 Gravando... fale suas orientações</p>
