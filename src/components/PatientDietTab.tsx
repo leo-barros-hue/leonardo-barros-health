@@ -319,18 +319,18 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
 
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-6 items-center">
               {/* Left: Energy Balance */}
-              <div className="grid grid-cols-3 gap-3">
-                <div className="flex flex-col items-center justify-center gap-0.5 p-3 rounded-xl bg-secondary/40">
+              <div className="grid grid-cols-3 gap-3 auto-rows-fr">
+                <div className="flex flex-col items-center justify-center gap-0.5 p-3 rounded-xl bg-secondary/40 aspect-square">
                   <Flame className="w-4 h-4 text-primary mb-1" />
                   <p className="text-lg font-bold text-primary">{energyProfile.tdee!.toLocaleString('pt-BR')}</p>
                   <p className="text-[10px] text-muted-foreground">TDEE (kcal)</p>
                 </div>
-                <div className="flex flex-col items-center justify-center gap-0.5 p-3 rounded-xl bg-secondary/40">
+                <div className="flex flex-col items-center justify-center gap-0.5 p-3 rounded-xl bg-secondary/40 aspect-square">
                   <UtensilsCrossed className="w-4 h-4 text-foreground mb-1" />
                   <p className="text-lg font-bold text-foreground">{totals.calories.toLocaleString('pt-BR')}</p>
                   <p className="text-[10px] text-muted-foreground">Ingestão (kcal)</p>
                 </div>
-                <div className={`flex flex-col items-center justify-center gap-0.5 p-3 rounded-xl ${isDeficit ? 'bg-destructive/10' : isSurplus ? 'bg-success/10' : 'bg-secondary/40'}`}>
+                <div className={`flex flex-col items-center justify-center gap-0.5 p-3 rounded-xl aspect-square ${isDeficit ? 'bg-destructive/10' : isSurplus ? 'bg-success/10' : 'bg-secondary/40'}`}>
                   <Scale className={`w-4 h-4 mb-1 ${isDeficit ? 'text-destructive' : isSurplus ? 'text-success' : 'text-muted-foreground'}`} />
                   <p className={`text-lg font-bold ${isDeficit ? 'text-destructive' : isSurplus ? 'text-success' : 'text-foreground'}`}>
                     {isSurplus ? '+' : ''}{balance.toLocaleString('pt-BR')}
@@ -344,7 +344,7 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                   { label: "Carboidrato", value: carbsPerKg, color: "text-warning", total: `${totals.carbs}g`, pct: `${carbsPct}%` },
                   { label: "Gordura", value: fatPerKg, color: "text-destructive", total: `${totals.fat}g`, pct: `${fatPct}%` },
                 ].map((macro) => (
-                  <div key={macro.label} className="flex flex-col items-center justify-center gap-0.5 p-3 rounded-xl bg-secondary/40">
+                  <div key={macro.label} className="flex flex-col items-center justify-center gap-0.5 p-3 rounded-xl bg-secondary/40 aspect-square">
                     <p className="text-[10px] text-muted-foreground">{macro.label}</p>
                     <p className={`text-lg font-bold ${macro.color}`}>
                       {weight > 0 ? macro.value.toFixed(1) : "—"}
