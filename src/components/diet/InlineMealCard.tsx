@@ -325,10 +325,15 @@ export default function InlineMealCard({ meal, mealIndex, onUpdate, onDelete, on
             </div>
             <div>
               <Input
-                type="number"
-                step="0.1"
+                type="text"
+                inputMode="decimal"
                 value={food.quantity || ""}
-                onChange={(e) => handleFoodChange(food.id, "quantity", e.target.value)}
+                onChange={(e) => {
+                  const v = e.target.value.replace(",", ".");
+                  if (v === "" || /^\d*\.?\d*$/.test(v)) {
+                    handleFoodChange(food.id, "quantity", v);
+                  }
+                }}
                 className="h-8 text-sm text-center border-0 bg-transparent px-0 focus-visible:ring-0"
                 placeholder="-"
               />
