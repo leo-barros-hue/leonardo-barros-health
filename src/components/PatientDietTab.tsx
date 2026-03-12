@@ -317,7 +317,7 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-6 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_2fr] gap-6 items-start">
               {/* Left: Cards */}
               <div className="grid grid-cols-3 gap-3 auto-rows-fr">
                 <div className="flex flex-col items-center justify-center gap-0.5 p-3 rounded-xl bg-secondary/40 aspect-square">
