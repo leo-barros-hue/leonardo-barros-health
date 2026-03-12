@@ -407,7 +407,7 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                       stroke="none"
                       label={({ cx, cy, midAngle, outerRadius, pct }) => {
                         const RADIAN = Math.PI / 180;
-                        const radius = outerRadius + 18;
+                        const radius = outerRadius + 20;
                         const x = cx + radius * Math.cos(-midAngle * RADIAN);
                         const y = cy + radius * Math.sin(-midAngle * RADIAN);
                         return (
