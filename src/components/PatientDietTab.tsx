@@ -319,7 +319,7 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr_auto] gap-4 items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_auto] gap-4 items-center">
               {/* Left: Bar Chart */}
               <div className="w-[220px]">
                 <ResponsiveContainer width="100%" height={280}>
