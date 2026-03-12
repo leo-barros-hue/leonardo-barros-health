@@ -1,0 +1,1 @@
+ALTER TABLE public.diets ADD COLUMN notes text DEFAULT '' NOT NULL;

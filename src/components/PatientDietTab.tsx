@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import DietDialog from "@/components/diet/DietDialog";
 import InlineMealCard from "@/components/diet/InlineMealCard";
+import DietNotesEditor from "@/components/diet/DietNotesEditor";
 
 interface Diet {
   id: string;
   name: string;
+  notes: string;
   created_at: string;
   updated_at: string;
 }
@@ -527,6 +529,13 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                   ))}
                 </div>
               )}
+
+              {/* Diet Notes */}
+              <DietNotesEditor
+                key={selectedDiet.id}
+                dietId={selectedDiet.id}
+                initialContent={selectedDiet.notes || ""}
+              />
             </>
           )}
         </>
