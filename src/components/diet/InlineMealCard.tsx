@@ -286,7 +286,7 @@ export default function InlineMealCard({ meal, mealIndex, onUpdate, onDelete, on
         <div className="col-span-1 text-muted-foreground text-center">Med</div>
         <div className="col-span-1 text-success text-center">Ptn</div>
         <div className="col-span-1 text-warning text-center">Carb</div>
-        <div className="col-span-1 text-destructive text-center">Fat</div>
+        <div className="col-span-1 text-destructive text-center">Gor</div>
         <div className="col-span-2"></div>
       </div>
 
