@@ -361,7 +361,7 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
               <div className="hidden lg:block w-px h-full bg-border" />
 
               {/* Right: Charts side by side */}
-              <div className="grid grid-cols-[1.2fr_1fr] gap-4 items-center h-full">
+              <div className="grid grid-cols-[0.8fr_1.2fr] gap-2 items-center h-full">
                 {/* Bar Chart */}
                 <ResponsiveContainer width="100%" height={280}>
                   <BarChart
@@ -370,18 +370,18 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                       { name: "Ingestão", value: totals.calories, fill: "hsl(50, 90%, 55%)" },
                       { name: "Balanço", value: balance, fill: isDeficit ? "hsl(var(--destructive))" : "hsl(142, 71%, 45%)" },
                     ]}
-                    margin={{ top: 10, right: 10, bottom: 5, left: 10 }}
-                    barCategoryGap="20%"
+                    margin={{ top: 10, right: 5, bottom: 5, left: 5 }}
+                    barCategoryGap="8%"
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} width={45} />
+                    <XAxis dataKey="name" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} width={40} />
                     {balance < 0 && <ReferenceLine y={0} stroke="hsl(var(--border))" />}
                     <Tooltip
                       formatter={(value: number) => [`${value.toLocaleString('pt-BR')} kcal`]}
                       contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
                     />
-                    <Bar dataKey="value" radius={[6, 6, 0, 0]} label={{ position: 'inside', fontSize: 12, fontWeight: 600, fill: '#fff' }}>
+                    <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={36} label={{ position: 'inside', fontSize: 11, fontWeight: 600, fill: '#fff' }}>
                       {[
                         { fill: "hsl(var(--primary))" },
                         { fill: "hsl(50, 90%, 55%)" },
@@ -394,14 +394,14 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                 </ResponsiveContainer>
 
                 {/* Donut Chart */}
-                <ResponsiveContainer width="100%" height={280}>
+                <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie
                       data={pieData}
                       cx="50%"
                       cy="50%"
-                      innerRadius={60}
-                      outerRadius={95}
+                      innerRadius={75}
+                      outerRadius={115}
                       paddingAngle={3}
                       dataKey="value"
                       stroke="none"
