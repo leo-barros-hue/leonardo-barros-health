@@ -188,7 +188,9 @@ export type Database = {
           category: string
           created_at: string
           fat_per_unit: number
+          fiber_per_unit: number
           id: string
+          kcal_per_unit: number
           measure: string
           name: string
           protein_per_unit: number
@@ -198,7 +200,9 @@ export type Database = {
           category?: string
           created_at?: string
           fat_per_unit?: number
+          fiber_per_unit?: number
           id?: string
+          kcal_per_unit?: number
           measure?: string
           name: string
           protein_per_unit?: number
@@ -208,7 +212,9 @@ export type Database = {
           category?: string
           created_at?: string
           fat_per_unit?: number
+          fiber_per_unit?: number
           id?: string
+          kcal_per_unit?: number
           measure?: string
           name?: string
           protein_per_unit?: number

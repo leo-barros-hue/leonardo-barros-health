@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Search, Download, Check } from "lucide-react";
+import { Search, Download } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -85,6 +85,8 @@ const ImportFoodDialog = ({ open, onOpenChange, onImported }: ImportFoodDialogPr
       protein_per_unit: f.protein,
       carbs_per_unit: f.carbs,
       fat_per_unit: f.fat,
+      kcal_per_unit: f.kcal,
+      fiber_per_unit: f.fiber,
     }));
 
     const { error } = await supabase.from("foods").insert(rows);
@@ -103,7 +105,7 @@ const ImportFoodDialog = ({ open, onOpenChange, onImported }: ImportFoodDialogPr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
+      <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Importar de Tabelas Nutricionais</DialogTitle>
         </DialogHeader>
@@ -148,16 +150,18 @@ const ImportFoodDialog = ({ open, onOpenChange, onImported }: ImportFoodDialogPr
                     <tr className="border-b border-border">
                       <th className="w-10 py-2 px-2"></th>
                       <th className="text-left py-2 px-3 text-muted-foreground font-semibold text-xs uppercase">Alimento</th>
-                      <th className="text-center py-2 px-2 text-muted-foreground font-semibold text-xs uppercase w-16">Cat</th>
+                      <th className="text-center py-2 px-2 text-muted-foreground font-semibold text-xs uppercase w-14">Cat</th>
+                      <th className="text-center py-2 px-2 text-muted-foreground font-semibold text-xs uppercase w-14">Kcal</th>
                       <th className="text-center py-2 px-2 text-success font-semibold text-xs uppercase w-14">Ptn</th>
                       <th className="text-center py-2 px-2 text-warning font-semibold text-xs uppercase w-14">Carb</th>
                       <th className="text-center py-2 px-2 text-destructive font-semibold text-xs uppercase w-14">Gor</th>
+                      <th className="text-center py-2 px-2 text-muted-foreground font-semibold text-xs uppercase w-14">Fib</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filtered.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="py-8 text-center text-muted-foreground">
+                        <td colSpan={8} className="py-8 text-center text-muted-foreground">
                           Nenhum alimento encontrado
                         </td>
                       </tr>
@@ -182,9 +186,11 @@ const ImportFoodDialog = ({ open, onOpenChange, onImported }: ImportFoodDialogPr
                                 {food.category.slice(0, 4)}
                               </span>
                             </td>
+                            <td className="py-2 px-2 text-center text-muted-foreground">{food.kcal}</td>
                             <td className="py-2 px-2 text-center text-success">{food.protein}</td>
                             <td className="py-2 px-2 text-center text-warning">{food.carbs}</td>
                             <td className="py-2 px-2 text-center text-destructive">{food.fat}</td>
+                            <td className="py-2 px-2 text-center text-muted-foreground">{food.fiber}</td>
                           </tr>
                         );
                       })
