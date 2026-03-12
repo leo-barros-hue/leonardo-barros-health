@@ -534,7 +534,7 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
               <DietNotesEditor
                 key={selectedDiet.id}
                 dietId={selectedDiet.id}
-                initialContent={(selectedDiet as any).notes || ""}
+                initialContent={selectedDiet.notes || ""}
               />
             </>
           )}
