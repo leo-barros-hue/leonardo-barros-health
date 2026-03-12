@@ -597,6 +597,39 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
         </>
       }
 
+      {/* Action Buttons */}
+      {selectedDiet && (
+        <div className="glass-card p-5 border border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+          <Button
+            variant="outline"
+            onClick={() => setHistoryOpen(true)}
+            className="gap-2"
+          >
+            <History className="w-4 h-4" />
+            Histórico de Dietas
+          </Button>
+          <div className="flex gap-3">
+            <Button
+              variant="secondary"
+              onClick={handleSaveAdjustments}
+              disabled={saving}
+              className="gap-2"
+            >
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              SALVAR AJUSTES
+            </Button>
+            <Button
+              onClick={handleSaveAndRelease}
+              disabled={saving}
+              className="gap-2"
+            >
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              SALVAR ALTERAÇÕES
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Dialogs */}
       <DietDialog
         open={dietDialogOpen}
@@ -604,6 +637,12 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
         patientId={patientId}
         diet={editingDiet}
         onSuccess={fetchDiets} />
+
+      {/* History Panel */}
+      <DietHistoryPanel
+        patientId={patientId}
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)} />
       
     </div>);
 
