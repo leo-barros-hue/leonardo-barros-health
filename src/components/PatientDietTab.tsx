@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Plus, Utensils, Pencil, Trash2, Flame, UtensilsCrossed, Scale } from "lucide-react";
+import { Loader2, Plus, Utensils, Pencil, Trash2, Flame, UtensilsCrossed, Scale, Save, History } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, ReferenceLine } from "recharts";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import DietDialog from "@/components/diet/DietDialog";
 import InlineMealCard from "@/components/diet/InlineMealCard";
 import DietNotesEditor from "@/components/diet/DietNotesEditor";
+import DietHistoryPanel from "@/components/diet/DietHistoryPanel";
 
 interface Diet {
   id: string;
