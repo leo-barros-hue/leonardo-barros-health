@@ -19,6 +19,7 @@ interface ExerciseDialogProps {
     reps: string;
     rest_seconds: number | null;
     notes: string | null;
+    technique: string | null;
   } | null;
   onSuccess: () => void;
 }
@@ -28,6 +29,7 @@ const ExerciseDialog = ({ open, onOpenChange, workoutDayId, exercise, onSuccess 
   const [sets, setSets] = useState("3");
   const [reps, setReps] = useState("10-12");
   const [rest, setRest] = useState("60");
+  const [technique, setTechnique] = useState("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const isEditing = !!exercise;
@@ -38,12 +40,14 @@ const ExerciseDialog = ({ open, onOpenChange, workoutDayId, exercise, onSuccess 
       setSets(String(exercise.sets));
       setReps(exercise.reps);
       setRest(exercise.rest_seconds ? String(exercise.rest_seconds) : "60");
+      setTechnique(exercise.technique || "");
       setNotes(exercise.notes || "");
     } else {
       setName("");
       setSets("3");
       setReps("10-12");
       setRest("60");
+      setTechnique("");
       setNotes("");
     }
   }, [exercise, open]);
@@ -57,11 +61,12 @@ const ExerciseDialog = ({ open, onOpenChange, workoutDayId, exercise, onSuccess 
 
     setLoading(true);
     try {
-      const data = {
+      const data: any = {
         name,
         sets: parseInt(sets) || 3,
         reps,
         rest_seconds: parseInt(rest) || 60,
+        technique: technique || null,
         notes: notes || null,
       };
 
@@ -79,7 +84,7 @@ const ExerciseDialog = ({ open, onOpenChange, workoutDayId, exercise, onSuccess 
           .eq("workout_day_id", workoutDayId)
           .order("sort_order", { ascending: false })
           .limit(1);
-        
+
         const newOrder = maxOrder && maxOrder.length > 0 ? maxOrder[0].sort_order + 1 : 0;
 
         const { error } = await supabase
@@ -146,12 +151,21 @@ const ExerciseDialog = ({ open, onOpenChange, workoutDayId, exercise, onSuccess 
             </div>
           </div>
           <div className="space-y-2">
+            <Label htmlFor="technique">Técnica de Treino</Label>
+            <Input
+              id="technique"
+              value={technique}
+              onChange={(e) => setTechnique(e.target.value)}
+              placeholder="Ex: Drop-set, Rest-pause, Bi-set..."
+            />
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="notes">Observações (opcional)</Label>
             <Textarea
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Técnica, variação..."
+              placeholder="Detalhes adicionais..."
               rows={2}
             />
           </div>
