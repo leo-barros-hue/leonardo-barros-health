@@ -19,10 +19,17 @@ interface DietHistoryPanelProps {
 const DietHistoryPanel = ({ patientId, open, onClose }: DietHistoryPanelProps) => {
   const [histories, setHistories] = useState<DietHistory[]>([]);
   const [loading, setLoading] = useState(false);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (open) fetchHistory();
-  }, [open, patientId]);
+    if (open) {
+      setVisible(true);
+      fetchHistory();
+    } else {
+      const timer = setTimeout(() => setVisible(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
 
   const fetchHistory = async () => {
     setLoading(true);
@@ -36,15 +43,17 @@ const DietHistoryPanel = ({ patientId, open, onClose }: DietHistoryPanelProps) =
     setLoading(false);
   };
 
+  if (!visible && !open) return null;
+
   return (
     <>
       {/* Backdrop */}
-      {open && (
-        <div
-          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity"
-          onClick={onClose}
-        />
-      )}
+      <div
+        className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${
+          open ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={onClose}
+      />
 
       {/* Panel - slides from left */}
       <div
@@ -53,7 +62,7 @@ const DietHistoryPanel = ({ patientId, open, onClose }: DietHistoryPanelProps) =
         }`}
         style={{ width: 420 }}
       >
-        <div className="h-full flex flex-col bg-[hsl(220,20%,10%)] shadow-2xl rounded-r-2xl">
+        <div className="h-full flex flex-col bg-[hsl(220,20%,10%)] shadow-2xl rounded-r-2xl overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
             <div className="flex items-center gap-2.5">
@@ -82,10 +91,11 @@ const DietHistoryPanel = ({ patientId, open, onClose }: DietHistoryPanelProps) =
                 <p className="text-sm text-white/40">Nenhuma dieta liberada ainda.</p>
               </div>
             ) : (
-              histories.map((diet) => (
+              histories.map((diet, index) => (
                 <div
                   key={diet.id}
-                  className="rounded-xl bg-white/5 border border-white/10 p-4 space-y-3"
+                  className="rounded-xl bg-white/5 border border-white/10 p-4 space-y-3 animate-fade-in"
+                  style={{ animationDelay: `${index * 80}ms`, animationFillMode: "backwards" }}
                 >
                   <h4 className="text-sm font-semibold text-white">{diet.name}</h4>
                   <div className="grid grid-cols-3 gap-2">
