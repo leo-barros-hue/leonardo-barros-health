@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Plus, Utensils, Pencil, Trash2, Flame, UtensilsCrossed, Scale, Save, History } from "lucide-react";
+import { Loader2, Plus, Utensils, Pencil, Trash2, Flame, UtensilsCrossed, Scale, Save, History, Sparkles } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, ReferenceLine } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import DietDialog from "@/components/diet/DietDialog";
 import InlineMealCard from "@/components/diet/InlineMealCard";
 import DietNotesEditor from "@/components/diet/DietNotesEditor";
 import DietHistoryPanel from "@/components/diet/DietHistoryPanel";
+import AIDietDialog from "@/components/diet/AIDietDialog";
 
 interface Diet {
   id: string;
@@ -63,6 +64,7 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
   const [dietTitle, setDietTitle] = useState("");
   const [historyOpen, setHistoryOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [aiDialogOpen, setAiDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchDiets();
@@ -551,14 +553,17 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                       Criada em {new Date(selectedDiet.created_at).toLocaleDateString("pt-BR")}
                     </p>
                   </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => {setEditingDiet(selectedDiet);setDietDialogOpen(true);}}>
-                      <Pencil className="w-4 h-4 mr-1" /> Editar
-                    </Button>
-                    <Button variant="destructive" size="sm" onClick={() => handleDeleteDiet(selectedDiet.id)}>
-                      <Trash2 className="w-4 h-4 mr-1" /> Excluir
-                    </Button>
-                  </div>
+              <div className="flex gap-2">
+                     <Button variant="outline" size="sm" onClick={() => setAiDialogOpen(true)} className="gap-1">
+                       <Sparkles className="w-4 h-4" /> IA
+                     </Button>
+                     <Button variant="outline" size="sm" onClick={() => {setEditingDiet(selectedDiet);setDietDialogOpen(true);}}>
+                       <Pencil className="w-4 h-4 mr-1" /> Editar
+                     </Button>
+                     <Button variant="destructive" size="sm" onClick={() => handleDeleteDiet(selectedDiet.id)}>
+                       <Trash2 className="w-4 h-4 mr-1" /> Excluir
+                     </Button>
+                   </div>
                 </div>
               </div>
 
@@ -652,6 +657,21 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
         patientId={patientId}
         open={historyOpen}
         onClose={() => setHistoryOpen(false)} />
+
+      {/* AI Dialog */}
+      {selectedDiet && (
+        <AIDietDialog
+          open={aiDialogOpen}
+          onOpenChange={setAiDialogOpen}
+          patientId={patientId}
+          dietId={selectedDiet.id}
+          tdee={energyProfile.tdee}
+          weight={energyProfile.weight}
+          onSuccess={() => {
+            if (selectedDiet) fetchMeals(selectedDiet.id);
+          }}
+        />
+      )}
       
     </div>);
 
