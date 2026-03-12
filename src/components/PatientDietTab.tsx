@@ -365,7 +365,103 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
         );
       })()}
 
-      {/* Header */}
+      {/* Macronutrient Distribution Block */}
+      {(() => {
+        const weight = energyProfile.weight || 0;
+        const protPerKg = weight > 0 ? (totals.protein / weight) : 0;
+        const carbsPerKg = weight > 0 ? (totals.carbs / weight) : 0;
+        const fatPerKg = weight > 0 ? (totals.fat / weight) : 0;
+
+        const protCal = totals.protein * 4;
+        const carbsCal = totals.carbs * 4;
+        const fatCal = totals.fat * 9;
+        const totalCal = protCal + carbsCal + fatCal;
+
+        const protPct = totalCal > 0 ? Math.round((protCal / totalCal) * 100) : 0;
+        const carbsPct = totalCal > 0 ? Math.round((carbsCal / totalCal) * 100) : 0;
+        const fatPct = totalCal > 0 ? 100 - protPct - carbsPct : 0;
+
+        const pieData = [
+          { name: "Proteína", value: protCal, pct: protPct },
+          { name: "Carboidrato", value: carbsCal, pct: carbsPct },
+          { name: "Gordura", value: fatCal, pct: fatPct },
+        ];
+        const pieColors = [
+          "hsl(142, 71%, 45%)",
+          "hsl(50, 90%, 55%)",
+          "hsl(var(--destructive))",
+        ];
+
+        return (
+          <div className="glass-card p-5 border border-border">
+            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide mb-4">Macronutrientes</h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Cards g/kg */}
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { label: "Proteína", value: protPerKg, color: "text-success", total: `${totals.protein}g` },
+                  { label: "Carboidrato", value: carbsPerKg, color: "text-warning", total: `${totals.carbs}g` },
+                  { label: "Gordura", value: fatPerKg, color: "text-destructive", total: `${totals.fat}g` },
+                ].map((macro) => (
+                  <div key={macro.label} className="flex flex-col items-center justify-center gap-1 p-3 rounded-xl bg-secondary/40 text-center">
+                    <p className="text-xs text-muted-foreground">{macro.label}</p>
+                    <p className={`text-lg font-bold ${macro.color}`}>
+                      {weight > 0 ? macro.value.toFixed(1) : "—"}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">g/kg/dia</p>
+                    <p className="text-xs text-muted-foreground mt-1">{macro.total} total</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Donut Chart */}
+              <div className="flex items-center justify-center">
+                <ResponsiveContainer width="100%" height={180}>
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={80}
+                      paddingAngle={3}
+                      dataKey="value"
+                      stroke="none"
+                    >
+                      {pieData.map((_, index) => (
+                        <Cell key={index} fill={pieColors[index]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(value: number, name: string) => [`${value.toLocaleString('pt-BR')} kcal`, name]}
+                      contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
+                    />
+                    <text x="50%" y="46%" textAnchor="middle" dominantBaseline="central" style={{ fontSize: 18, fontWeight: 700, fill: "hsl(var(--foreground))" }}>
+                      {totalCal.toLocaleString('pt-BR')}
+                    </text>
+                    <text x="50%" y="58%" textAnchor="middle" dominantBaseline="central" style={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}>
+                      kcal
+                    </text>
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Legend */}
+            <div className="flex items-center justify-center gap-6 mt-4">
+              {pieData.map((item, index) => (
+                <div key={item.name} className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: pieColors[index] }} />
+                  <span className="text-xs text-muted-foreground">{item.name} {item.pct}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
+
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-foreground">Dietas</h2>
         <Button onClick={() => { setEditingDiet(null); setDietDialogOpen(true); }} className="gap-2">
