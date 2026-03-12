@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Plus, Trash2, Search, Check, X, Pencil } from "lucide-react";
+import { Plus, Trash2, Search, Check, X, Pencil, FileDown } from "lucide-react";
+import ImportFoodDialog from "@/components/foods/ImportFoodDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
