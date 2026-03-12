@@ -200,6 +200,7 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
 
   const handleSelectDiet = (diet: Diet) => {
     setSelectedDiet(diet);
+    setDietTitle(diet.name);
     fetchMeals(diet.id);
   };
 
