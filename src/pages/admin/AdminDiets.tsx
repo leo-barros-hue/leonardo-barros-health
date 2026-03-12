@@ -52,13 +52,12 @@ interface SavedDiet {
   created_at: string;
 }
 
-const MEAL_PRESETS = [
-  "Café da Manhã",
-  "Lanche da Manhã",
-  "Almoço",
-  "Lanche da Tarde",
-  "Jantar",
-  "Ceia",
+const MEAL_PRESETS: { name: string; time: string }[] = [
+  { name: "CAFÉ DA MANHÃ", time: "07:00" },
+  { name: "LANCHE DA MANHÃ", time: "10:00" },
+  { name: "ALMOÇO", time: "12:00" },
+  { name: "LANCHE DA TARDE", time: "16:00" },
+  { name: "JANTAR", time: "20:00" },
 ];
 
 const createEmptyFood = (): FoodItem => ({
@@ -73,8 +72,8 @@ const createEmptyFood = (): FoodItem => ({
 
 const createEmptyMeal = (index: number): Meal => ({
   id: crypto.randomUUID(),
-  name: MEAL_PRESETS[index] || `Refeição ${index + 1}`,
-  time: "",
+  name: MEAL_PRESETS[index]?.name || `Refeição ${index + 1}`,
+  time: MEAL_PRESETS[index]?.time || "",
   foods: [createEmptyFood()],
 });
 

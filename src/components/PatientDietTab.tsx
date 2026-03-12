@@ -238,21 +238,30 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
     }
   };
 
+  const MEAL_PRESETS = [
+    { name: "CAFÉ DA MANHÃ", time: "07:00" },
+    { name: "LANCHE DA MANHÃ", time: "10:00" },
+    { name: "ALMOÇO", time: "12:00" },
+    { name: "LANCHE DA TARDE", time: "16:00" },
+    { name: "JANTAR", time: "20:00" },
+  ];
+
   const handleAddMeal = async () => {
     if (!selectedDiet) return;
 
-    const { data: maxOrder } = await supabase.
-    from("diet_meals").
-    select("sort_order").
-    eq("diet_id", selectedDiet.id).
-    order("sort_order", { ascending: false }).
-    limit(1);
+    const { data: maxOrder } = await supabase
+      .from("diet_meals")
+      .select("sort_order")
+      .eq("diet_id", selectedDiet.id)
+      .order("sort_order", { ascending: false })
+      .limit(1);
 
     const newOrder = maxOrder && maxOrder.length > 0 ? maxOrder[0].sort_order + 1 : 0;
+    const preset = MEAL_PRESETS[meals.length] || { name: `Refeição ${meals.length + 1}`, time: null };
 
     const { data, error } = await supabase.from("diet_meals").insert({
-      name: "Nova Refeição",
-      time: null,
+      name: preset.name,
+      time: preset.time,
       diet_id: selectedDiet.id,
       sort_order: newOrder
     }).select("*").single();
