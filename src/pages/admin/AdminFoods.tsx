@@ -85,7 +85,10 @@ const AdminFoods = () => {
           <h1 className="text-2xl font-bold text-foreground">Cadastro de Alimentos</h1>
           <p className="text-muted-foreground text-sm mt-1">Gerencie a base de alimentos com informações nutricionais</p>
         </div>
-        <Button onClick={() => setShowForm(!showForm)} className="gap-2"><Plus className="w-4 h-4" />Novo Alimento</Button>
+        <div className="flex gap-2">
+          <Button onClick={() => setShowImport(true)} variant="outline" className="gap-2"><FileDown className="w-4 h-4" />Importar Tabela</Button>
+          <Button onClick={() => setShowForm(!showForm)} className="gap-2"><Plus className="w-4 h-4" />Novo Alimento</Button>
+        </div>
       </div>
 
       {showForm && (
