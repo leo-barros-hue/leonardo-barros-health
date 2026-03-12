@@ -126,75 +126,77 @@ const ImportFoodDialog = ({ open, onOpenChange, onImported }: ImportFoodDialogPr
             </div>
           </div>
 
-          <TabsContent value={tab} className="mt-3">
-            <div className="flex items-center justify-between mb-2 px-1">
-              <button
-                onClick={toggleAll}
-                className="text-xs text-primary hover:underline"
-              >
-                {filtered.every((f) => selected.has(getKey(f))) && filtered.length > 0
-                  ? "Desmarcar todos"
-                  : "Selecionar todos"}
-              </button>
-              <span className="text-xs text-muted-foreground">
-                {selected.size} selecionado(s)
-              </span>
-            </div>
+          {["taco", "tbca"].map((source) => (
+            <TabsContent key={source} value={source} className="mt-3">
+              <div className="flex items-center justify-between mb-2 px-1">
+                <button
+                  onClick={toggleAll}
+                  className="text-xs text-primary hover:underline"
+                >
+                  {filtered.every((f) => selected.has(getKey(f))) && filtered.length > 0
+                    ? "Desmarcar todos"
+                    : "Selecionar todos"}
+                </button>
+                <span className="text-xs text-muted-foreground">
+                  {selected.size} selecionado(s)
+                </span>
+              </div>
 
-            <ScrollArea className="h-[380px] border border-border rounded-lg">
-              <table className="w-full text-sm">
-                <thead className="sticky top-0 bg-secondary/80 backdrop-blur z-10">
-                  <tr className="border-b border-border">
-                    <th className="w-10 py-2 px-2"></th>
-                    <th className="text-left py-2 px-3 text-muted-foreground font-semibold text-xs uppercase">Alimento</th>
-                    <th className="text-center py-2 px-2 text-muted-foreground font-semibold text-xs uppercase w-16">Cat</th>
-                    <th className="text-center py-2 px-2 text-success font-semibold text-xs uppercase w-14">Ptn</th>
-                    <th className="text-center py-2 px-2 text-warning font-semibold text-xs uppercase w-14">Carb</th>
-                    <th className="text-center py-2 px-2 text-destructive font-semibold text-xs uppercase w-14">Gor</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="py-8 text-center text-muted-foreground">
-                        Nenhum alimento encontrado
-                      </td>
+              <ScrollArea className="h-[380px] border border-border rounded-lg">
+                <table className="w-full text-sm">
+                  <thead className="sticky top-0 bg-secondary/80 backdrop-blur z-10">
+                    <tr className="border-b border-border">
+                      <th className="w-10 py-2 px-2"></th>
+                      <th className="text-left py-2 px-3 text-muted-foreground font-semibold text-xs uppercase">Alimento</th>
+                      <th className="text-center py-2 px-2 text-muted-foreground font-semibold text-xs uppercase w-16">Cat</th>
+                      <th className="text-center py-2 px-2 text-success font-semibold text-xs uppercase w-14">Ptn</th>
+                      <th className="text-center py-2 px-2 text-warning font-semibold text-xs uppercase w-14">Carb</th>
+                      <th className="text-center py-2 px-2 text-destructive font-semibold text-xs uppercase w-14">Gor</th>
                     </tr>
-                  ) : (
-                    filtered.map((food) => {
-                      const key = getKey(food);
-                      const isSelected = selected.has(key);
-                      return (
-                        <tr
-                          key={key}
-                          className={`border-b border-border/50 cursor-pointer transition-colors ${
-                            isSelected ? "bg-primary/10" : "hover:bg-secondary/30"
-                          }`}
-                          onClick={() => toggleSelect(food)}
-                        >
-                          <td className="py-2 px-2 text-center">
-                            <Checkbox checked={isSelected} tabIndex={-1} className="pointer-events-none" />
-                          </td>
-                          <td className="py-2 px-3 font-medium text-foreground">{food.name}</td>
-                          <td className="py-2 px-2 text-center">
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">
-                              {food.category.slice(0, 4)}
-                            </span>
-                          </td>
-                          <td className="py-2 px-2 text-center text-success">{food.protein}</td>
-                          <td className="py-2 px-2 text-center text-warning">{food.carbs}</td>
-                          <td className="py-2 px-2 text-center text-destructive">{food.fat}</td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </ScrollArea>
-            <p className="text-[10px] text-muted-foreground mt-2">
-              {tab === "taco" ? "Fonte: TACO 4ª ed. – UNICAMP" : "Fonte: TBCA – USP/FCF"}
-            </p>
-          </TabsContent>
+                  </thead>
+                  <tbody>
+                    {filtered.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="py-8 text-center text-muted-foreground">
+                          Nenhum alimento encontrado
+                        </td>
+                      </tr>
+                    ) : (
+                      filtered.map((food) => {
+                        const key = getKey(food);
+                        const isSelected = selected.has(key);
+                        return (
+                          <tr
+                            key={key}
+                            className={`border-b border-border/50 cursor-pointer transition-colors ${
+                              isSelected ? "bg-primary/10" : "hover:bg-secondary/30"
+                            }`}
+                            onClick={() => toggleSelect(food)}
+                          >
+                            <td className="py-2 px-2 text-center">
+                              <Checkbox checked={isSelected} tabIndex={-1} className="pointer-events-none" />
+                            </td>
+                            <td className="py-2 px-3 font-medium text-foreground">{food.name}</td>
+                            <td className="py-2 px-2 text-center">
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">
+                                {food.category.slice(0, 4)}
+                              </span>
+                            </td>
+                            <td className="py-2 px-2 text-center text-success">{food.protein}</td>
+                            <td className="py-2 px-2 text-center text-warning">{food.carbs}</td>
+                            <td className="py-2 px-2 text-center text-destructive">{food.fat}</td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </ScrollArea>
+              <p className="text-[10px] text-muted-foreground mt-2">
+                {source === "taco" ? "Fonte: TACO 4ª ed. – UNICAMP" : "Fonte: TBCA – USP/FCF"}
+              </p>
+            </TabsContent>
+          ))}
         </Tabs>
 
         <div className="flex justify-end gap-2 pt-2 border-t border-border">
