@@ -2,11 +2,9 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Plus, Trash2, Pencil, Dumbbell } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import WorkoutProgramDialog from "@/components/workout/WorkoutProgramDialog";
-import WorkoutDayDialog from "@/components/workout/WorkoutDayDialog";
-import ExerciseDialog from "@/components/workout/ExerciseDialog";
+import InlineWorkoutCard from "@/components/workout/InlineWorkoutCard";
 
 interface WorkoutExercise {
   id: string;
@@ -45,21 +43,14 @@ interface Props {
   patientId: string;
 }
 
-const SERIES_COLUMNS = [1, 2, 3, 4, 5, 6] as const;
-
 const PatientWorkoutTab = ({ patientId }: Props) => {
   const [loading, setLoading] = useState(true);
   const [programs, setPrograms] = useState<WorkoutProgram[]>([]);
   const [selectedProgram, setSelectedProgram] = useState<WorkoutProgram | null>(null);
   const [days, setDays] = useState<WorkoutDay[]>([]);
-  const [activeDay, setActiveDay] = useState<WorkoutDay | null>(null);
 
   const [programDialogOpen, setProgramDialogOpen] = useState(false);
   const [editingProgram, setEditingProgram] = useState<WorkoutProgram | null>(null);
-  const [dayDialogOpen, setDayDialogOpen] = useState(false);
-  const [editingDay, setEditingDay] = useState<WorkoutDay | null>(null);
-  const [exerciseDialogOpen, setExerciseDialogOpen] = useState(false);
-  const [editingExercise, setEditingExercise] = useState<WorkoutExercise | null>(null);
 
   useEffect(() => {
     fetchPrograms();
@@ -82,7 +73,6 @@ const PatientWorkoutTab = ({ patientId }: Props) => {
     } else {
       setSelectedProgram(null);
       setDays([]);
-      setActiveDay(null);
     }
     setLoading(false);
   };
@@ -120,16 +110,10 @@ const PatientWorkoutTab = ({ patientId }: Props) => {
     }
 
     setDays(daysWithExercises);
-    if (daysWithExercises.length > 0) {
-      setActiveDay(daysWithExercises[0]);
-    } else {
-      setActiveDay(null);
-    }
   };
 
   const handleSelectProgram = (program: WorkoutProgram) => {
     setSelectedProgram(program);
-    setActiveDay(null);
   };
 
   const handleDeleteProgram = async (programId: string) => {
@@ -150,42 +134,36 @@ const PatientWorkoutTab = ({ patientId }: Props) => {
       toast.error("Erro ao excluir treino");
     } else {
       toast.success("Treino excluído");
-      setActiveDay(null);
       if (selectedProgram) fetchDays(selectedProgram.id);
     }
   };
 
-  const handleDeleteExercise = async (exerciseId: string) => {
-    if (!confirm("Excluir este exercício?")) return;
-    const { error } = await supabase.from("workout_exercises").delete().eq("id", exerciseId);
-    if (error) {
-      toast.error("Erro ao excluir exercício");
-    } else {
-      toast.success("Exercício excluído");
-      if (selectedProgram) fetchDays(selectedProgram.id);
-    }
-  };
+  const handleAddDay = async () => {
+    if (!selectedProgram) return;
 
-  const handleLoadChange = async (exerciseId: string, seriesKey: string, value: string) => {
-    // Update local state immediately
-    setActiveDay((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        exercises: prev.exercises.map((ex) =>
-          ex.id === exerciseId ? { ...ex, [seriesKey]: value || null } : ex
-        ),
-      };
-    });
-  };
+    const { data: maxOrder } = await supabase
+      .from("workout_days")
+      .select("sort_order")
+      .eq("program_id", selectedProgram.id)
+      .order("sort_order", { ascending: false })
+      .limit(1);
 
-  const handleLoadBlur = async (exerciseId: string, seriesKey: string, value: string) => {
+    const newOrder = maxOrder && maxOrder.length > 0 ? maxOrder[0].sort_order + 1 : 0;
+    const dayLetter = String.fromCharCode(65 + newOrder); // A, B, C...
+
     const { error } = await supabase
-      .from("workout_exercises")
-      .update({ [seriesKey]: value || null } as any)
-      .eq("id", exerciseId);
+      .from("workout_days")
+      .insert({
+        name: `Treino ${dayLetter}`,
+        program_id: selectedProgram.id,
+        sort_order: newOrder,
+      } as any);
+
     if (error) {
-      toast.error("Erro ao salvar carga");
+      toast.error("Erro ao adicionar treino");
+    } else {
+      toast.success("Treino adicionado");
+      fetchDays(selectedProgram.id);
     }
   };
 
@@ -199,6 +177,7 @@ const PatientWorkoutTab = ({ patientId }: Props) => {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-foreground">Treinos</h2>
         <Button onClick={() => { setEditingProgram(null); setProgramDialogOpen(true); }} className="gap-2">
@@ -235,8 +214,8 @@ const PatientWorkoutTab = ({ patientId }: Props) => {
           {selectedProgram && (
             <>
               {/* Program Header */}
-              <div className="glass-card p-6">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="glass-card p-4">
+                <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-lg font-bold text-foreground">{selectedProgram.name}</h2>
                     {selectedProgram.description && (
@@ -254,126 +233,30 @@ const PatientWorkoutTab = ({ patientId }: Props) => {
                 </div>
               </div>
 
-              {/* Day Tabs */}
-              <div className="flex gap-2 overflow-x-auto pb-2">
-                {days.map((day) => (
-                  <button
+              {/* Inline Workout Day Cards */}
+              <div className="space-y-4">
+                {days.map((day, idx) => (
+                  <InlineWorkoutCard
                     key={day.id}
-                    onClick={() => setActiveDay(day)}
-                    className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
-                      activeDay?.id === day.id
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-secondary/50 text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {day.name}
-                  </button>
+                    day={day}
+                    dayIndex={idx}
+                    onUpdate={() => fetchDays(selectedProgram.id)}
+                    onDelete={() => handleDeleteDay(day.id)}
+                  />
                 ))}
-                <Button variant="outline" size="sm" onClick={() => { setEditingDay(null); setDayDialogOpen(true); }} className="whitespace-nowrap">
-                  <Plus className="w-4 h-4 mr-1" /> Treino
-                </Button>
               </div>
 
-              {/* Workout Day Block */}
-              {activeDay && (
-                <div className="glass-card p-6">
-                  {/* Day Header */}
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-xl font-bold text-foreground">{activeDay.name}</h3>
-                    <div className="flex gap-1">
-                      <Button variant="ghost" size="sm" onClick={() => { setEditingDay(activeDay); setDayDialogOpen(true); }}>
-                        <Pencil className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDeleteDay(activeDay.id)}>
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Sub-header info */}
-                  <div className="flex gap-6 mb-6">
-                    <p className="text-sm text-muted-foreground">
-                      <span className="font-medium text-foreground">Faixa de repetições:</span>{" "}
-                      {activeDay.rep_range || "—"}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      <span className="font-medium text-foreground">Intervalo entre as séries:</span>{" "}
-                      {activeDay.rest_interval || "—"}
-                    </p>
-                  </div>
-
-                  {/* Exercises Table */}
-                  {activeDay.exercises.length === 0 ? (
-                    <p className="text-sm text-muted-foreground py-4 text-center">Nenhum exercício adicionado.</p>
-                  ) : (
-                    <div className="overflow-x-auto mb-4">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b border-border">
-                            <th className="text-left py-2 text-muted-foreground font-medium min-w-[160px]">Exercício</th>
-                            {SERIES_COLUMNS.map((s) => (
-                              <th key={s} className="text-center py-2 text-muted-foreground font-medium min-w-[80px]">
-                                Série {s}
-                              </th>
-                            ))}
-                            <th className="text-center py-2 text-muted-foreground font-medium min-w-[120px]">Técnica</th>
-                            <th className="w-20"></th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {activeDay.exercises.map((ex) => (
-                            <tr key={ex.id} className="border-b border-border/50 last:border-0 align-top">
-                              <td className="py-3">
-                                <p className="font-medium text-foreground">{ex.name}</p>
-                                {ex.notes && <p className="text-xs text-muted-foreground mt-0.5">{ex.notes}</p>}
-                              </td>
-                              {SERIES_COLUMNS.map((s) => {
-                                const key = `load_s${s}` as keyof WorkoutExercise;
-                                return (
-                                  <td key={s} className="py-3 px-1 text-center">
-                                    <Input
-                                      type="text"
-                                      inputMode="decimal"
-                                      className="h-8 text-center text-xs w-full"
-                                      placeholder="Carga"
-                                      value={(ex[key] as string) || ""}
-                                      onChange={(e) => handleLoadChange(ex.id, key, e.target.value)}
-                                      onBlur={(e) => handleLoadBlur(ex.id, key, e.target.value)}
-                                    />
-                                  </td>
-                                );
-                              })}
-                              <td className="py-3 px-1 text-center">
-                                <span className="text-xs text-foreground">{ex.technique || "—"}</span>
-                              </td>
-                              <td className="py-3 text-right">
-                                <div className="flex justify-end gap-1">
-                                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => { setEditingExercise(ex); setExerciseDialogOpen(true); }}>
-                                    <Pencil className="w-3 h-3" />
-                                  </Button>
-                                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => handleDeleteExercise(ex.id)}>
-                                    <Trash2 className="w-3 h-3" />
-                                  </Button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-
-                  <Button variant="outline" size="sm" onClick={() => { setEditingExercise(null); setExerciseDialogOpen(true); }} className="gap-1">
-                    <Plus className="w-3 h-3" /> Exercício
-                  </Button>
-                </div>
-              )}
+              {/* Add Day Button */}
+              <Button variant="outline" onClick={handleAddDay} className="gap-2 w-full">
+                <Plus className="w-4 h-4" />
+                Adicionar Treino
+              </Button>
             </>
           )}
         </>
       )}
 
-      {/* Dialogs */}
+      {/* Program Dialog */}
       <WorkoutProgramDialog
         open={programDialogOpen}
         onOpenChange={setProgramDialogOpen}
@@ -381,24 +264,6 @@ const PatientWorkoutTab = ({ patientId }: Props) => {
         program={editingProgram}
         onSuccess={fetchPrograms}
       />
-      {selectedProgram && (
-        <WorkoutDayDialog
-          open={dayDialogOpen}
-          onOpenChange={setDayDialogOpen}
-          programId={selectedProgram.id}
-          day={editingDay}
-          onSuccess={() => fetchDays(selectedProgram.id)}
-        />
-      )}
-      {activeDay && (
-        <ExerciseDialog
-          open={exerciseDialogOpen}
-          onOpenChange={setExerciseDialogOpen}
-          workoutDayId={activeDay.id}
-          exercise={editingExercise}
-          onSuccess={() => selectedProgram && fetchDays(selectedProgram.id)}
-        />
-      )}
     </div>
   );
 };
