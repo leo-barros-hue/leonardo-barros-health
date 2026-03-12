@@ -553,14 +553,17 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                       Criada em {new Date(selectedDiet.created_at).toLocaleDateString("pt-BR")}
                     </p>
                   </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => {setEditingDiet(selectedDiet);setDietDialogOpen(true);}}>
-                      <Pencil className="w-4 h-4 mr-1" /> Editar
-                    </Button>
-                    <Button variant="destructive" size="sm" onClick={() => handleDeleteDiet(selectedDiet.id)}>
-                      <Trash2 className="w-4 h-4 mr-1" /> Excluir
-                    </Button>
-                  </div>
+              <div className="flex gap-2">
+                     <Button variant="outline" size="sm" onClick={() => setAiDialogOpen(true)} className="gap-1">
+                       <Sparkles className="w-4 h-4" /> IA
+                     </Button>
+                     <Button variant="outline" size="sm" onClick={() => {setEditingDiet(selectedDiet);setDietDialogOpen(true);}}>
+                       <Pencil className="w-4 h-4 mr-1" /> Editar
+                     </Button>
+                     <Button variant="destructive" size="sm" onClick={() => handleDeleteDiet(selectedDiet.id)}>
+                       <Trash2 className="w-4 h-4 mr-1" /> Excluir
+                     </Button>
+                   </div>
                 </div>
               </div>
 
