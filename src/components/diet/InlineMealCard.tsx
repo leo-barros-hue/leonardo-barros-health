@@ -296,10 +296,30 @@ export default function InlineMealCard({ meal, mealIndex, onUpdate, onDelete, on
         {foods.map((food) => (
           <div key={food.id} className="px-4 py-2 grid gap-2 items-center" style={{ gridTemplateColumns: "1fr 70px 70px 50px 50px 50px 60px" }}>
             <div>
-              <Input
+              <FoodAutocomplete
                 value={food.food_name}
-                onChange={(e) => handleFoodChange(food.id, "food_name", e.target.value)}
-                className="h-8 text-sm border-0 bg-transparent px-0 focus-visible:ring-0"
+                onChange={(v) => handleFoodChange(food.id, "food_name", v)}
+                onSelect={(catalogFood) => {
+                  const macros = calculateMacros(catalogFood, food.quantity);
+                  const updatedFood = {
+                    ...food,
+                    food_id: catalogFood.id,
+                    food_name: catalogFood.name,
+                    measure: catalogFood.measure,
+                    ...macros,
+                  };
+                  const nextFoods = foods.map((f) => (f.id === food.id ? updatedFood : f));
+                  syncFoodsState(nextFoods);
+                  supabase.from("diet_meal_foods").update({
+                    food_id: catalogFood.id,
+                    food_name: catalogFood.name,
+                    measure: catalogFood.measure,
+                    protein: macros.protein,
+                    carbs: macros.carbs,
+                    fat: macros.fat,
+                  }).eq("id", food.id);
+                }}
+                foodCatalog={foodCatalog}
                 placeholder="Nome do alimento..."
               />
             </div>
