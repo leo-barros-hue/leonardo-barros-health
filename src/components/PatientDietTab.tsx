@@ -166,9 +166,11 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
     setDiets(data || []);
     if (data && data.length > 0) {
       setSelectedDiet(data[0]);
+      setDietTitle(data[0].name);
       fetchMeals(data[0].id);
     } else {
       setSelectedDiet(null);
+      setDietTitle("");
       setMeals([]);
     }
     setLoading(false);
