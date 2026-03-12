@@ -52,7 +52,7 @@ FORMATO DE RESPOSTA (JSON):
 Catálogo de alimentos disponíveis (nome | proteína/g | carboidrato/g | gordura/g | kcal/g):
 ${foods.map((f: any) => `${f.name} | ${f.protein_per_unit} | ${f.carbs_per_unit} | ${f.fat_per_unit} | ${f.kcal_per_unit}`).join("\n")}
 
-Gere um plano alimentar completo para este paciente, distribuindo as calorias ao longo das 5 refeições para atingir aproximadamente ${patientProfile.tdee} kcal/dia.`;
+Gere um plano alimentar completo para este paciente, distribuindo as calorias ao longo das 5 refeições para atingir aproximadamente ${patientProfile.tdee} kcal/dia.${customInstructions ? `\n\nINSTRUÇÕES ADICIONAIS DO NUTRICIONISTA:\n${customInstructions}` : ""}`;
 
     } else if (mode === "adjust_macros") {
       systemPrompt = `Você é um nutricionista especialista. Ajuste as quantidades dos alimentos da dieta atual para atingir as metas de macronutrientes especificadas.
