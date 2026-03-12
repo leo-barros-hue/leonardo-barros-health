@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Loader2, Sparkles, Wand2 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Loader2, Sparkles, Wand2, Mic, MicOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -18,6 +19,64 @@ interface AIDietDialogProps {
 export default function AIDietDialog({ open, onOpenChange, patientId, dietId, tdee, weight, onSuccess }: AIDietDialogProps) {
   const [generating, setGenerating] = useState(false);
   const [mode, setMode] = useState<"generate" | "adjust_macros" | null>(null);
+  const [instructions, setInstructions] = useState("");
+  const [isRecording, setIsRecording] = useState(false);
+  const recognitionRef = useRef<any>(null);
+
+  const toggleRecording = useCallback(() => {
+    if (isRecording) {
+      recognitionRef.current?.stop();
+      setIsRecording(false);
+      return;
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast.error("Seu navegador não suporta reconhecimento de voz. Use Chrome ou Edge.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = "pt-BR";
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    let finalTranscript = "";
+
+    recognition.onresult = (event: any) => {
+      let interim = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript + " ";
+        } else {
+          interim = transcript;
+        }
+      }
+      setInstructions(prev => {
+        const base = prev.replace(/🎤.*$/, "").trimEnd();
+        const combined = base ? base + " " + finalTranscript : finalTranscript;
+        return interim ? combined + "🎤 " + interim : combined.trimEnd();
+      });
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error("Speech recognition error:", event.error);
+      if (event.error === "not-allowed") {
+        toast.error("Permissão do microfone negada. Habilite nas configurações do navegador.");
+      }
+      setIsRecording(false);
+    };
+
+    recognition.onend = () => {
+      setIsRecording(false);
+      setInstructions(prev => prev.replace(/🎤.*$/, "").trimEnd());
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+    setIsRecording(true);
+  }, [isRecording]);
 
   const handleGenerate = async (selectedMode: "generate" | "adjust_macros") => {
     if (!tdee) {
@@ -25,11 +84,15 @@ export default function AIDietDialog({ open, onOpenChange, patientId, dietId, td
       return;
     }
 
+    if (isRecording) {
+      recognitionRef.current?.stop();
+      setIsRecording(false);
+    }
+
     setMode(selectedMode);
     setGenerating(true);
 
     try {
-      // Fetch patient info
       const { data: patient } = await supabase
         .from("patients")
         .select("sex, birth_date, objective")
@@ -45,7 +108,6 @@ export default function AIDietDialog({ open, onOpenChange, patientId, dietId, td
         if (m < 0 || (m === 0 && today.getDate() < bd.getDate())) age--;
       }
 
-      // Fetch food catalog
       const { data: foods } = await supabase
         .from("foods")
         .select("id, name, protein_per_unit, carbs_per_unit, fat_per_unit, kcal_per_unit, category");
@@ -60,7 +122,6 @@ export default function AIDietDialog({ open, onOpenChange, patientId, dietId, td
 
       let currentDiet = null;
       if (selectedMode === "adjust_macros") {
-        // Fetch current meals and foods
         const { data: mealsData } = await supabase
           .from("diet_meals")
           .select("*")
@@ -86,12 +147,15 @@ export default function AIDietDialog({ open, onOpenChange, patientId, dietId, td
         }
       }
 
+      const cleanInstructions = instructions.replace(/🎤.*$/, "").trim();
+
       const { data: result, error } = await supabase.functions.invoke("generate-diet", {
         body: {
           mode: selectedMode,
           patientProfile,
           foods: foods || [],
           currentDiet,
+          customInstructions: cleanInstructions || null,
         },
       });
 
@@ -117,7 +181,6 @@ export default function AIDietDialog({ open, onOpenChange, patientId, dietId, td
   };
 
   const applyGeneratedDiet = async (result: any, foods: any[]) => {
-    // Delete existing meals for this diet
     const { data: existingMeals } = await supabase
       .from("diet_meals")
       .select("id")
@@ -130,7 +193,6 @@ export default function AIDietDialog({ open, onOpenChange, patientId, dietId, td
       await supabase.from("diet_meals").delete().eq("diet_id", dietId);
     }
 
-    // Create new meals from AI response
     const foodCatalog = new Map(foods.map((f) => [f.name.toLowerCase().trim(), f]));
 
     for (let i = 0; i < result.meals.length; i++) {
@@ -175,7 +237,6 @@ export default function AIDietDialog({ open, onOpenChange, patientId, dietId, td
       if (!meal.foods) continue;
       for (const food of meal.foods) {
         if (food.food_id) {
-          // Recalculate macros with new quantity
           const { data: catalogFood } = await supabase
             .from("foods")
             .select("protein_per_unit, carbs_per_unit, fat_per_unit")
@@ -203,7 +264,7 @@ export default function AIDietDialog({ open, onOpenChange, patientId, dietId, td
             Assistente de IA - Dieta
           </DialogTitle>
           <DialogDescription>
-            Escolha como a IA deve ajudar na montagem da dieta.
+            Descreva suas orientações e escolha como a IA deve ajudar.
           </DialogDescription>
         </DialogHeader>
 
@@ -217,6 +278,34 @@ export default function AIDietDialog({ open, onOpenChange, patientId, dietId, td
               ⚠️ Configure o TDEE na aba Energia antes de usar a IA.
             </p>
           )}
+
+          {/* Instructions textarea with mic */}
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground">Orientações para a IA</label>
+            <div className="relative">
+              <Textarea
+                placeholder="Ex: Paciente não come glúten, prefere alimentos naturais, incluir whey no pós-treino..."
+                value={instructions}
+                onChange={(e) => setInstructions(e.target.value)}
+                className="min-h-[80px] pr-12 resize-none"
+                disabled={generating}
+              />
+              <Button
+                type="button"
+                variant={isRecording ? "destructive" : "ghost"}
+                size="icon"
+                className="absolute right-2 bottom-2 h-8 w-8"
+                onClick={toggleRecording}
+                disabled={generating}
+                title={isRecording ? "Parar gravação" : "Gravar orientações por voz"}
+              >
+                {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+              </Button>
+            </div>
+            {isRecording && (
+              <p className="text-xs text-destructive animate-pulse">🔴 Gravando... fale suas orientações</p>
+            )}
+          </div>
 
           <Button
             variant="outline"
