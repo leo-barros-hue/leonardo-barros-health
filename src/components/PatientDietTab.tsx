@@ -657,6 +657,21 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
         patientId={patientId}
         open={historyOpen}
         onClose={() => setHistoryOpen(false)} />
+
+      {/* AI Dialog */}
+      {selectedDiet && (
+        <AIDietDialog
+          open={aiDialogOpen}
+          onOpenChange={setAiDialogOpen}
+          patientId={patientId}
+          dietId={selectedDiet.id}
+          tdee={energyProfile.tdee}
+          weight={energyProfile.weight}
+          onSuccess={() => {
+            if (selectedDiet) fetchMeals(selectedDiet.id);
+          }}
+        />
+      )}
       
     </div>);
 
