@@ -66,27 +66,27 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
 
   const fetchEnergyProfile = async () => {
     // Fetch patient data for age and sex
-    const { data: patientData } = await supabase
-      .from("patients")
-      .select("sex, birth_date")
-      .eq("id", patientId)
-      .single();
+    const { data: patientData } = await supabase.
+    from("patients").
+    select("sex, birth_date").
+    eq("id", patientId).
+    single();
 
     // Fetch energy profile
-    const { data: profileData } = await supabase
-      .from("patient_energy_profiles")
-      .select("height, activity_factor, selected_formula")
-      .eq("patient_id", patientId)
-      .single();
+    const { data: profileData } = await supabase.
+    from("patient_energy_profiles").
+    select("height, activity_factor, selected_formula").
+    eq("patient_id", patientId).
+    single();
 
     // Fetch latest weight and body fat
-    const { data: measurementData } = await supabase
-      .from("body_measurements")
-      .select("weight, body_fat_pct")
-      .eq("patient_id", patientId)
-      .order("measured_at", { ascending: false })
-      .limit(1)
-      .single();
+    const { data: measurementData } = await supabase.
+    from("body_measurements").
+    select("weight, body_fat_pct").
+    eq("patient_id", patientId).
+    order("measured_at", { ascending: false }).
+    limit(1).
+    single();
 
     if (!profileData?.selected_formula || !measurementData?.weight) {
       setEnergyProfile({ bmr: null, tdee: null, formula: null, weight: null });
@@ -98,7 +98,7 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
     const bodyFat = measurementData.body_fat_pct || 0;
     const activityFactor = profileData.activity_factor || 1.2;
     const sex = patientData?.sex || "M";
-    
+
     // Calculate age
     let age = 0;
     if (patientData?.birth_date) {
@@ -106,7 +106,7 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
       const today = new Date();
       age = today.getFullYear() - birthDate.getFullYear();
       const m = today.getMonth() - birthDate.getMonth();
-      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      if (m < 0 || m === 0 && today.getDate() < birthDate.getDate()) {
         age--;
       }
     }
@@ -152,12 +152,12 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
 
   const fetchDiets = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("diets")
-      .select("*")
-      .eq("patient_id", patientId)
-      .order("created_at", { ascending: false });
-    
+    const { data } = await supabase.
+    from("diets").
+    select("*").
+    eq("patient_id", patientId).
+    order("created_at", { ascending: false });
+
     setDiets(data || []);
     if (data && data.length > 0) {
       setSelectedDiet(data[0]);
@@ -171,20 +171,20 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
 
   const fetchMeals = async (dietId: string) => {
     setLoadingMeals(true);
-    const { data: mealsData } = await supabase
-      .from("diet_meals")
-      .select("*")
-      .eq("diet_id", dietId)
-      .order("sort_order", { ascending: true });
+    const { data: mealsData } = await supabase.
+    from("diet_meals").
+    select("*").
+    eq("diet_id", dietId).
+    order("sort_order", { ascending: true });
 
     if (mealsData) {
       const mealsWithFoods: DietMeal[] = await Promise.all(
         mealsData.map(async (meal) => {
-          const { data: foodsData } = await supabase
-            .from("diet_meal_foods")
-            .select("*")
-            .eq("diet_meal_id", meal.id)
-            .order("sort_order", { ascending: true });
+          const { data: foodsData } = await supabase.
+          from("diet_meal_foods").
+          select("*").
+          eq("diet_meal_id", meal.id).
+          order("sort_order", { ascending: true });
           return { ...meal, foods: foodsData || [] };
         })
       );
@@ -200,11 +200,11 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
 
   const handleMealFoodsChange = (mealId: string, updatedFoods: DietMealFood[]) => {
     setMeals((prev) =>
-      prev.map((meal) =>
-        meal.id === mealId
-          ? { ...meal, foods: updatedFoods }
-          : meal
-      )
+    prev.map((meal) =>
+    meal.id === mealId ?
+    { ...meal, foods: updatedFoods } :
+    meal
+    )
     );
   };
 
@@ -232,21 +232,21 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
 
   const handleAddMeal = async () => {
     if (!selectedDiet) return;
-    
-    const { data: maxOrder } = await supabase
-      .from("diet_meals")
-      .select("sort_order")
-      .eq("diet_id", selectedDiet.id)
-      .order("sort_order", { ascending: false })
-      .limit(1);
-    
+
+    const { data: maxOrder } = await supabase.
+    from("diet_meals").
+    select("sort_order").
+    eq("diet_id", selectedDiet.id).
+    order("sort_order", { ascending: false }).
+    limit(1);
+
     const newOrder = maxOrder && maxOrder.length > 0 ? maxOrder[0].sort_order + 1 : 0;
 
     const { data, error } = await supabase.from("diet_meals").insert({
       name: "Nova Refeição",
       time: null,
       diet_id: selectedDiet.id,
-      sort_order: newOrder,
+      sort_order: newOrder
     }).select("*").single();
 
     if (error) {
@@ -257,9 +257,9 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
   };
 
   const calculateTotals = () => {
-    let protein = 0, carbs = 0, fat = 0;
-    meals.forEach(meal => {
-      meal.foods.forEach(food => {
+    let protein = 0,carbs = 0,fat = 0;
+    meals.forEach((meal) => {
+      meal.foods.forEach((food) => {
         protein += food.protein;
         carbs += food.carbs;
         fat += food.fat;
@@ -273,8 +273,8 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-      </div>
-    );
+      </div>);
+
   }
 
   const totals = calculateTotals();
@@ -288,24 +288,24 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
         const isDeficit = balance < 0;
 
         const weight = energyProfile.weight || 0;
-        const protPerKg = weight > 0 ? (totals.protein / weight) : 0;
-        const carbsPerKg = weight > 0 ? (totals.carbs / weight) : 0;
-        const fatPerKg = weight > 0 ? (totals.fat / weight) : 0;
+        const protPerKg = weight > 0 ? totals.protein / weight : 0;
+        const carbsPerKg = weight > 0 ? totals.carbs / weight : 0;
+        const fatPerKg = weight > 0 ? totals.fat / weight : 0;
 
         const protCal = totals.protein * 4;
         const carbsCal = totals.carbs * 4;
         const fatCal = totals.fat * 9;
         const totalCal = protCal + carbsCal + fatCal;
 
-        const protPct = totalCal > 0 ? Math.round((protCal / totalCal) * 100) : 0;
-        const carbsPct = totalCal > 0 ? Math.round((carbsCal / totalCal) * 100) : 0;
+        const protPct = totalCal > 0 ? Math.round(protCal / totalCal * 100) : 0;
+        const carbsPct = totalCal > 0 ? Math.round(carbsCal / totalCal * 100) : 0;
         const fatPct = totalCal > 0 ? 100 - protPct - carbsPct : 0;
 
         const pieData = [
-          { name: "Proteína", value: protCal, pct: protPct },
-          { name: "Carboidrato", value: carbsCal, pct: carbsPct },
-          { name: "Gordura", value: fatCal, pct: fatPct },
-        ];
+        { name: "Proteína", value: protCal, pct: protPct },
+        { name: "Carboidrato", value: carbsCal, pct: carbsPct },
+        { name: "Gordura", value: fatCal, pct: fatPct }];
+
         const pieColors = ["hsl(142, 71%, 45%)", "hsl(50, 90%, 55%)", "hsl(var(--destructive))"];
 
         return (
@@ -342,11 +342,11 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                   </p>
                 </div>
                 {[
-                  { label: "Proteína", value: protPerKg, color: "text-success", total: `${totals.protein}g`, pct: `${protPct}%` },
-                  { label: "Carboidrato", value: carbsPerKg, color: "text-warning", total: `${totals.carbs}g`, pct: `${carbsPct}%` },
-                  { label: "Gordura", value: fatPerKg, color: "text-destructive", total: `${totals.fat}g`, pct: `${fatPct}%` },
-                ].map((macro) => (
-                  <div key={macro.label} className="flex flex-col items-center justify-center gap-0.5 p-3 rounded-xl bg-secondary/40 aspect-square">
+                { label: "Proteína", value: protPerKg, color: "text-success", total: `${totals.protein}g`, pct: `${protPct}%` },
+                { label: "Carboidrato", value: carbsPerKg, color: "text-warning", total: `${totals.carbs}g`, pct: `${carbsPct}%` },
+                { label: "Gordura", value: fatPerKg, color: "text-destructive", total: `${totals.fat}g`, pct: `${fatPct}%` }].
+                map((macro) =>
+                <div key={macro.label} className="flex flex-col items-center justify-center gap-0.5 p-3 rounded-xl bg-secondary/40 aspect-square">
                     <p className="text-[10px] text-muted-foreground">{macro.label}</p>
                     <p className={`text-lg font-bold ${macro.color}`}>
                       {weight > 0 ? macro.value.toFixed(1) : "—"}
@@ -354,7 +354,7 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                     <p className="text-[10px] text-muted-foreground">g/kg/dia</p>
                     <p className="text-[10px] text-muted-foreground mt-0.5">{macro.total} · {macro.pct}</p>
                   </div>
-                ))}
+                )}
               </div>
 
               {/* Divider */}
@@ -366,35 +366,35 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                 <ResponsiveContainer width="100%" height={280}>
                   <BarChart
                     data={[
-                      { name: "TDEE", value: energyProfile.tdee!, fill: "hsl(var(--primary))" },
-                      { name: "Ingestão", value: totals.calories, fill: "hsl(50, 90%, 55%)" },
-                      { name: "Balanço", value: balance, fill: isDeficit ? "hsl(var(--destructive))" : "hsl(142, 71%, 45%)" },
-                    ]}
+                    { name: "TDEE", value: energyProfile.tdee!, fill: "hsl(var(--primary))" },
+                    { name: "Ingestão", value: totals.calories, fill: "hsl(50, 90%, 55%)" },
+                    { name: "Balanço", value: balance, fill: isDeficit ? "hsl(var(--destructive))" : "hsl(142, 71%, 45%)" }]
+                    }
                     margin={{ top: 10, right: 5, bottom: 5, left: 5 }}
-                    barCategoryGap="4%"
-                  >
+                    barCategoryGap="4%">
+                    
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                     <XAxis dataKey="name" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} width={40} />
                     {balance < 0 && <ReferenceLine y={0} stroke="hsl(var(--border))" />}
                     <Tooltip
                       formatter={(value: number) => [`${value.toLocaleString('pt-BR')} kcal`]}
-                      contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
-                    />
+                      contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }} />
+                    
                     <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={52} label={{ position: 'inside', fontSize: 11, fontWeight: 600, fill: '#fff' }}>
                       {[
-                        { fill: "hsl(var(--primary))" },
-                        { fill: "hsl(50, 90%, 55%)" },
-                        { fill: isDeficit ? "hsl(var(--destructive))" : "hsl(142, 71%, 45%)" },
-                      ].map((entry, index) => (
-                        <Cell key={index} fill={entry.fill} />
-                      ))}
+                      { fill: "hsl(var(--primary))" },
+                      { fill: "hsl(50, 90%, 55%)" },
+                      { fill: isDeficit ? "hsl(var(--destructive))" : "hsl(142, 71%, 45%)" }].
+                      map((entry, index) =>
+                      <Cell key={index} fill={entry.fill} />
+                      )}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
 
                 {/* Donut Chart */}
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={300} className="px-0 rounded-none shadow-none border-0 mx-[50px]">
                   <PieChart>
                     <Pie
                       data={pieData}
@@ -413,18 +413,18 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                         return (
                           <text x={x} y={y} textAnchor="middle" dominantBaseline="central" style={{ fontSize: 11, fontWeight: 600, fill: "hsl(var(--foreground))" }}>
                             {pct}%
-                          </text>
-                        );
-                      }}
-                    >
-                      {pieData.map((_, index) => (
-                        <Cell key={index} fill={pieColors[index]} />
-                      ))}
+                          </text>);
+
+                      }}>
+                      
+                      {pieData.map((_, index) =>
+                      <Cell key={index} fill={pieColors[index]} />
+                      )}
                     </Pie>
                     <Tooltip
                       formatter={(value: number, name: string) => [`${value.toLocaleString('pt-BR')} kcal`, name]}
-                      contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
-                    />
+                      contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }} />
+                    
                     <text x="50%" y="46%" textAnchor="middle" dominantBaseline="central" style={{ fontSize: 24, fontWeight: 700, fill: "hsl(var(--foreground))" }}>
                       {totalCal.toLocaleString('pt-BR')}
                     </text>
@@ -435,48 +435,48 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                 </ResponsiveContainer>
               </div>
             </div>
-          </div>
-        );
+          </div>);
+
       })()}
 
 
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-foreground">Dietas</h2>
-        <Button onClick={() => { setEditingDiet(null); setDietDialogOpen(true); }} className="gap-2">
+        <Button onClick={() => {setEditingDiet(null);setDietDialogOpen(true);}} className="gap-2">
           <Plus className="w-4 h-4" />
           Nova Dieta
         </Button>
       </div>
 
-      {diets.length === 0 ? (
-        <div className="glass-card p-8 text-center">
+      {diets.length === 0 ?
+      <div className="glass-card p-8 text-center">
           <Utensils className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-lg font-semibold text-foreground mb-2">Nenhuma dieta cadastrada</h3>
           <p className="text-sm text-muted-foreground">
             Clique em "Nova Dieta" para começar.
           </p>
-        </div>
-      ) : (
-        <>
+        </div> :
+
+      <>
           {/* Diet Selector */}
           <div className="flex gap-2 overflow-x-auto pb-2">
-            {diets.map((diet) => (
-              <button
-                key={diet.id}
-                onClick={() => handleSelectDiet(diet)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
-                  selectedDiet?.id === diet.id
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-secondary/50 text-muted-foreground hover:text-foreground"
-                }`}
-              >
+            {diets.map((diet) =>
+          <button
+            key={diet.id}
+            onClick={() => handleSelectDiet(diet)}
+            className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
+            selectedDiet?.id === diet.id ?
+            "bg-primary text-primary-foreground" :
+            "bg-secondary/50 text-muted-foreground hover:text-foreground"}`
+            }>
+            
                 {diet.name}
               </button>
-            ))}
+          )}
           </div>
 
-          {selectedDiet && (
-            <>
+          {selectedDiet &&
+        <>
               {/* Diet Header */}
               <div className="glass-card p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -487,7 +487,7 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                     </p>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => { setEditingDiet(selectedDiet); setDietDialogOpen(true); }}>
+                    <Button variant="outline" size="sm" onClick={() => {setEditingDiet(selectedDiet);setDietDialogOpen(true);}}>
                       <Pencil className="w-4 h-4 mr-1" /> Editar
                     </Button>
                     <Button variant="destructive" size="sm" onClick={() => handleDeleteDiet(selectedDiet.id)}>
@@ -507,39 +507,39 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
               </div>
 
               {/* Meals */}
-              {loadingMeals ? (
-                <div className="flex items-center justify-center py-8">
+              {loadingMeals ?
+          <div className="flex items-center justify-center py-8">
                   <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-                </div>
-              ) : meals.length === 0 ? (
-                <div className="glass-card p-6 text-center">
+                </div> :
+          meals.length === 0 ?
+          <div className="glass-card p-6 text-center">
                   <p className="text-muted-foreground">Nenhuma refeição cadastrada.</p>
+                </div> :
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {meals.map((meal, index) =>
+            <InlineMealCard
+              key={meal.id}
+              meal={meal}
+              mealIndex={index}
+              onUpdate={() => selectedDiet && fetchMeals(selectedDiet.id)}
+              onDelete={() => handleDeleteMeal(meal.id)}
+              onFoodsChange={handleMealFoodsChange} />
+
+            )}
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {meals.map((meal, index) => (
-                    <InlineMealCard
-                      key={meal.id}
-                      meal={meal}
-                      mealIndex={index}
-                      onUpdate={() => selectedDiet && fetchMeals(selectedDiet.id)}
-                      onDelete={() => handleDeleteMeal(meal.id)}
-                      onFoodsChange={handleMealFoodsChange}
-                    />
-                  ))}
-                </div>
-              )}
+          }
 
               {/* Diet Notes */}
               <DietNotesEditor
-                key={selectedDiet.id}
-                dietId={selectedDiet.id}
-                initialContent={selectedDiet.notes || ""}
-              />
+            key={selectedDiet.id}
+            dietId={selectedDiet.id}
+            initialContent={selectedDiet.notes || ""} />
+          
             </>
-          )}
+        }
         </>
-      )}
+      }
 
       {/* Dialogs */}
       <DietDialog
@@ -547,10 +547,10 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
         onOpenChange={setDietDialogOpen}
         patientId={patientId}
         diet={editingDiet}
-        onSuccess={fetchDiets}
-      />
-    </div>
-  );
+        onSuccess={fetchDiets} />
+      
+    </div>);
+
 };
 
 export default PatientDietTab;
