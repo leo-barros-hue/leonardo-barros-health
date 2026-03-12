@@ -293,8 +293,8 @@ export default function InlineMealCard({ meal, mealIndex, onUpdate, onDelete, on
       {/* Food Rows */}
       <div className="divide-y divide-border/50">
         {foods.map((food) => (
-          <div key={food.id} className="px-4 py-2 grid grid-cols-12 gap-2 items-center">
-            <div className="col-span-5">
+          <div key={food.id} className="px-4 py-2 grid gap-2 items-center" style={{ gridTemplateColumns: "1fr 70px 70px 50px 50px 50px 60px" }}>
+            <div>
               <Input
                 value={food.food_name}
                 onChange={(e) => handleFoodChange(food.id, "food_name", e.target.value)}
@@ -302,7 +302,7 @@ export default function InlineMealCard({ meal, mealIndex, onUpdate, onDelete, on
                 placeholder="Nome do alimento..."
               />
             </div>
-            <div className="col-span-1">
+            <div>
               <Input
                 type="number"
                 step="0.1"
@@ -312,7 +312,7 @@ export default function InlineMealCard({ meal, mealIndex, onUpdate, onDelete, on
                 placeholder="-"
               />
             </div>
-            <div className="col-span-1">
+            <div>
               <Select value={food.measure} onValueChange={(v) => handleFoodChange(food.id, "measure", v)}>
                 <SelectTrigger className="h-8 text-xs border-0 bg-transparent px-1">
                   <SelectValue />
@@ -327,34 +327,16 @@ export default function InlineMealCard({ meal, mealIndex, onUpdate, onDelete, on
                 </SelectContent>
               </Select>
             </div>
-            <div className="col-span-1">
-              <Input
-                type="number"
-                value={food.protein || ""}
-                readOnly
-                className="h-8 text-sm text-center text-success border-0 bg-transparent px-0 focus-visible:ring-0"
-                placeholder="0"
-              />
+            <div>
+              <Input type="number" value={food.protein || ""} readOnly className="h-8 text-sm text-center text-success border-0 bg-transparent px-0 focus-visible:ring-0" placeholder="0" />
             </div>
-            <div className="col-span-1">
-              <Input
-                type="number"
-                value={food.carbs || ""}
-                readOnly
-                className="h-8 text-sm text-center text-warning border-0 bg-transparent px-0 focus-visible:ring-0"
-                placeholder="0"
-              />
+            <div>
+              <Input type="number" value={food.carbs || ""} readOnly className="h-8 text-sm text-center text-warning border-0 bg-transparent px-0 focus-visible:ring-0" placeholder="0" />
             </div>
-            <div className="col-span-1">
-              <Input
-                type="number"
-                value={food.fat || ""}
-                readOnly
-                className="h-8 text-sm text-center text-destructive border-0 bg-transparent px-0 focus-visible:ring-0"
-                placeholder="0"
-              />
+            <div>
+              <Input type="number" value={food.fat || ""} readOnly className="h-8 text-sm text-center text-destructive border-0 bg-transparent px-0 focus-visible:ring-0" placeholder="0" />
             </div>
-            <div className="col-span-2 flex justify-end">
+            <div className="flex justify-end">
               <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => handleDeleteFood(food.id)}>
                 <Trash2 className="w-3 h-3" />
               </Button>
