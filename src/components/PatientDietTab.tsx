@@ -51,7 +51,7 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
   const [meals, setMeals] = useState<DietMeal[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMeals, setLoadingMeals] = useState(false);
-  const [energyProfile, setEnergyProfile] = useState<EnergyProfile>({ bmr: null, tdee: null, formula: null });
+  const [energyProfile, setEnergyProfile] = useState<EnergyProfile>({ bmr: null, tdee: null, formula: null, weight: null });
 
   // Dialog states
   const [dietDialogOpen, setDietDialogOpen] = useState(false);
