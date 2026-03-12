@@ -49,20 +49,17 @@ const SERIES_KEYS = ["load_s1", "load_s2", "load_s3", "load_s4", "load_s5", "loa
 
 export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }: InlineWorkoutCardProps) {
   const [name, setName] = useState(day.name);
-  const [repRange, setRepRange] = useState(day.rep_range || "");
   const [restInterval, setRestInterval] = useState(day.rest_interval || "");
   const [exercises, setExercises] = useState<WorkoutExercise[]>(day.exercises);
   const [exerciseCatalog, setExerciseCatalog] = useState<ExerciseCatalogItem[]>([]);
   const [newExerciseName, setNewExerciseName] = useState("");
 
   const nameTimeout = useRef<NodeJS.Timeout>();
-  const repTimeout = useRef<NodeJS.Timeout>();
   const restTimeout = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     setExercises(day.exercises);
     setName(day.name);
-    setRepRange(day.rep_range || "");
     setRestInterval(day.rest_interval || "");
   }, [day]);
 
@@ -85,23 +82,23 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
   };
 
   const handleNameChange = (v: string) => { setName(v); debounceUpdate(nameTimeout, { name: v }); };
-  const handleRepRangeChange = (v: string) => { setRepRange(v); debounceUpdate(repTimeout, { rep_range: v || null }); };
   const handleRestIntervalChange = (v: string) => { setRestInterval(v); debounceUpdate(restTimeout, { rest_interval: v || null }); };
 
-  const handleLoadChange = (exerciseId: string, key: string, value: string) => {
-    setExercises((prev) => prev.map((ex) => (ex.id === exerciseId ? { ...ex, [key]: value || null } : ex)));
+  // Exercise field updates (inline)
+  const handleFieldChange = (exerciseId: string, field: string, value: string | null) => {
+    setExercises((prev) => prev.map((ex) => (ex.id === exerciseId ? { ...ex, [field]: value } : ex)));
   };
 
-  const handleLoadBlur = async (exerciseId: string, key: string, value: string) => {
-    await supabase.from("workout_exercises").update({ [key]: value || null } as any).eq("id", exerciseId);
+  const handleFieldBlur = async (exerciseId: string, field: string, value: string | null) => {
+    await supabase.from("workout_exercises").update({ [field]: value } as any).eq("id", exerciseId);
   };
 
-  const handleTechniqueChange = (exerciseId: string, value: string) => {
-    setExercises((prev) => prev.map((ex) => (ex.id === exerciseId ? { ...ex, technique: value || null } : ex)));
+  const handleRepsChange = (exerciseId: string, value: string) => {
+    handleFieldChange(exerciseId, "reps", value);
   };
 
-  const handleTechniqueBlur = async (exerciseId: string, value: string) => {
-    await supabase.from("workout_exercises").update({ technique: value || null } as any).eq("id", exerciseId);
+  const handleRepsBlur = async (exerciseId: string, value: string) => {
+    await supabase.from("workout_exercises").update({ reps: value } as any).eq("id", exerciseId);
   };
 
   const handleDeleteExercise = async (exerciseId: string) => {
@@ -147,58 +144,82 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
     setNewExerciseName("");
   };
 
-  const gridCols = "1fr 65px 65px 65px 65px 65px 65px 110px 40px";
+  // Grid: Exercício | Reps | S1 | S2 | S3 | S4 | S5 | S6 | Observações | Técnica | Delete
+  const gridCols = "1fr 70px 55px 55px 55px 55px 55px 55px 130px 120px 40px";
 
   return (
     <div className="glass-card overflow-hidden">
-      {/* Header */}
+      {/* Header - TREINO X (Nome) */}
       <div className="bg-muted/50 px-4 py-3 flex items-center gap-3">
         <Dumbbell className="w-4 h-4 text-primary" />
-        <span className="text-xs font-semibold text-muted-foreground">TREINO {dayIndex + 1}:</span>
+        <span className="text-sm font-bold text-foreground whitespace-nowrap">TREINO {dayIndex + 1}</span>
+        <span className="text-sm text-muted-foreground">(</span>
         <Input
           value={name}
           onChange={(e) => handleNameChange(e.target.value)}
           placeholder="Nome do treino"
-          className="flex-1 h-7 text-xs font-semibold uppercase bg-secondary/80 border-0"
+          className="flex-1 h-7 text-sm font-semibold bg-secondary/80 border-0 px-2"
         />
-        <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={onDelete}>
+        <span className="text-sm text-muted-foreground">)</span>
+        <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive ml-auto" onClick={onDelete}>
           <Trash2 className="w-4 h-4" />
         </Button>
       </div>
 
-      {/* Sub-header */}
-      <div className="bg-muted/30 px-4 py-2 flex items-center gap-4 text-xs">
-        <div className="flex items-center gap-1.5">
-          <span className="font-medium text-muted-foreground">Faixa de repetições:</span>
-          <Input value={repRange} onChange={(e) => handleRepRangeChange(e.target.value)} placeholder="10-12" className="w-20 h-6 text-xs bg-secondary/80 border-0 px-2" />
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="font-medium text-muted-foreground">Intervalo entre as séries:</span>
-          <Input value={restInterval} onChange={(e) => handleRestIntervalChange(e.target.value)} placeholder="60s" className="w-20 h-6 text-xs bg-secondary/80 border-0 px-2" />
-        </div>
+      {/* Sub-header: Intervalo entre as séries */}
+      <div className="bg-muted/30 px-4 py-2 flex items-center gap-1.5 text-xs">
+        <span className="font-medium text-muted-foreground">Intervalo entre as séries:</span>
+        <Input
+          value={restInterval}
+          onChange={(e) => handleRestIntervalChange(e.target.value)}
+          placeholder="60s"
+          className="w-24 h-6 text-xs bg-secondary/80 border-0 px-2"
+        />
       </div>
 
       {/* Table Header */}
-      <div className="bg-muted/20 px-4 py-2 grid gap-1 text-[10px] font-medium uppercase" style={{ gridTemplateColumns: gridCols }}>
-        <div className="text-muted-foreground">Exercício</div>
-        <div className="text-muted-foreground text-center">Série 1</div>
-        <div className="text-muted-foreground text-center">Série 2</div>
-        <div className="text-muted-foreground text-center">Série 3</div>
-        <div className="text-muted-foreground text-center">Série 4</div>
-        <div className="text-muted-foreground text-center">Série 5</div>
-        <div className="text-muted-foreground text-center">Série 6</div>
-        <div className="text-muted-foreground text-center">Técnica</div>
+      <div className="bg-muted/20 px-4 py-2 grid gap-1 items-end" style={{ gridTemplateColumns: gridCols }}>
+        <div className="text-[10px] font-bold uppercase text-muted-foreground">Exercícios</div>
+        <div className="text-[10px] font-bold uppercase text-muted-foreground text-center">Reps</div>
+        {/* Séries group header */}
+        <div className="col-span-6 text-center">
+          <div className="text-[10px] font-bold uppercase text-muted-foreground mb-0.5">Séries</div>
+          <div className="grid grid-cols-6 gap-1">
+            {[1, 2, 3, 4, 5, 6].map((n) => (
+              <div key={n} className="flex flex-col items-center">
+                <span className="text-[10px]">💀</span>
+                <span className="text-[9px] text-muted-foreground font-medium">{n}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="text-[10px] font-bold uppercase text-muted-foreground text-center">Observações</div>
+        <div className="text-[10px] font-bold uppercase text-muted-foreground text-center">Técnica de Treino</div>
         <div></div>
       </div>
 
       {/* Exercise Rows */}
       <div className="divide-y divide-border/50">
         {exercises.map((ex) => (
-          <div key={ex.id} className="px-4 py-2 grid gap-1 items-center" style={{ gridTemplateColumns: gridCols }}>
+          <div key={ex.id} className="px-4 py-1.5 grid gap-1 items-center" style={{ gridTemplateColumns: gridCols }}>
+            {/* Exercise Name */}
             <div>
               <p className="text-sm font-medium text-foreground truncate">{ex.name}</p>
-              {ex.notes && <p className="text-[10px] text-muted-foreground truncate">{ex.notes}</p>}
             </div>
+
+            {/* Reps (admin editable) */}
+            <div>
+              <Input
+                type="text"
+                className="h-8 text-xs text-center border-0 bg-secondary/30 px-1 focus-visible:ring-1 focus-visible:ring-primary/30 rounded"
+                placeholder="10-12"
+                value={ex.reps || ""}
+                onChange={(e) => handleRepsChange(ex.id, e.target.value)}
+                onBlur={(e) => handleRepsBlur(ex.id, e.target.value)}
+              />
+            </div>
+
+            {/* Series 1-6 loads (user editable) */}
             {SERIES_KEYS.map((key) => (
               <div key={key}>
                 <Input
@@ -207,21 +228,37 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
                   className="h-8 text-xs text-center border-0 bg-transparent px-0 focus-visible:ring-1 focus-visible:ring-primary/30"
                   placeholder="—"
                   value={(ex[key] as string) || ""}
-                  onChange={(e) => handleLoadChange(ex.id, key, e.target.value)}
-                  onBlur={(e) => handleLoadBlur(ex.id, key, e.target.value)}
+                  onChange={(e) => handleFieldChange(ex.id, key, e.target.value || null)}
+                  onBlur={(e) => handleFieldBlur(ex.id, key, e.target.value || null)}
                 />
               </div>
             ))}
+
+            {/* Observações */}
             <div>
               <Input
                 type="text"
-                className="h-8 text-xs text-center border-0 bg-transparent px-0 focus-visible:ring-1 focus-visible:ring-primary/30"
+                className="h-8 text-xs text-center border-0 bg-transparent px-1 focus-visible:ring-1 focus-visible:ring-primary/30"
                 placeholder="—"
-                value={ex.technique || ""}
-                onChange={(e) => handleTechniqueChange(ex.id, e.target.value)}
-                onBlur={(e) => handleTechniqueBlur(ex.id, e.target.value)}
+                value={ex.notes || ""}
+                onChange={(e) => handleFieldChange(ex.id, "notes", e.target.value || null)}
+                onBlur={(e) => handleFieldBlur(ex.id, "notes", e.target.value || null)}
               />
             </div>
+
+            {/* Técnica de Treino */}
+            <div>
+              <Input
+                type="text"
+                className="h-8 text-xs text-center border-0 bg-transparent px-1 focus-visible:ring-1 focus-visible:ring-primary/30"
+                placeholder="—"
+                value={ex.technique || ""}
+                onChange={(e) => handleFieldChange(ex.id, "technique", e.target.value || null)}
+                onBlur={(e) => handleFieldBlur(ex.id, "technique", e.target.value || null)}
+              />
+            </div>
+
+            {/* Delete */}
             <div className="flex justify-center">
               <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => handleDeleteExercise(ex.id)}>
                 <Trash2 className="w-3 h-3" />
@@ -230,17 +267,15 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
           </div>
         ))}
 
-        {/* Add Exercise Row (inline) */}
+        {/* Add Exercise Row */}
         <div className="px-4 py-2 grid gap-1 items-center bg-secondary/20" style={{ gridTemplateColumns: gridCols }}>
           <div>
             <ExerciseAutocomplete
               value={newExerciseName}
               onChange={setNewExerciseName}
-              onSelect={(catalogEx) => {
-                handleAddExercise(catalogEx.name);
-              }}
+              onSelect={(catalogEx) => handleAddExercise(catalogEx.name)}
               exerciseCatalog={exerciseCatalog}
-              placeholder="Digite o exercício..."
+              placeholder="Adicionar exercício..."
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
@@ -249,12 +284,12 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
               }}
             />
           </div>
-          <div className="col-span-7"></div>
+          <div className="col-span-9"></div>
           <div></div>
         </div>
       </div>
 
-      {/* Add Exercise Button */}
+      {/* Footer */}
       <div className="px-4 py-2 border-t border-border/50">
         <Button
           variant="ghost"
