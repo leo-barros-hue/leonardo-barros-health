@@ -192,7 +192,7 @@ const ImportFoodDialog = ({ open, onOpenChange, onImported }: ImportFoodDialogPr
               </table>
             </ScrollArea>
             <p className="text-[10px] text-muted-foreground mt-2">
-              Valores por 100g. {tab === "taco" ? "Fonte: TACO 4ª ed. – UNICAMP" : "Fonte: TBCA – USP/FCF"}
+              {tab === "taco" ? "Fonte: TACO 4ª ed. – UNICAMP" : "Fonte: TBCA – USP/FCF"}
             </p>
           </TabsContent>
         </Tabs>
