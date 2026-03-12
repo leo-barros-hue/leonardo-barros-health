@@ -528,6 +528,13 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                   ))}
                 </div>
               )}
+
+              {/* Diet Notes */}
+              <DietNotesEditor
+                key={selectedDiet.id}
+                dietId={selectedDiet.id}
+                initialContent={(selectedDiet as any).notes || ""}
+              />
             </>
           )}
         </>
