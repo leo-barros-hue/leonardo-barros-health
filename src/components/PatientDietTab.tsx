@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Plus, Utensils, Pencil, Trash2, Flame, UtensilsCrossed, Scale } from "lucide-react";
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, ReferenceLine } from "recharts";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import DietDialog from "@/components/diet/DietDialog";
@@ -317,8 +317,8 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-6 items-center">
-              {/* Left: Energy Balance */}
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-6 items-start">
+              {/* Left: Cards */}
               <div className="grid grid-cols-3 gap-3 auto-rows-fr">
                 <div className="flex flex-col items-center justify-center gap-0.5 p-3 rounded-xl bg-secondary/40 aspect-square">
                   <Flame className="w-4 h-4 text-primary mb-1" />
@@ -358,26 +358,58 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
               {/* Divider */}
               <div className="hidden lg:block w-px h-full bg-border" />
 
-              {/* Right: Donut Chart */}
-              <div className="flex items-center justify-center">
+              {/* Right: Charts side by side */}
+              <div className="grid grid-cols-2 gap-2 items-center">
+                {/* Bar Chart */}
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart
+                    data={[
+                      { name: "TDEE", value: energyProfile.tdee!, fill: "hsl(var(--primary))" },
+                      { name: "Ingestão", value: totals.calories, fill: "hsl(50, 90%, 55%)" },
+                      { name: "Balanço", value: balance, fill: isDeficit ? "hsl(var(--destructive))" : "hsl(142, 71%, 45%)" },
+                    ]}
+                    margin={{ top: 10, right: 5, bottom: 5, left: 5 }}
+                    barCategoryGap="15%"
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                    <XAxis dataKey="name" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} width={40} />
+                    {balance < 0 && <ReferenceLine y={0} stroke="hsl(var(--border))" />}
+                    <Tooltip
+                      formatter={(value: number) => [`${value.toLocaleString('pt-BR')} kcal`]}
+                      contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
+                    />
+                    <Bar dataKey="value" radius={[4, 4, 0, 0]} label={{ position: 'inside', fontSize: 11, fontWeight: 600, fill: '#fff' }}>
+                      {[
+                        { fill: "hsl(var(--primary))" },
+                        { fill: "hsl(50, 90%, 55%)" },
+                        { fill: isDeficit ? "hsl(var(--destructive))" : "hsl(142, 71%, 45%)" },
+                      ].map((entry, index) => (
+                        <Cell key={index} fill={entry.fill} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+
+                {/* Donut Chart */}
                 <ResponsiveContainer width="100%" height={220}>
                   <PieChart>
                     <Pie
                       data={pieData}
                       cx="50%"
                       cy="50%"
-                      innerRadius={55}
-                      outerRadius={85}
+                      innerRadius={45}
+                      outerRadius={70}
                       paddingAngle={3}
                       dataKey="value"
                       stroke="none"
-                      label={({ cx, cy, midAngle, outerRadius, pct, name }) => {
+                      label={({ cx, cy, midAngle, outerRadius, pct }) => {
                         const RADIAN = Math.PI / 180;
-                        const radius = outerRadius + 18;
+                        const radius = outerRadius + 16;
                         const x = cx + radius * Math.cos(-midAngle * RADIAN);
                         const y = cy + radius * Math.sin(-midAngle * RADIAN);
                         return (
-                          <text x={x} y={y} textAnchor="middle" dominantBaseline="central" style={{ fontSize: 11, fontWeight: 600, fill: "hsl(var(--foreground))" }}>
+                          <text x={x} y={y} textAnchor="middle" dominantBaseline="central" style={{ fontSize: 10, fontWeight: 600, fill: "hsl(var(--foreground))" }}>
                             {pct}%
                           </text>
                         );
@@ -391,10 +423,10 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                       formatter={(value: number, name: string) => [`${value.toLocaleString('pt-BR')} kcal`, name]}
                       contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
                     />
-                    <text x="50%" y="46%" textAnchor="middle" dominantBaseline="central" style={{ fontSize: 20, fontWeight: 700, fill: "hsl(var(--foreground))" }}>
+                    <text x="50%" y="46%" textAnchor="middle" dominantBaseline="central" style={{ fontSize: 16, fontWeight: 700, fill: "hsl(var(--foreground))" }}>
                       {totalCal.toLocaleString('pt-BR')}
                     </text>
-                    <text x="50%" y="57%" textAnchor="middle" dominantBaseline="central" style={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}>
+                    <text x="50%" y="57%" textAnchor="middle" dominantBaseline="central" style={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}>
                       kcal
                     </text>
                   </PieChart>
