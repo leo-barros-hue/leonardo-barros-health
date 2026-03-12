@@ -36,6 +36,7 @@ const AdminFoods = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState({ ...emptyFood });
+  const [showImport, setShowImport] = useState(false);
 
   const fetchFoods = async () => {
     const { data, error } = await supabase.from("foods").select("*").order("category").order("name");
