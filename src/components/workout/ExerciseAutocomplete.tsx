@@ -32,7 +32,6 @@ export default function ExerciseAutocomplete({
     value.length >= 2
       ? exerciseCatalog
           .filter((ex) => ex.name.toLowerCase().includes(value.toLowerCase()))
-          .slice(0, 8)
       : [];
 
   useEffect(() => {
