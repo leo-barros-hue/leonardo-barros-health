@@ -463,20 +463,6 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                 </div>
               </div>
 
-              {/* Macros */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {[
-                  { label: "Calorias", value: `${totals.calories} kcal`, color: "text-primary" },
-                  { label: "Proteína", value: `${totals.protein}g`, color: "text-success" },
-                  { label: "Carboidrato", value: `${totals.carbs}g`, color: "text-warning" },
-                  { label: "Gordura", value: `${totals.fat}g`, color: "text-destructive" },
-                ].map((macro) => (
-                  <div key={macro.label} className="glass-card p-4 text-center">
-                    <p className={`text-xl font-bold ${macro.color}`}>{macro.value}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{macro.label}</p>
-                  </div>
-                ))}
-              </div>
 
               {/* Add Meal Button */}
               <div className="flex justify-end">
