@@ -82,7 +82,7 @@ Metas:
 - Calorias alvo: ${patientProfile.tdee} kcal
 - Peso do paciente: ${patientProfile.weight} kg
 
-Ajuste as quantidades para atingir aproximadamente ${patientProfile.tdee} kcal, mantendo uma distribuição equilibrada de macros.`;
+Ajuste as quantidades para atingir aproximadamente ${patientProfile.tdee} kcal, mantendo uma distribuição equilibrada de macros.${customInstructions ? `\n\nINSTRUÇÕES ADICIONAIS DO NUTRICIONISTA:\n${customInstructions}` : ""}`;
     }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
