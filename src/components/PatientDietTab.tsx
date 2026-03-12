@@ -11,6 +11,7 @@ import DietNotesEditor from "@/components/diet/DietNotesEditor";
 interface Diet {
   id: string;
   name: string;
+  notes: string;
   created_at: string;
   updated_at: string;
 }
