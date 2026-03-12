@@ -417,20 +417,20 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
 
               {/* Donut Chart */}
               <div className="flex items-center justify-center">
-                <ResponsiveContainer width="100%" height={180}>
-                  <PieChart>
+                <ResponsiveContainer width="100%" height={200}>
+                  <PieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                     <Pie
                       data={pieData}
                       cx="50%"
                       cy="50%"
-                      innerRadius={50}
-                      outerRadius={80}
+                      innerRadius={40}
+                      outerRadius={65}
                       paddingAngle={3}
                       dataKey="value"
                       stroke="none"
                       label={({ cx, cy, midAngle, outerRadius, pct }) => {
                         const RADIAN = Math.PI / 180;
-                        const radius = outerRadius + 16;
+                        const radius = outerRadius + 14;
                         const x = cx + radius * Math.cos(-midAngle * RADIAN);
                         const y = cy + radius * Math.sin(-midAngle * RADIAN);
                         return (
@@ -448,7 +448,7 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                       formatter={(value: number, name: string) => [`${value.toLocaleString('pt-BR')} kcal`, name]}
                       contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
                     />
-                    <text x="50%" y="46%" textAnchor="middle" dominantBaseline="central" style={{ fontSize: 18, fontWeight: 700, fill: "hsl(var(--foreground))" }}>
+                    <text x="50%" y="46%" textAnchor="middle" dominantBaseline="central" style={{ fontSize: 16, fontWeight: 700, fill: "hsl(var(--foreground))" }}>
                       {totalCal.toLocaleString('pt-BR')}
                     </text>
                     <text x="50%" y="58%" textAnchor="middle" dominantBaseline="central" style={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}>
