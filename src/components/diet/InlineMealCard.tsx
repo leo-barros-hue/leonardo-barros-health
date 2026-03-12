@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2, Plus, Utensils } from "lucide-react";
 import { toast } from "sonner";
+import FoodAutocomplete from "./FoodAutocomplete";
 
 interface DietMealFood {
   id: string;
