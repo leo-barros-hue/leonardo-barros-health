@@ -327,6 +327,19 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
 
   return (
     <div className="space-y-6">
+      {/* Diet Title Input */}
+      {selectedDiet && (
+        <div className="glass-card p-4 border border-border">
+          <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2 block">Título da Dieta</label>
+          <Input
+            value={dietTitle}
+            onChange={(e) => setDietTitle(e.target.value)}
+            placeholder="Ex: Dieta Hipercalórica - Fase 1"
+            className="text-lg font-semibold bg-transparent border-none shadow-none focus-visible:ring-0 px-0 h-auto"
+          />
+        </div>
+      )}
+
       {/* Combined Energy & Macros Dashboard */}
       {energyProfile.tdee && (() => {
         const balance = totals.calories - energyProfile.tdee!;
