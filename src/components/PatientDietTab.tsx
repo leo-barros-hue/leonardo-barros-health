@@ -9,6 +9,7 @@ import DietDialog from "@/components/diet/DietDialog";
 import InlineMealCard from "@/components/diet/InlineMealCard";
 import DietNotesEditor from "@/components/diet/DietNotesEditor";
 import DietHistoryPanel from "@/components/diet/DietHistoryPanel";
+import AIDietDialog from "@/components/diet/AIDietDialog";
 
 interface Diet {
   id: string;
