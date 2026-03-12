@@ -42,6 +42,7 @@ interface EnergyProfile {
   bmr: number | null;
   tdee: number | null;
   formula: string | null;
+  weight: number | null;
 }
 
 const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
