@@ -277,7 +277,45 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
     return { calories: Math.round(calories), protein: Math.round(protein), carbs: Math.round(carbs), fat: Math.round(fat) };
   };
 
-  if (loading) {
+  const handleSaveAndRelease = async () => {
+    if (!selectedDiet) return;
+    setSaving(true);
+    const totals = calculateTotals();
+    const { error } = await supabase.from("diets").update({
+      name: dietTitle || selectedDiet.name,
+      released_at: new Date().toISOString(),
+      calories_snapshot: totals.calories,
+      weight_snapshot: energyProfile.weight,
+      updated_at: new Date().toISOString(),
+    }).eq("id", selectedDiet.id);
+    setSaving(false);
+    if (error) {
+      toast.error("Erro ao salvar dieta");
+    } else {
+      toast.success("Dieta salva e liberada para o paciente!");
+      fetchDiets();
+    }
+  };
+
+  const handleSaveAdjustments = async () => {
+    if (!selectedDiet) return;
+    setSaving(true);
+    const totals = calculateTotals();
+    const { error } = await supabase.from("diets").update({
+      name: dietTitle || selectedDiet.name,
+      calories_snapshot: totals.calories,
+      updated_at: new Date().toISOString(),
+    }).eq("id", selectedDiet.id);
+    setSaving(false);
+    if (error) {
+      toast.error("Erro ao salvar ajustes");
+    } else {
+      toast.success("Ajustes salvos com sucesso!");
+      fetchDiets();
+    }
+  };
+
+
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
