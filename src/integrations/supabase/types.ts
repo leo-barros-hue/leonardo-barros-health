@@ -182,6 +182,27 @@ export type Database = {
           },
         ]
       }
+      exercise_catalog: {
+        Row: {
+          created_at: string
+          id: string
+          muscle_group: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          muscle_group?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          muscle_group?: string
+          name?: string
+        }
+        Relationships: []
+      }
       foods: {
         Row: {
           carbs_per_unit: number
