@@ -11,20 +11,26 @@ interface WorkoutDayDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   programId: string;
-  day?: { id: string; name: string; sort_order: number } | null;
+  day?: { id: string; name: string; sort_order: number; rep_range?: string | null; rest_interval?: string | null } | null;
   onSuccess: () => void;
 }
 
 const WorkoutDayDialog = ({ open, onOpenChange, programId, day, onSuccess }: WorkoutDayDialogProps) => {
   const [name, setName] = useState("");
+  const [repRange, setRepRange] = useState("");
+  const [restInterval, setRestInterval] = useState("");
   const [loading, setLoading] = useState(false);
   const isEditing = !!day;
 
   useEffect(() => {
     if (day) {
       setName(day.name);
+      setRepRange(day.rep_range || "");
+      setRestInterval(day.rest_interval || "");
     } else {
       setName("");
+      setRepRange("");
+      setRestInterval("");
     }
   }, [day, open]);
 
@@ -37,10 +43,16 @@ const WorkoutDayDialog = ({ open, onOpenChange, programId, day, onSuccess }: Wor
 
     setLoading(true);
     try {
+      const payload: any = {
+        name,
+        rep_range: repRange || null,
+        rest_interval: restInterval || null,
+      };
+
       if (isEditing) {
         const { error } = await supabase
           .from("workout_days")
-          .update({ name })
+          .update(payload)
           .eq("id", day.id);
         if (error) throw error;
         toast.success("Treino atualizado");
@@ -51,12 +63,12 @@ const WorkoutDayDialog = ({ open, onOpenChange, programId, day, onSuccess }: Wor
           .eq("program_id", programId)
           .order("sort_order", { ascending: false })
           .limit(1);
-        
+
         const newOrder = maxOrder && maxOrder.length > 0 ? maxOrder[0].sort_order + 1 : 0;
 
         const { error } = await supabase
           .from("workout_days")
-          .insert({ name, program_id: programId, sort_order: newOrder });
+          .insert({ ...payload, program_id: programId, sort_order: newOrder });
         if (error) throw error;
         toast.success("Treino adicionado");
       }
@@ -85,6 +97,26 @@ const WorkoutDayDialog = ({ open, onOpenChange, programId, day, onSuccess }: Wor
               onChange={(e) => setName(e.target.value)}
               placeholder="Ex: Treino A - Peito e Tríceps"
             />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="rep-range">Faixa de Repetições</Label>
+              <Input
+                id="rep-range"
+                value={repRange}
+                onChange={(e) => setRepRange(e.target.value)}
+                placeholder="Ex: 10-12"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="rest-interval">Intervalo entre Séries</Label>
+              <Input
+                id="rest-interval"
+                value={restInterval}
+                onChange={(e) => setRestInterval(e.target.value)}
+                placeholder="Ex: 60s"
+              />
+            </div>
           </div>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

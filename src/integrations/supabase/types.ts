@@ -627,18 +627,24 @@ export type Database = {
           id: string
           name: string
           program_id: string
+          rep_range: string | null
+          rest_interval: string | null
           sort_order: number
         }
         Insert: {
           id?: string
           name: string
           program_id: string
+          rep_range?: string | null
+          rest_interval?: string | null
           sort_order?: number
         }
         Update: {
           id?: string
           name?: string
           program_id?: string
+          rep_range?: string | null
+          rest_interval?: string | null
           sort_order?: number
         }
         Relationships: [
@@ -654,32 +660,53 @@ export type Database = {
       workout_exercises: {
         Row: {
           id: string
+          load_s1: string | null
+          load_s2: string | null
+          load_s3: string | null
+          load_s4: string | null
+          load_s5: string | null
+          load_s6: string | null
           name: string
           notes: string | null
           reps: string
           rest_seconds: number | null
           sets: number
           sort_order: number
+          technique: string | null
           workout_day_id: string
         }
         Insert: {
           id?: string
+          load_s1?: string | null
+          load_s2?: string | null
+          load_s3?: string | null
+          load_s4?: string | null
+          load_s5?: string | null
+          load_s6?: string | null
           name: string
           notes?: string | null
           reps?: string
           rest_seconds?: number | null
           sets?: number
           sort_order?: number
+          technique?: string | null
           workout_day_id: string
         }
         Update: {
           id?: string
+          load_s1?: string | null
+          load_s2?: string | null
+          load_s3?: string | null
+          load_s4?: string | null
+          load_s5?: string | null
+          load_s6?: string | null
           name?: string
           notes?: string | null
           reps?: string
           rest_seconds?: number | null
           sets?: number
           sort_order?: number
+          technique?: string | null
           workout_day_id?: string
         }
         Relationships: [
