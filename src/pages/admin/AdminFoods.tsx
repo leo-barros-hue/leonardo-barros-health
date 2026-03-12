@@ -181,6 +181,7 @@ const AdminFoods = () => {
           {filtered.length} alimento(s) encontrado(s)
         </div>
       </div>
+      <ImportFoodDialog open={showImport} onOpenChange={setShowImport} onImported={fetchFoods} />
     </div>
   );
 };
