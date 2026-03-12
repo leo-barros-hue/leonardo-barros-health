@@ -143,7 +143,8 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
     setEnergyProfile({
       bmr: bmr > 0 ? Math.round(bmr) : null,
       tdee: tdee > 0 ? Math.round(tdee) : null,
-      formula: formulaNames[formula] || null
+      formula: formulaNames[formula] || null,
+      weight: weight > 0 ? weight : null
     });
   };
 
