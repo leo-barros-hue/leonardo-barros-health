@@ -123,17 +123,7 @@ const AdminPatientDetail = () => {
       </button>
 
       {/* Patient Header */}
-      <div className="glass-card p-6 flex items-center gap-4">
-        <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-2xl font-bold text-primary">
-          {patient.name.charAt(0)}
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{patient.name}</h1>
-          <p className="text-muted-foreground">
-            {patient.objective || "Sem objetivo"} · {calculateAge(patient.birth_date)} · {sexLabel}
-          </p>
-        </div>
-      </div>
+      <PatientInfoHeader patient={patient} />
 
       {/* Tabs */}
       <div className="flex gap-2 overflow-x-auto pb-2">
