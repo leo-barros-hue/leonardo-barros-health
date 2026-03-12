@@ -319,50 +319,9 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_2fr] gap-6 items-start">
-              {/* Left: Cards */}
-              <div className="grid grid-cols-3 gap-3 auto-rows-fr">
-                <div className="flex flex-col items-center justify-center gap-0.5 p-3 rounded-xl bg-secondary/40 aspect-square">
-                  <Flame className="w-4 h-4 text-primary mb-1" />
-                  <p className="text-lg font-bold text-primary">{energyProfile.tdee!.toLocaleString('pt-BR')}</p>
-                  <p className="text-[10px] text-muted-foreground">TDEE (kcal)</p>
-                </div>
-                <div className="flex flex-col items-center justify-center gap-0.5 p-3 rounded-xl bg-secondary/40 aspect-square">
-                  <UtensilsCrossed className="w-4 h-4 text-foreground mb-1" />
-                  <p className="text-lg font-bold text-foreground">{totals.calories.toLocaleString('pt-BR')}</p>
-                  <p className="text-[10px] text-muted-foreground">Ingestão (kcal)</p>
-                </div>
-                <div className={`flex flex-col items-center justify-center gap-0.5 p-3 rounded-xl aspect-square ${isDeficit ? 'bg-destructive/10' : isSurplus ? 'bg-success/10' : 'bg-secondary/40'}`}>
-                  <Scale className={`w-4 h-4 mb-1 ${isDeficit ? 'text-destructive' : isSurplus ? 'text-success' : 'text-muted-foreground'}`} />
-                  <p className={`text-lg font-bold ${isDeficit ? 'text-destructive' : isSurplus ? 'text-success' : 'text-foreground'}`}>
-                    {isSurplus ? '+' : ''}{balance.toLocaleString('pt-BR')}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground">
-                    {isDeficit ? 'Déficit' : isSurplus ? 'Superávit' : 'Equilíbrio'}
-                  </p>
-                </div>
-                {[
-                { label: "Proteína", value: protPerKg, color: "text-success", total: `${totals.protein}g`, pct: `${protPct}%` },
-                { label: "Carboidrato", value: carbsPerKg, color: "text-warning", total: `${totals.carbs}g`, pct: `${carbsPct}%` },
-                { label: "Gordura", value: fatPerKg, color: "text-destructive", total: `${totals.fat}g`, pct: `${fatPct}%` }].
-                map((macro) =>
-                <div key={macro.label} className="flex flex-col items-center justify-center gap-0.5 p-3 rounded-xl bg-secondary/40 aspect-square">
-                    <p className="text-[10px] text-muted-foreground">{macro.label}</p>
-                    <p className={`text-lg font-bold ${macro.color}`}>
-                      {weight > 0 ? macro.value.toFixed(1) : "—"}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground">g/kg/dia</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{macro.total} · {macro.pct}</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Divider */}
-              <div className="hidden lg:block w-px h-full bg-border" />
-
-              {/* Right: Charts side by side */}
-              <div className="grid grid-cols-[0.8fr_1.2fr] gap-2 items-center h-full">
-                {/* Bar Chart */}
+            <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr_auto] gap-4 items-center">
+              {/* Left: Bar Chart */}
+              <div className="w-[220px]">
                 <ResponsiveContainer width="100%" height={280}>
                   <BarChart
                     data={[
@@ -392,9 +351,48 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
+              </div>
 
-                {/* Donut Chart */}
-                <ResponsiveContainer width="100%" height={300} className="px-0 rounded-none shadow-none border-0 mx-[50px]">
+              {/* Center: Cards */}
+              <div className="grid grid-cols-3 grid-rows-2 gap-3">
+                <div className="flex flex-col items-center justify-center gap-0.5 p-3 rounded-xl bg-secondary/40">
+                  <Flame className="w-4 h-4 text-primary mb-1" />
+                  <p className="text-lg font-bold text-primary">{energyProfile.tdee!.toLocaleString('pt-BR')}</p>
+                  <p className="text-[10px] text-muted-foreground">TDEE (kcal)</p>
+                </div>
+                <div className="flex flex-col items-center justify-center gap-0.5 p-3 rounded-xl bg-secondary/40">
+                  <UtensilsCrossed className="w-4 h-4 text-foreground mb-1" />
+                  <p className="text-lg font-bold text-foreground">{totals.calories.toLocaleString('pt-BR')}</p>
+                  <p className="text-[10px] text-muted-foreground">Ingestão (kcal)</p>
+                </div>
+                <div className={`flex flex-col items-center justify-center gap-0.5 p-3 rounded-xl ${isDeficit ? 'bg-destructive/10' : isSurplus ? 'bg-success/10' : 'bg-secondary/40'}`}>
+                  <Scale className={`w-4 h-4 mb-1 ${isDeficit ? 'text-destructive' : isSurplus ? 'text-success' : 'text-muted-foreground'}`} />
+                  <p className={`text-lg font-bold ${isDeficit ? 'text-destructive' : isSurplus ? 'text-success' : 'text-foreground'}`}>
+                    {isSurplus ? '+' : ''}{balance.toLocaleString('pt-BR')}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {isDeficit ? 'Déficit' : isSurplus ? 'Superávit' : 'Equilíbrio'}
+                  </p>
+                </div>
+                {[
+                { label: "Proteína", value: protPerKg, color: "text-success", total: `${totals.protein}g`, pct: `${protPct}%` },
+                { label: "Carboidrato", value: carbsPerKg, color: "text-warning", total: `${totals.carbs}g`, pct: `${carbsPct}%` },
+                { label: "Gordura", value: fatPerKg, color: "text-destructive", total: `${totals.fat}g`, pct: `${fatPct}%` }].
+                map((macro) =>
+                <div key={macro.label} className="flex flex-col items-center justify-center gap-0.5 p-3 rounded-xl bg-secondary/40">
+                    <p className="text-[10px] text-muted-foreground">{macro.label}</p>
+                    <p className={`text-lg font-bold ${macro.color}`}>
+                      {weight > 0 ? macro.value.toFixed(1) : "—"}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">g/kg/dia</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">{macro.total} · {macro.pct}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Right: Donut Chart */}
+              <div className="w-[300px]">
+                <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie
                       data={pieData}
@@ -414,7 +412,6 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                           <text x={x} y={y} textAnchor="middle" dominantBaseline="central" style={{ fontSize: 11, fontWeight: 600, fill: "hsl(var(--foreground))" }}>
                             {pct}%
                           </text>);
-
                       }}>
                       
                       {pieData.map((_, index) =>
