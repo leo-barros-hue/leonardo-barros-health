@@ -266,15 +266,17 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
               />
             </div>
 
-            {/* Técnica de Treino */}
+            {/* Técnica de Treino - Autocomplete */}
             <div>
-              <Input
-                type="text"
-                className="h-8 text-xs text-center border-0 bg-transparent px-1 focus-visible:ring-1 focus-visible:ring-primary/30"
-                placeholder="—"
-                value={ex.technique || ""}
-                onChange={(e) => handleFieldChange(ex.id, "technique", e.target.value || null)}
-                onBlur={(e) => handleFieldBlur(ex.id, "technique", e.target.value || null)}
+              <TechniqueAutocomplete
+                value={ex.technique}
+                onSelect={async (technique) => {
+                  const newVal = technique?.name || null;
+                  handleFieldChange(ex.id, "technique", newVal);
+                  await supabase.from("workout_exercises").update({ technique: newVal } as any).eq("id", ex.id);
+                }}
+                techniqueCatalog={techniqueCatalog}
+                onDescriptionClick={(t) => setTechniqueDetail(t)}
               />
             </div>
 
