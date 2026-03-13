@@ -643,6 +643,27 @@ export type Database = {
           },
         ]
       }
+      technique_catalog: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       workout_days: {
         Row: {
           id: string

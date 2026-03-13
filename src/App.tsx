@@ -12,6 +12,7 @@ import AdminPatientDetail from "./pages/admin/AdminPatientDetail";
 import AdminDiets from "./pages/admin/AdminDiets";
 import AdminFoods from "./pages/admin/AdminFoods";
 import AdminExercises from "./pages/admin/AdminExercises";
+import AdminTechniques from "./pages/admin/AdminTechniques";
 import AdminForms from "./pages/admin/AdminForms";
 import PatientDashboard from "./pages/patient/PatientDashboard";
 import PatientDiet from "./pages/patient/PatientDiet";
@@ -43,6 +44,7 @@ const App = () => (
             <Route path="prescriptions" element={<AdminDashboard />} />
             <Route path="foods" element={<AdminFoods />} />
             <Route path="exercises" element={<AdminExercises />} />
+            <Route path="techniques" element={<AdminTechniques />} />
             <Route path="forms" element={<AdminForms />} />
           </Route>
 

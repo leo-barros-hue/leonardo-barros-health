@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Trash2, Plus, Dumbbell } from "lucide-react";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import ExerciseAutocomplete from "./ExerciseAutocomplete";
+import TechniqueAutocomplete from "./TechniqueAutocomplete";
 
 interface WorkoutExercise {
   id: string;
@@ -38,6 +40,12 @@ interface ExerciseCatalogItem {
   muscle_group: string;
 }
 
+interface TechniqueCatalogItem {
+  id: string;
+  name: string;
+  description: string;
+}
+
 interface InlineWorkoutCardProps {
   day: WorkoutDay;
   dayIndex: number;
@@ -53,9 +61,11 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
   const [restInterval, setRestInterval] = useState(day.rest_interval || "");
   const [exercises, setExercises] = useState<WorkoutExercise[]>(day.exercises);
   const [exerciseCatalog, setExerciseCatalog] = useState<ExerciseCatalogItem[]>([]);
+  const [techniqueCatalog, setTechniqueCatalog] = useState<TechniqueCatalogItem[]>([]);
   const [newExerciseName, setNewExerciseName] = useState("");
   const [seriesEmojis, setSeriesEmojis] = useState<string[]>(["💀", "💀", "💀", "💀", "💀", "💀"]);
   const [openEmojiIdx, setOpenEmojiIdx] = useState<number | null>(null);
+  const [techniqueDetail, setTechniqueDetail] = useState<TechniqueCatalogItem | null>(null);
 
   const nameTimeout = useRef<NodeJS.Timeout>();
   const restTimeout = useRef<NodeJS.Timeout>();
@@ -67,14 +77,15 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
   }, [day]);
 
   useEffect(() => {
-    const fetch = async () => {
-      const { data } = await supabase
-        .from("exercise_catalog")
-        .select("id, name, muscle_group")
-        .order("name");
-      setExerciseCatalog((data as ExerciseCatalogItem[]) || []);
+    const fetchCatalogs = async () => {
+      const [exRes, techRes] = await Promise.all([
+        supabase.from("exercise_catalog").select("id, name, muscle_group").order("name"),
+        supabase.from("technique_catalog").select("id, name, description").order("name"),
+      ]);
+      setExerciseCatalog((exRes.data as ExerciseCatalogItem[]) || []);
+      setTechniqueCatalog((techRes.data as TechniqueCatalogItem[]) || []);
     };
-    fetch();
+    fetchCatalogs();
   }, []);
 
   const debounceUpdate = (ref: React.MutableRefObject<NodeJS.Timeout | undefined>, field: Record<string, any>) => {
@@ -255,15 +266,17 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
               />
             </div>
 
-            {/* Técnica de Treino */}
+            {/* Técnica de Treino - Autocomplete */}
             <div>
-              <Input
-                type="text"
-                className="h-8 text-xs text-center border-0 bg-transparent px-1 focus-visible:ring-1 focus-visible:ring-primary/30"
-                placeholder="—"
-                value={ex.technique || ""}
-                onChange={(e) => handleFieldChange(ex.id, "technique", e.target.value || null)}
-                onBlur={(e) => handleFieldBlur(ex.id, "technique", e.target.value || null)}
+              <TechniqueAutocomplete
+                value={ex.technique}
+                onSelect={async (technique) => {
+                  const newVal = technique?.name || null;
+                  handleFieldChange(ex.id, "technique", newVal);
+                  await supabase.from("workout_exercises").update({ technique: newVal } as any).eq("id", ex.id);
+                }}
+                techniqueCatalog={techniqueCatalog}
+                onDescriptionClick={(t) => setTechniqueDetail(t)}
               />
             </div>
 
@@ -311,6 +324,17 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
           Adicionar exercício
         </Button>
       </div>
+      {/* Technique Detail Dialog */}
+      <Dialog open={!!techniqueDetail} onOpenChange={(o) => !o && setTechniqueDetail(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{techniqueDetail?.name}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+            {techniqueDetail?.description || "Sem descrição disponível."}
+          </p>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
