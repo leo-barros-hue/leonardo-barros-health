@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Plus, Trash2, Pencil, Dumbbell } from "lucide-react";
+import { Loader2, Plus, Trash2, Pencil, Dumbbell, Copy, Save, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import WorkoutProgramDialog from "@/components/workout/WorkoutProgramDialog";
 import InlineWorkoutCard from "@/components/workout/InlineWorkoutCard";
+import WorkoutHistoryPanel from "@/components/workout/WorkoutHistoryPanel";
 
 interface WorkoutExercise {
   id: string;
