@@ -40,6 +40,12 @@ interface ExerciseCatalogItem {
   muscle_group: string;
 }
 
+interface TechniqueCatalogItem {
+  id: string;
+  name: string;
+  description: string;
+}
+
 interface InlineWorkoutCardProps {
   day: WorkoutDay;
   dayIndex: number;
