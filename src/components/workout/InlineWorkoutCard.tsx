@@ -46,6 +46,7 @@ interface InlineWorkoutCardProps {
 }
 
 const SERIES_KEYS = ["load_s1", "load_s2", "load_s3", "load_s4", "load_s5", "load_s6"] as const;
+const EMOJI_OPTIONS = ["🐔", "💀", "💀💀", "💀💀💀", "😈"];
 
 export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }: InlineWorkoutCardProps) {
   const [name, setName] = useState(day.name);
@@ -53,6 +54,8 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
   const [exercises, setExercises] = useState<WorkoutExercise[]>(day.exercises);
   const [exerciseCatalog, setExerciseCatalog] = useState<ExerciseCatalogItem[]>([]);
   const [newExerciseName, setNewExerciseName] = useState("");
+  const [seriesEmojis, setSeriesEmojis] = useState<string[]>(["💀", "💀", "💀", "💀", "💀", "💀"]);
+  const [openEmojiIdx, setOpenEmojiIdx] = useState<number | null>(null);
 
   const nameTimeout = useRef<NodeJS.Timeout>();
   const restTimeout = useRef<NodeJS.Timeout>();
@@ -101,6 +104,11 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
     await supabase.from("workout_exercises").update({ reps: value } as any).eq("id", exerciseId);
   };
 
+  const handleEmojiSelect = (colIdx: number, emoji: string) => {
+    setSeriesEmojis((prev) => prev.map((e, i) => (i === colIdx ? emoji : e)));
+    setOpenEmojiIdx(null);
+  };
+
   const handleDeleteExercise = async (exerciseId: string) => {
     const { error } = await supabase.from("workout_exercises").delete().eq("id", exerciseId);
     if (error) { toast.error("Erro ao excluir exercício"); return; }
@@ -144,8 +152,8 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
     setNewExerciseName("");
   };
 
-  // Grid: Exercício | Reps | S1 | S2 | S3 | S4 | S5 | S6 | Observações | Técnica | Delete
-  const gridCols = "1fr 70px 55px 55px 55px 55px 55px 55px 130px 120px 40px";
+  // Grid: Exercício | S1 | S2 | S3 | S4 | S5 | S6 | Observações | Técnica | Delete
+  const gridCols = "0.7fr 75px 75px 75px 75px 75px 75px 1.2fr 120px 40px";
 
   return (
     <div className="glass-card overflow-visible">
@@ -180,19 +188,32 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
       {/* Table Header */}
       <div className="bg-muted/20 px-4 py-2 grid gap-1 items-end" style={{ gridTemplateColumns: gridCols }}>
         <div className="text-[10px] font-bold uppercase text-muted-foreground">Exercícios</div>
-        <div className="text-[10px] font-bold uppercase text-muted-foreground text-center">Reps</div>
-        {/* Séries group header */}
-        <div className="col-span-6 text-center">
-          <div className="text-[10px] font-bold uppercase text-muted-foreground mb-0.5">Séries</div>
-          <div className="grid grid-cols-6 gap-1">
-            {[1, 2, 3, 4, 5, 6].map((n) => (
-              <div key={n} className="flex flex-col items-center">
-                <span className="text-[10px]">💀</span>
-                <span className="text-[9px] text-muted-foreground font-medium">{n}</span>
+        {[1, 2, 3, 4, 5, 6].map((n, colIdx) => (
+          <div key={n} className="flex flex-col items-center gap-0.5 relative">
+            <button
+              type="button"
+              className="text-lg cursor-pointer hover:scale-110 transition-transform"
+              onClick={() => setOpenEmojiIdx(openEmojiIdx === colIdx ? null : colIdx)}
+            >
+              {seriesEmojis[colIdx]}
+            </button>
+            {openEmojiIdx === colIdx && (
+              <div className="absolute top-full mt-1 z-50 bg-popover border border-border rounded-lg shadow-lg p-1.5 flex gap-1">
+                {EMOJI_OPTIONS.map((emoji) => (
+                  <button
+                    key={emoji}
+                    type="button"
+                    className={`text-lg p-1 rounded hover:bg-accent transition-colors ${seriesEmojis[colIdx] === emoji ? 'bg-accent' : ''}`}
+                    onClick={() => handleEmojiSelect(colIdx, emoji)}
+                  >
+                    {emoji}
+                  </button>
+                ))}
               </div>
-            ))}
+            )}
+            <span className="text-[9px] text-muted-foreground font-medium">{n} set</span>
           </div>
-        </div>
+        ))}
         <div className="text-[10px] font-bold uppercase text-muted-foreground text-center">Observações</div>
         <div className="text-[10px] font-bold uppercase text-muted-foreground text-center">Técnica de Treino</div>
         <div></div>
@@ -207,25 +228,13 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
               <p className="text-sm font-medium text-foreground truncate">{ex.name}</p>
             </div>
 
-            {/* Reps (admin editable) */}
-            <div>
-              <Input
-                type="text"
-                className="h-8 text-xs text-center border-0 bg-secondary/30 px-1 focus-visible:ring-1 focus-visible:ring-primary/30 rounded"
-                placeholder="10-12"
-                value={ex.reps || ""}
-                onChange={(e) => handleRepsChange(ex.id, e.target.value)}
-                onBlur={(e) => handleRepsBlur(ex.id, e.target.value)}
-              />
-            </div>
-
-            {/* Series 1-6 loads (user editable) */}
+            {/* Series 1-6 (load + reps inline) */}
             {SERIES_KEYS.map((key) => (
               <div key={key}>
                 <Input
                   type="text"
                   inputMode="decimal"
-                  className="h-8 text-xs text-center border-0 bg-transparent px-0 focus-visible:ring-1 focus-visible:ring-primary/30"
+                  className="h-8 text-xs text-center border-0 bg-secondary/30 px-0 focus-visible:ring-1 focus-visible:ring-primary/30 rounded"
                   placeholder="—"
                   value={(ex[key] as string) || ""}
                   onChange={(e) => handleFieldChange(ex.id, key, e.target.value || null)}
@@ -284,7 +293,7 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
               }}
             />
           </div>
-          <div className="col-span-9"></div>
+          <div className="col-span-8"></div>
           <div></div>
         </div>
       </div>
