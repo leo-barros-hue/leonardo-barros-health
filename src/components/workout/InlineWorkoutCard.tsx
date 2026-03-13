@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2, Plus, Dumbbell } from "lucide-react";
+import { Trash2, Plus, Dumbbell, ChevronUp, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import ExerciseAutocomplete from "./ExerciseAutocomplete";
 
@@ -115,6 +115,23 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
     setExercises((prev) => prev.filter((ex) => ex.id !== exerciseId));
   };
 
+  const handleMoveExercise = async (index: number, direction: "up" | "down") => {
+    const newIndex = direction === "up" ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= exercises.length) return;
+
+    const updated = [...exercises];
+    [updated[index], updated[newIndex]] = [updated[newIndex], updated[index]];
+
+    // Update sort_order for both swapped exercises
+    const updates = updated.map((ex, i) => ({ ...ex, sort_order: i }));
+    setExercises(updates);
+
+    await Promise.all([
+      supabase.from("workout_exercises").update({ sort_order: newIndex } as any).eq("id", exercises[index].id),
+      supabase.from("workout_exercises").update({ sort_order: index } as any).eq("id", exercises[newIndex].id),
+    ]);
+  };
+
   const handleAddExercise = async (exerciseName: string) => {
     if (!exerciseName.trim()) return;
 
@@ -153,7 +170,7 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
   };
 
   // Grid: Exercício | S1 | S2 | S3 | S4 | S5 | S6 | Observações | Técnica | Delete
-  const gridCols = "0.7fr 75px 75px 75px 75px 75px 75px 1.2fr 120px 40px";
+  const gridCols = "40px 0.7fr 75px 75px 75px 75px 75px 75px 1.2fr 120px 40px";
 
   return (
     <div className="glass-card overflow-visible">
@@ -187,6 +204,7 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
 
       {/* Table Header */}
       <div className="bg-muted/20 px-4 py-2 grid gap-1 items-end" style={{ gridTemplateColumns: gridCols }}>
+        <div className="text-[10px] font-bold uppercase text-muted-foreground text-center">Ordem</div>
         <div className="text-[10px] font-bold uppercase text-muted-foreground">Exercícios</div>
         {[1, 2, 3, 4, 5, 6].map((n, colIdx) => (
           <div key={n} className="flex flex-col items-center gap-0.5 relative">
@@ -221,8 +239,30 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
 
       {/* Exercise Rows */}
       <div className="divide-y divide-border/50">
-        {exercises.map((ex) => (
+        {exercises.map((ex, exIndex) => (
           <div key={ex.id} className="px-4 py-1.5 grid gap-1 items-center min-w-0" style={{ gridTemplateColumns: gridCols }}>
+            {/* Reorder buttons */}
+            <div className="flex flex-col items-center gap-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-5 w-5 p-0 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                disabled={exIndex === 0}
+                onClick={() => handleMoveExercise(exIndex, "up")}
+              >
+                <ChevronUp className="w-3.5 h-3.5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-5 w-5 p-0 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                disabled={exIndex === exercises.length - 1}
+                onClick={() => handleMoveExercise(exIndex, "down")}
+              >
+                <ChevronDown className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+
             {/* Exercise Name - Inline editable */}
             <div className="min-w-0 overflow-hidden">
               <ExerciseAutocomplete
@@ -304,7 +344,7 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
               }}
             />
           </div>
-          <div className="col-span-8"></div>
+          <div className="col-span-9"></div>
           <div></div>
         </div>
       </div>

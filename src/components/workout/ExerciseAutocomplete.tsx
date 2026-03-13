@@ -107,11 +107,20 @@ export default function ExerciseAutocomplete({
         value={value}
         onChange={(e) => {
           onChange(e.target.value);
-          setOpen(true);
+          if (e.target.value.length >= 2) {
+            setOpen(true);
+          }
         }}
-        onFocus={() => setOpen(true)}
+        onFocus={() => {
+          if (value.length >= 2) {
+            setOpen(true);
+          }
+        }}
         onBlur={() => {
-          onBlur?.();
+          // Delay blur to allow dropdown click to register
+          setTimeout(() => {
+            onBlur?.();
+          }, 150);
         }}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
