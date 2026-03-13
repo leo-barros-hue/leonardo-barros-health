@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Plus, Trash2, Pencil, Dumbbell } from "lucide-react";
+import { Loader2, Plus, Trash2, Pencil, Dumbbell, Copy, Save, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import WorkoutProgramDialog from "@/components/workout/WorkoutProgramDialog";
 import InlineWorkoutCard from "@/components/workout/InlineWorkoutCard";
+import WorkoutHistoryPanel from "@/components/workout/WorkoutHistoryPanel";
 
 interface WorkoutExercise {
   id: string;
@@ -48,6 +49,8 @@ const PatientWorkoutTab = ({ patientId }: Props) => {
   const [programs, setPrograms] = useState<WorkoutProgram[]>([]);
   const [selectedProgram, setSelectedProgram] = useState<WorkoutProgram | null>(null);
   const [days, setDays] = useState<WorkoutDay[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const [programDialogOpen, setProgramDialogOpen] = useState(false);
   const [editingProgram, setEditingProgram] = useState<WorkoutProgram | null>(null);
@@ -138,6 +141,39 @@ const PatientWorkoutTab = ({ patientId }: Props) => {
     }
   };
 
+  const handleCopyLastDay = async () => {
+    if (!selectedProgram || days.length === 0) return;
+
+    const lastDay = days[days.length - 1];
+
+    const { data: maxOrder } = await supabase
+      .from("workout_days")
+      .select("sort_order")
+      .eq("program_id", selectedProgram.id)
+      .order("sort_order", { ascending: false })
+      .limit(1);
+
+    const newOrder = maxOrder && maxOrder.length > 0 ? maxOrder[0].sort_order + 1 : 0;
+    const dayLetter = String.fromCharCode(65 + newOrder);
+
+    const { error } = await supabase
+      .from("workout_days")
+      .insert({
+        name: `Treino ${dayLetter}`,
+        program_id: selectedProgram.id,
+        sort_order: newOrder,
+        rep_range: lastDay.rep_range,
+        rest_interval: lastDay.rest_interval,
+      } as any);
+
+    if (error) {
+      toast.error("Erro ao copiar treino");
+    } else {
+      toast.success("Treino copiado (sem exercícios)");
+      fetchDays(selectedProgram.id);
+    }
+  };
+
   const handleAddDay = async () => {
     if (!selectedProgram) return;
 
@@ -149,7 +185,7 @@ const PatientWorkoutTab = ({ patientId }: Props) => {
       .limit(1);
 
     const newOrder = maxOrder && maxOrder.length > 0 ? maxOrder[0].sort_order + 1 : 0;
-    const dayLetter = String.fromCharCode(65 + newOrder); // A, B, C...
+    const dayLetter = String.fromCharCode(65 + newOrder);
 
     const { error } = await supabase
       .from("workout_days")
@@ -164,6 +200,35 @@ const PatientWorkoutTab = ({ patientId }: Props) => {
     } else {
       toast.success("Treino adicionado");
       fetchDays(selectedProgram.id);
+    }
+  };
+
+  const handleSaveAdjustments = async () => {
+    if (!selectedProgram) return;
+    setSaving(true);
+    const { error } = await supabase.from("workout_programs").update({
+      updated_at: new Date().toISOString(),
+    }).eq("id", selectedProgram.id);
+    setSaving(false);
+    if (error) {
+      toast.error("Erro ao salvar ajustes");
+    } else {
+      toast.success("Ajustes salvos com sucesso!");
+    }
+  };
+
+  const handleSaveAndRelease = async () => {
+    if (!selectedProgram) return;
+    setSaving(true);
+    const { error } = await supabase.from("workout_programs").update({
+      updated_at: new Date().toISOString(),
+    }).eq("id", selectedProgram.id);
+    setSaving(false);
+    if (error) {
+      toast.error("Erro ao salvar alterações");
+    } else {
+      toast.success("Treino salvo e atualizado!");
+      fetchPrograms();
     }
   };
 
@@ -246,11 +311,50 @@ const PatientWorkoutTab = ({ patientId }: Props) => {
                 ))}
               </div>
 
-              {/* Add Day Button */}
-              <Button variant="outline" onClick={handleAddDay} className="gap-2 w-full">
-                <Plus className="w-4 h-4" />
-                Adicionar Treino
-              </Button>
+              {/* Add Day Buttons */}
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={handleAddDay} className="gap-2 flex-1">
+                  <Plus className="w-4 h-4" />
+                  Adicionar Novo Treino
+                </Button>
+                {days.length > 0 && (
+                  <Button variant="outline" onClick={handleCopyLastDay} className="gap-2 flex-1">
+                    <Copy className="w-4 h-4" />
+                    Copiar Treino Acima
+                  </Button>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="glass-card p-5 border border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setHistoryOpen(true)}
+                  className="gap-2"
+                >
+                  <History className="w-4 h-4" />
+                  Histórico de Treinos
+                </Button>
+                <div className="flex gap-3">
+                  <Button
+                    variant="secondary"
+                    onClick={handleSaveAdjustments}
+                    disabled={saving}
+                    className="gap-2"
+                  >
+                    {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                    SALVAR AJUSTES
+                  </Button>
+                  <Button
+                    onClick={handleSaveAndRelease}
+                    disabled={saving}
+                    className="gap-2"
+                  >
+                    {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                    SALVAR ALTERAÇÕES
+                  </Button>
+                </div>
+              </div>
             </>
           )}
         </>
@@ -263,6 +367,13 @@ const PatientWorkoutTab = ({ patientId }: Props) => {
         patientId={patientId}
         program={editingProgram}
         onSuccess={fetchPrograms}
+      />
+
+      {/* History Panel */}
+      <WorkoutHistoryPanel
+        patientId={patientId}
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
       />
     </div>
   );

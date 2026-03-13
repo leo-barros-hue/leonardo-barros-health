@@ -14,6 +14,8 @@ interface ExerciseAutocompleteProps {
   exerciseCatalog: ExerciseCatalogItem[];
   placeholder?: string;
   onKeyDown?: (e: React.KeyboardEvent) => void;
+  onBlur?: () => void;
+  inputClassName?: string;
 }
 
 const MUSCLE_GROUP_ORDER = [
@@ -28,6 +30,8 @@ export default function ExerciseAutocomplete({
   exerciseCatalog,
   placeholder = "Adicionar exercício...",
   onKeyDown,
+  onBlur,
+  inputClassName,
 }: ExerciseAutocompleteProps) {
   const [open, setOpen] = useState(false);
   const [highlightIndex, setHighlightIndex] = useState(-1);
@@ -106,9 +110,12 @@ export default function ExerciseAutocomplete({
           setOpen(true);
         }}
         onFocus={() => setOpen(true)}
+        onBlur={() => {
+          onBlur?.();
+        }}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        className="h-8 text-sm border-0 bg-transparent px-1 focus-visible:ring-0"
+        className={inputClassName || "h-8 text-sm border-0 bg-transparent px-1 focus-visible:ring-0"}
       />
       {open && flatList.length > 0 && (
         <div
