@@ -36,7 +36,9 @@ export default function ExerciseAutocomplete({
 }: ExerciseAutocompleteProps) {
   const [open, setOpen] = useState(false);
   const [highlightIndex, setHighlightIndex] = useState(-1);
+  const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
   // Show all when no filter, or filter by typed text
@@ -58,9 +60,20 @@ export default function ExerciseAutocomplete({
     setHighlightIndex(-1);
   }, [value]);
 
+  // Update dropdown position when open
+  useEffect(() => {
+    if (open && inputRef.current) {
+      const rect = inputRef.current.getBoundingClientRect();
+      setDropdownPos({ top: rect.bottom + 4, left: rect.left });
+    }
+  }, [open, value]);
+
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        containerRef.current && !containerRef.current.contains(e.target as Node) &&
+        listRef.current && !listRef.current.contains(e.target as Node)
+      ) {
         setOpen(false);
       }
     };
@@ -101,27 +114,12 @@ export default function ExerciseAutocomplete({
 
   let flatIdx = -1;
 
-  return (
-    <div ref={containerRef} className="relative">
-      <Input
-        type="text"
-        value={value}
-        onChange={(e) => {
-          onChange(e.target.value);
-          setOpen(true);
-        }}
-        onFocus={() => setOpen(true)}
-        onBlur={() => {
-          onBlur?.();
-        }}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-        className={inputClassName || "h-8 text-sm border-0 bg-transparent px-1 focus-visible:ring-0"}
-      />
-      {open && flatList.length > 0 && (
+  const dropdown = open && flatList.length > 0 && dropdownPos
+    ? createPortal(
         <div
           ref={listRef}
-          className="absolute z-50 top-full left-0 w-[360px] mt-1 bg-popover border border-border rounded-lg shadow-lg max-h-64 overflow-y-auto"
+          className="fixed w-[360px] bg-popover border border-border rounded-lg shadow-lg max-h-64 overflow-y-auto"
+          style={{ top: dropdownPos.top, left: dropdownPos.left, zIndex: 9999 }}
         >
           {grouped.map(({ group, items }) => (
             <div key={group}>
@@ -151,8 +149,30 @@ export default function ExerciseAutocomplete({
               })}
             </div>
           ))}
-        </div>
-      )}
+        </div>,
+        document.body
+      )
+    : null;
+
+  return (
+    <div ref={containerRef} className="relative">
+      <Input
+        ref={inputRef}
+        type="text"
+        value={value}
+        onChange={(e) => {
+          onChange(e.target.value);
+          setOpen(true);
+        }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => {
+          onBlur?.();
+        }}
+        onKeyDown={handleKeyDown}
+        placeholder={placeholder}
+        className={inputClassName || "h-8 text-sm border-0 bg-transparent px-1 focus-visible:ring-0"}
+      />
+      {dropdown}
     </div>
   );
 }
