@@ -204,6 +204,7 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
 
       {/* Table Header */}
       <div className="bg-muted/20 px-4 py-2 grid gap-1 items-end" style={{ gridTemplateColumns: gridCols }}>
+        <div className="text-[10px] font-bold uppercase text-muted-foreground text-center">Ordem</div>
         <div className="text-[10px] font-bold uppercase text-muted-foreground">Exercícios</div>
         {[1, 2, 3, 4, 5, 6].map((n, colIdx) => (
           <div key={n} className="flex flex-col items-center gap-0.5 relative">
