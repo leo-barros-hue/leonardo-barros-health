@@ -49,6 +49,8 @@ const PatientWorkoutTab = ({ patientId }: Props) => {
   const [programs, setPrograms] = useState<WorkoutProgram[]>([]);
   const [selectedProgram, setSelectedProgram] = useState<WorkoutProgram | null>(null);
   const [days, setDays] = useState<WorkoutDay[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const [programDialogOpen, setProgramDialogOpen] = useState(false);
   const [editingProgram, setEditingProgram] = useState<WorkoutProgram | null>(null);
