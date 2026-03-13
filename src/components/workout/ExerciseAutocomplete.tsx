@@ -30,6 +30,8 @@ export default function ExerciseAutocomplete({
   exerciseCatalog,
   placeholder = "Adicionar exercício...",
   onKeyDown,
+  onBlur,
+  inputClassName,
 }: ExerciseAutocompleteProps) {
   const [open, setOpen] = useState(false);
   const [highlightIndex, setHighlightIndex] = useState(-1);
