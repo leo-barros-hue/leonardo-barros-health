@@ -239,8 +239,30 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
 
       {/* Exercise Rows */}
       <div className="divide-y divide-border/50">
-        {exercises.map((ex) => (
+        {exercises.map((ex, exIndex) => (
           <div key={ex.id} className="px-4 py-1.5 grid gap-1 items-center min-w-0" style={{ gridTemplateColumns: gridCols }}>
+            {/* Reorder buttons */}
+            <div className="flex flex-col items-center gap-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-5 w-5 p-0 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                disabled={exIndex === 0}
+                onClick={() => handleMoveExercise(exIndex, "up")}
+              >
+                <ChevronUp className="w-3.5 h-3.5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-5 w-5 p-0 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                disabled={exIndex === exercises.length - 1}
+                onClick={() => handleMoveExercise(exIndex, "down")}
+              >
+                <ChevronDown className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+
             {/* Exercise Name - Inline editable */}
             <div className="min-w-0 overflow-hidden">
               <ExerciseAutocomplete
