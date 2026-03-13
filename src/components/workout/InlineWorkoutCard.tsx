@@ -225,8 +225,27 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
         {exercises.map((ex) => (
           <div key={ex.id} className="px-4 py-1.5 grid gap-1 items-center min-w-0" style={{ gridTemplateColumns: gridCols }}>
             {/* Exercise Name - Inline editable */}
-            <div className="min-w-0 overflow-hidden px-1">
-              <span className="text-sm font-medium truncate block">{ex.name}</span>
+            <div className="min-w-0 overflow-hidden">
+              {editingExerciseId === ex.id ? (
+                <ExerciseAutocomplete
+                  value={ex.name}
+                  onChange={(v) => handleFieldChange(ex.id, "name", v)}
+                  onSelect={(catalogEx) => {
+                    handleFieldChange(ex.id, "name", catalogEx.name);
+                    handleFieldBlur(ex.id, "name", catalogEx.name);
+                    setEditingExerciseId(null);
+                  }}
+                  exerciseCatalog={exerciseCatalog}
+                  placeholder="Exercício..."
+                  onBlur={() => {
+                    handleFieldBlur(ex.id, "name", ex.name);
+                    setEditingExerciseId(null);
+                  }}
+                  inputClassName="h-8 text-sm font-medium border-0 bg-transparent px-1 focus-visible:ring-1 focus-visible:ring-primary/30"
+                />
+              ) : (
+                <span className="text-sm font-medium truncate block px-1">{ex.name}</span>
+              )}
             </div>
 
             {/* Series 1-6 (load + reps inline) */}
