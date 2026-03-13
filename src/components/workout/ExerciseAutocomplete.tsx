@@ -110,9 +110,12 @@ export default function ExerciseAutocomplete({
           setOpen(true);
         }}
         onFocus={() => setOpen(true)}
+        onBlur={() => {
+          onBlur?.();
+        }}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        className="h-8 text-sm border-0 bg-transparent px-1 focus-visible:ring-0"
+        className={inputClassName || "h-8 text-sm border-0 bg-transparent px-1 focus-visible:ring-0"}
       />
       {open && flatList.length > 0 && (
         <div
