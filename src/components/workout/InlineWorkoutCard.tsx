@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Trash2, Plus, Dumbbell } from "lucide-react";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import ExerciseAutocomplete from "./ExerciseAutocomplete";
+import TechniqueAutocomplete from "./TechniqueAutocomplete";
 
 interface WorkoutExercise {
   id: string;
