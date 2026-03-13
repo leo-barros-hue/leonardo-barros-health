@@ -115,6 +115,23 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
     setExercises((prev) => prev.filter((ex) => ex.id !== exerciseId));
   };
 
+  const handleMoveExercise = async (index: number, direction: "up" | "down") => {
+    const newIndex = direction === "up" ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= exercises.length) return;
+
+    const updated = [...exercises];
+    [updated[index], updated[newIndex]] = [updated[newIndex], updated[index]];
+
+    // Update sort_order for both swapped exercises
+    const updates = updated.map((ex, i) => ({ ...ex, sort_order: i }));
+    setExercises(updates);
+
+    await Promise.all([
+      supabase.from("workout_exercises").update({ sort_order: newIndex } as any).eq("id", exercises[index].id),
+      supabase.from("workout_exercises").update({ sort_order: index } as any).eq("id", exercises[newIndex].id),
+    ]);
+  };
+
   const handleAddExercise = async (exerciseName: string) => {
     if (!exerciseName.trim()) return;
 
