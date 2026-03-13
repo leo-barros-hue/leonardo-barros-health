@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2, Plus, Dumbbell } from "lucide-react";
+import { Trash2, Plus, Dumbbell, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import ExerciseAutocomplete from "./ExerciseAutocomplete";
 
@@ -56,6 +56,7 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
   const [newExerciseName, setNewExerciseName] = useState("");
   const [seriesEmojis, setSeriesEmojis] = useState<string[]>(["💀", "💀", "💀", "💀", "💀", "💀"]);
   const [openEmojiIdx, setOpenEmojiIdx] = useState<number | null>(null);
+  const [editingExerciseId, setEditingExerciseId] = useState<string | null>(null);
 
   const nameTimeout = useRef<NodeJS.Timeout>();
   const restTimeout = useRef<NodeJS.Timeout>();
@@ -152,8 +153,8 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
     setNewExerciseName("");
   };
 
-  // Grid: Exercício | S1 | S2 | S3 | S4 | S5 | S6 | Observações | Técnica | Delete
-  const gridCols = "0.7fr 75px 75px 75px 75px 75px 75px 1.2fr 120px 40px";
+  // Grid: Exercício | S1 | S2 | S3 | S4 | S5 | S6 | Observações | Técnica | Actions
+  const gridCols = "0.7fr 75px 75px 75px 75px 75px 75px 1.2fr 120px 70px";
 
   return (
     <div className="glass-card overflow-visible">
@@ -224,8 +225,27 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
         {exercises.map((ex) => (
           <div key={ex.id} className="px-4 py-1.5 grid gap-1 items-center min-w-0" style={{ gridTemplateColumns: gridCols }}>
             {/* Exercise Name - Inline editable */}
-            <div className="min-w-0 overflow-hidden px-1">
-              <span className="text-sm font-medium truncate block">{ex.name}</span>
+            <div className="min-w-0 overflow-hidden">
+              {editingExerciseId === ex.id ? (
+                <ExerciseAutocomplete
+                  value={ex.name}
+                  onChange={(v) => handleFieldChange(ex.id, "name", v)}
+                  onSelect={(catalogEx) => {
+                    handleFieldChange(ex.id, "name", catalogEx.name);
+                    handleFieldBlur(ex.id, "name", catalogEx.name);
+                    setEditingExerciseId(null);
+                  }}
+                  exerciseCatalog={exerciseCatalog}
+                  placeholder="Exercício..."
+                  onBlur={() => {
+                    handleFieldBlur(ex.id, "name", ex.name);
+                    setEditingExerciseId(null);
+                  }}
+                  inputClassName="h-8 text-sm font-medium border-0 bg-transparent px-1 focus-visible:ring-1 focus-visible:ring-primary/30"
+                />
+              ) : (
+                <span className="text-sm font-medium truncate block px-1">{ex.name}</span>
+              )}
             </div>
 
             {/* Series 1-6 (load + reps inline) */}
@@ -267,8 +287,11 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
               />
             </div>
 
-            {/* Delete */}
-            <div className="flex justify-center">
+            {/* Actions */}
+            <div className="flex justify-center gap-0.5">
+              <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-primary" onClick={() => setEditingExerciseId(editingExerciseId === ex.id ? null : ex.id)}>
+                <Pencil className="w-3 h-3" />
+              </Button>
               <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => handleDeleteExercise(ex.id)}>
                 <Trash2 className="w-3 h-3" />
               </Button>
