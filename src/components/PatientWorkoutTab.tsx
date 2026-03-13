@@ -311,11 +311,50 @@ const PatientWorkoutTab = ({ patientId }: Props) => {
                 ))}
               </div>
 
-              {/* Add Day Button */}
-              <Button variant="outline" onClick={handleAddDay} className="gap-2 w-full">
-                <Plus className="w-4 h-4" />
-                Adicionar Treino
-              </Button>
+              {/* Add Day Buttons */}
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={handleAddDay} className="gap-2 flex-1">
+                  <Plus className="w-4 h-4" />
+                  Adicionar Novo Treino
+                </Button>
+                {days.length > 0 && (
+                  <Button variant="outline" onClick={handleCopyLastDay} className="gap-2 flex-1">
+                    <Copy className="w-4 h-4" />
+                    Copiar Treino Acima
+                  </Button>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="glass-card p-5 border border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setHistoryOpen(true)}
+                  className="gap-2"
+                >
+                  <History className="w-4 h-4" />
+                  Histórico de Treinos
+                </Button>
+                <div className="flex gap-3">
+                  <Button
+                    variant="secondary"
+                    onClick={handleSaveAdjustments}
+                    disabled={saving}
+                    className="gap-2"
+                  >
+                    {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                    SALVAR AJUSTES
+                  </Button>
+                  <Button
+                    onClick={handleSaveAndRelease}
+                    disabled={saving}
+                    className="gap-2"
+                  >
+                    {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                    SALVAR ALTERAÇÕES
+                  </Button>
+                </div>
+              </div>
             </>
           )}
         </>
@@ -328,6 +367,13 @@ const PatientWorkoutTab = ({ patientId }: Props) => {
         patientId={patientId}
         program={editingProgram}
         onSuccess={fetchPrograms}
+      />
+
+      {/* History Panel */}
+      <WorkoutHistoryPanel
+        patientId={patientId}
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
       />
     </div>
   );
