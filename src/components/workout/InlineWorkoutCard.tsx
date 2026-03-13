@@ -222,10 +222,10 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
       {/* Exercise Rows */}
       <div className="divide-y divide-border/50">
         {exercises.map((ex) => (
-          <div key={ex.id} className="px-4 py-1.5 grid gap-1 items-center" style={{ gridTemplateColumns: gridCols }}>
+          <div key={ex.id} className="px-4 py-1.5 grid gap-1 items-center min-w-0" style={{ gridTemplateColumns: gridCols }}>
             {/* Exercise Name */}
-            <div>
-              <p className="text-sm font-medium text-foreground truncate">{ex.name}</p>
+            <div className="min-w-0 overflow-hidden">
+              <p className="text-sm font-medium text-foreground truncate" title={ex.name}>{ex.name}</p>
             </div>
 
             {/* Series 1-6 (load + reps inline) */}
