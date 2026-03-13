@@ -15,6 +15,7 @@ import {
   Database,
   PackageOpen,
   ClipboardList,
+  Zap,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
