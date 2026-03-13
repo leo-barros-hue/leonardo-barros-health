@@ -141,6 +141,39 @@ const PatientWorkoutTab = ({ patientId }: Props) => {
     }
   };
 
+  const handleCopyLastDay = async () => {
+    if (!selectedProgram || days.length === 0) return;
+
+    const lastDay = days[days.length - 1];
+
+    const { data: maxOrder } = await supabase
+      .from("workout_days")
+      .select("sort_order")
+      .eq("program_id", selectedProgram.id)
+      .order("sort_order", { ascending: false })
+      .limit(1);
+
+    const newOrder = maxOrder && maxOrder.length > 0 ? maxOrder[0].sort_order + 1 : 0;
+    const dayLetter = String.fromCharCode(65 + newOrder);
+
+    const { error } = await supabase
+      .from("workout_days")
+      .insert({
+        name: `Treino ${dayLetter}`,
+        program_id: selectedProgram.id,
+        sort_order: newOrder,
+        rep_range: lastDay.rep_range,
+        rest_interval: lastDay.rest_interval,
+      } as any);
+
+    if (error) {
+      toast.error("Erro ao copiar treino");
+    } else {
+      toast.success("Treino copiado (sem exercícios)");
+      fetchDays(selectedProgram.id);
+    }
+  };
+
   const handleAddDay = async () => {
     if (!selectedProgram) return;
 
@@ -152,7 +185,7 @@ const PatientWorkoutTab = ({ patientId }: Props) => {
       .limit(1);
 
     const newOrder = maxOrder && maxOrder.length > 0 ? maxOrder[0].sort_order + 1 : 0;
-    const dayLetter = String.fromCharCode(65 + newOrder); // A, B, C...
+    const dayLetter = String.fromCharCode(65 + newOrder);
 
     const { error } = await supabase
       .from("workout_days")
@@ -167,6 +200,35 @@ const PatientWorkoutTab = ({ patientId }: Props) => {
     } else {
       toast.success("Treino adicionado");
       fetchDays(selectedProgram.id);
+    }
+  };
+
+  const handleSaveAdjustments = async () => {
+    if (!selectedProgram) return;
+    setSaving(true);
+    const { error } = await supabase.from("workout_programs").update({
+      updated_at: new Date().toISOString(),
+    }).eq("id", selectedProgram.id);
+    setSaving(false);
+    if (error) {
+      toast.error("Erro ao salvar ajustes");
+    } else {
+      toast.success("Ajustes salvos com sucesso!");
+    }
+  };
+
+  const handleSaveAndRelease = async () => {
+    if (!selectedProgram) return;
+    setSaving(true);
+    const { error } = await supabase.from("workout_programs").update({
+      updated_at: new Date().toISOString(),
+    }).eq("id", selectedProgram.id);
+    setSaving(false);
+    if (error) {
+      toast.error("Erro ao salvar alterações");
+    } else {
+      toast.success("Treino salvo e atualizado!");
+      fetchPrograms();
     }
   };
 
