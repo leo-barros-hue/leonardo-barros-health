@@ -56,6 +56,7 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
   const [newExerciseName, setNewExerciseName] = useState("");
   const [seriesEmojis, setSeriesEmojis] = useState<string[]>(["💀", "💀", "💀", "💀", "💀", "💀"]);
   const [openEmojiIdx, setOpenEmojiIdx] = useState<number | null>(null);
+  const [editingExerciseId, setEditingExerciseId] = useState<string | null>(null);
 
   const nameTimeout = useRef<NodeJS.Timeout>();
   const restTimeout = useRef<NodeJS.Timeout>();
