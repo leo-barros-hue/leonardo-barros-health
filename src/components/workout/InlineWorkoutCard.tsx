@@ -211,7 +211,7 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
                 ))}
               </div>
             )}
-            <span className="text-[9px] text-muted-foreground font-medium">{n} set</span>
+            <span className="text-[9px] text-muted-foreground font-medium">{n}° SÉRIE</span>
           </div>
         ))}
         <div className="text-[10px] font-bold uppercase text-muted-foreground text-center">Observações</div>
