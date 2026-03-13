@@ -38,10 +38,10 @@ export default function ExerciseAutocomplete({
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
-  // Filter by typed text (show after 2+ chars)
-  const filtered = value.length >= 2
+  // Show all when no filter, or filter by typed text
+  const filtered = value.length >= 1
     ? exerciseCatalog.filter((ex) => ex.name.toLowerCase().includes(value.toLowerCase()))
-    : [];
+    : exerciseCatalog;
 
   // Group by muscle group
   const grouped = MUSCLE_GROUP_ORDER.reduce((acc, group) => {
