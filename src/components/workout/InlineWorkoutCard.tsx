@@ -153,8 +153,8 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
     setNewExerciseName("");
   };
 
-  // Grid: Exercício | S1 | S2 | S3 | S4 | S5 | S6 | Observações | Técnica | Delete
-  const gridCols = "0.7fr 75px 75px 75px 75px 75px 75px 1.2fr 120px 40px";
+  // Grid: Exercício | S1 | S2 | S3 | S4 | S5 | S6 | Observações | Técnica | Actions
+  const gridCols = "0.7fr 75px 75px 75px 75px 75px 75px 1.2fr 120px 70px";
 
   return (
     <div className="glass-card overflow-visible">
