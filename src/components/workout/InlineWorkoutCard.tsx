@@ -324,6 +324,17 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
           Adicionar exercício
         </Button>
       </div>
+      {/* Technique Detail Dialog */}
+      <Dialog open={!!techniqueDetail} onOpenChange={(o) => !o && setTechniqueDetail(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{techniqueDetail?.name}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+            {techniqueDetail?.description || "Sem descrição disponível."}
+          </p>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
