@@ -14,6 +14,8 @@ interface ExerciseAutocompleteProps {
   exerciseCatalog: ExerciseCatalogItem[];
   placeholder?: string;
   onKeyDown?: (e: React.KeyboardEvent) => void;
+  onBlur?: () => void;
+  inputClassName?: string;
 }
 
 const MUSCLE_GROUP_ORDER = [
