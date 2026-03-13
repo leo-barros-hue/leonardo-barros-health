@@ -32,6 +32,7 @@ const navItems = [
 const cadastroItems = [
   { to: "/admin/foods", icon: Apple, label: "Alimentos" },
   { to: "/admin/exercises", icon: Dumbbell, label: "Exercícios" },
+  { to: "/admin/techniques", icon: Zap, label: "Técnicas de Treino" },
   { to: "/admin/extras", icon: PackageOpen, label: "Materiais Extras" },
   { to: "/admin/forms", icon: ClipboardList, label: "Formulários" },
 ];
