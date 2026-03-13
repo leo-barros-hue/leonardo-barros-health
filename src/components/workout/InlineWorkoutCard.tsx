@@ -344,7 +344,7 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
               }}
             />
           </div>
-          <div className="col-span-8"></div>
+          <div className="col-span-9"></div>
           <div></div>
         </div>
       </div>
