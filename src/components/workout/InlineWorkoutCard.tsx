@@ -77,14 +77,15 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
   }, [day]);
 
   useEffect(() => {
-    const fetch = async () => {
-      const { data } = await supabase
-        .from("exercise_catalog")
-        .select("id, name, muscle_group")
-        .order("name");
-      setExerciseCatalog((data as ExerciseCatalogItem[]) || []);
+    const fetchCatalogs = async () => {
+      const [exRes, techRes] = await Promise.all([
+        supabase.from("exercise_catalog").select("id, name, muscle_group").order("name"),
+        supabase.from("technique_catalog").select("id, name, description").order("name"),
+      ]);
+      setExerciseCatalog((exRes.data as ExerciseCatalogItem[]) || []);
+      setTechniqueCatalog((techRes.data as TechniqueCatalogItem[]) || []);
     };
-    fetch();
+    fetchCatalogs();
   }, []);
 
   const debounceUpdate = (ref: React.MutableRefObject<NodeJS.Timeout | undefined>, field: Record<string, any>) => {
