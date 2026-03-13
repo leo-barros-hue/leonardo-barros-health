@@ -299,7 +299,7 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
       </div>
 
       {/* Footer */}
-      <div className="px-4 py-3 border-t border-border/50 flex items-center justify-between">
+      <div className="px-4 py-2 border-t border-border/50">
         <Button
           variant="ghost"
           size="sm"
@@ -310,27 +310,6 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
           <Plus className="w-3 h-3" />
           Adicionar exercício
         </Button>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              onUpdate();
-              toast.success("Treino salvo com sucesso");
-            }}
-          >
-            Salvar
-          </Button>
-          <Button
-            size="sm"
-            onClick={() => {
-              onUpdate();
-              toast.success("Treino salvo com sucesso");
-            }}
-          >
-            Salvar e continuar
-          </Button>
-        </div>
       </div>
     </div>
   );
