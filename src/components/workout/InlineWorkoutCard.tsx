@@ -287,8 +287,11 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
               />
             </div>
 
-            {/* Delete */}
-            <div className="flex justify-center">
+            {/* Actions */}
+            <div className="flex justify-center gap-0.5">
+              <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-primary" onClick={() => setEditingExerciseId(editingExerciseId === ex.id ? null : ex.id)}>
+                <Pencil className="w-3 h-3" />
+              </Button>
               <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => handleDeleteExercise(ex.id)}>
                 <Trash2 className="w-3 h-3" />
               </Button>
