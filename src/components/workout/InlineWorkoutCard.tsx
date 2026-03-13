@@ -104,6 +104,11 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete }:
     await supabase.from("workout_exercises").update({ reps: value } as any).eq("id", exerciseId);
   };
 
+  const handleEmojiSelect = (colIdx: number, emoji: string) => {
+    setSeriesEmojis((prev) => prev.map((e, i) => (i === colIdx ? emoji : e)));
+    setOpenEmojiIdx(null);
+  };
+
   const handleDeleteExercise = async (exerciseId: string) => {
     const { error } = await supabase.from("workout_exercises").delete().eq("id", exerciseId);
     if (error) { toast.error("Erro ao excluir exercício"); return; }
