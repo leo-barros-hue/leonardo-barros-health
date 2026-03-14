@@ -19,6 +19,12 @@ interface WorkoutExercise {
   load_s4: string | null;
   load_s5: string | null;
   load_s6: string | null;
+  reps_s1: number | null;
+  reps_s2: number | null;
+  reps_s3: number | null;
+  reps_s4: number | null;
+  reps_s5: number | null;
+  reps_s6: number | null;
 }
 
 interface WorkoutDay {

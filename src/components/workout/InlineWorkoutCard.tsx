@@ -23,6 +23,12 @@ interface WorkoutExercise {
   load_s4: string | null;
   load_s5: string | null;
   load_s6: string | null;
+  reps_s1: number | null;
+  reps_s2: number | null;
+  reps_s3: number | null;
+  reps_s4: number | null;
+  reps_s5: number | null;
+  reps_s6: number | null;
 }
 
 interface WorkoutDay {
@@ -55,29 +61,31 @@ interface InlineWorkoutCardProps {
 }
 
 const SERIES_KEYS = ["load_s1", "load_s2", "load_s3", "load_s4", "load_s5", "load_s6"] as const;
+const REPS_SERIES_KEYS = ["reps_s1", "reps_s2", "reps_s3", "reps_s4", "reps_s5", "reps_s6"] as const;
 const EMOJI_OPTIONS = ["🐔", "💀", "💀💀", "💀💀💀", "😈"];
 
-function parseRepsNumber(reps: string): number {
-  // "8-12" → 10, "10" → 10, "10 cada" → 10
-  const match = reps.match(/(\d+)\s*[-–]\s*(\d+)/);
-  if (match) return Math.round((parseInt(match[1]) + parseInt(match[2])) / 2);
-  const single = reps.match(/(\d+)/);
-  return single ? parseInt(single[1]) : 0;
+function calcExerciseVolume(ex: WorkoutExercise): number | null {
+  const filledSets = countFilledSets(ex);
+  if (filledSets === 0) return null;
+
+  let totalVolume = 0;
+  for (let i = 0; i < 6; i++) {
+    const repsVal = ex[REPS_SERIES_KEYS[i]];
+    const loadVal = ex[SERIES_KEYS[i]];
+    if (repsVal == null || !loadVal || loadVal.trim() === "") continue;
+    const load = parseFloat(loadVal);
+    if (isNaN(load)) continue;
+    totalVolume += repsVal * load;
+  }
+  return totalVolume > 0 ? totalVolume : null;
 }
 
-function calcExerciseVolume(ex: WorkoutExercise): number | null {
-  const loads: number[] = [];
-  for (let i = 0; i < ex.sets; i++) {
-    const key = SERIES_KEYS[i];
-    const val = ex[key];
-    if (!val || val.trim() === "") return null;
-    const num = parseFloat(val);
-    if (isNaN(num)) return null;
-    loads.push(num);
+function countFilledSets(ex: WorkoutExercise): number {
+  let count = 0;
+  for (const key of REPS_SERIES_KEYS) {
+    if (ex[key] != null && ex[key]! > 0) count++;
   }
-  const reps = parseRepsNumber(ex.reps);
-  if (reps === 0) return null;
-  return loads.reduce((sum, load) => sum + reps * load, 0);
+  return count;
 }
 
 export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete, mode = "admin" }: InlineWorkoutCardProps) {
@@ -125,12 +133,43 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete, m
   const handleNameChange = (v: string) => { setName(v); debounceUpdate(nameTimeout, { name: v }); };
   const handleRestIntervalChange = (v: string) => { setRestInterval(v); debounceUpdate(restTimeout, { rest_interval: v || null }); };
 
-  const handleFieldChange = (exerciseId: string, field: string, value: string | null) => {
+  const handleFieldChange = (exerciseId: string, field: string, value: any) => {
     setExercises((prev) => prev.map((ex) => (ex.id === exerciseId ? { ...ex, [field]: value } : ex)));
   };
 
-  const handleFieldBlur = async (exerciseId: string, field: string, value: string | null) => {
+  const handleFieldBlur = async (exerciseId: string, field: string, value: any) => {
     await supabase.from("workout_exercises").update({ [field]: value } as any).eq("id", exerciseId);
+  };
+
+  const handleRepsSeriesChange = (exerciseId: string, key: string, rawValue: string) => {
+    const cleaned = rawValue.replace(/[^0-9]/g, "");
+    const numValue = cleaned === "" ? null : Math.min(parseInt(cleaned), 100);
+    handleFieldChange(exerciseId, key, numValue);
+
+    // Auto-update sets count
+    setExercises((prev) => {
+      const ex = prev.find((e) => e.id === exerciseId);
+      if (!ex) return prev;
+      const updated = { ...ex, [key]: numValue };
+      const filledCount = countFilledSets(updated);
+      return prev.map((e) => e.id === exerciseId ? { ...updated, sets: filledCount } : e);
+    });
+  };
+
+  const handleRepsSeriesBlur = async (exerciseId: string, key: string, rawValue: string) => {
+    const cleaned = rawValue.replace(/[^0-9]/g, "");
+    const numValue = cleaned === "" ? null : Math.min(parseInt(cleaned), 100);
+    
+    // Calculate sets count from current state
+    const ex = exercises.find((e) => e.id === exerciseId);
+    if (!ex) return;
+    const updated = { ...ex, [key]: numValue };
+    const filledCount = countFilledSets(updated);
+
+    await supabase.from("workout_exercises").update({ 
+      [key]: numValue, 
+      sets: filledCount 
+    } as any).eq("id", exerciseId);
   };
 
   const handleEmojiSelect = (colIdx: number, emoji: string) => {
@@ -160,8 +199,8 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete, m
       .insert({
         workout_day_id: day.id,
         name: exerciseName.trim(),
-        sets: 3,
-        reps: "10-12",
+        sets: 0,
+        reps: "",
         rest_seconds: 60,
         sort_order: newOrder,
       } as any)
@@ -175,6 +214,8 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete, m
       technique: null,
       load_s1: null, load_s2: null, load_s3: null,
       load_s4: null, load_s5: null, load_s6: null,
+      reps_s1: null, reps_s2: null, reps_s3: null,
+      reps_s4: null, reps_s5: null, reps_s6: null,
     };
     setExercises((prev) => [...prev, newEx]);
     setNewExerciseName("");
@@ -185,14 +226,10 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete, m
   const allVolumesFilled = exerciseVolumes.every((v) => v !== null) && exercises.length > 0;
   const totalVolume = allVolumesFilled ? exerciseVolumes.reduce((sum, v) => sum! + v!, 0) : null;
 
-  // Grid columns: adapt based on mode
-  // Admin: Exercício | Séries | Reps | S1-S6 (placeholders) | Obs | Técnica | Delete
-  // Patient: Exercício | Séries | Reps | S1-S6 (editable) | Obs | Técnica | Volume
+  // Grid: Exercício | Séries | S1-S6 | Obs | Técnica | Action
   const gridCols = isPatient
-    ? "1fr 50px 60px 65px 65px 65px 65px 65px 65px 1fr 110px 70px"
-    : "1fr 50px 60px 65px 65px 65px 65px 65px 65px 1fr 110px 40px";
-
-  const colCount = 12;
+    ? "1fr 50px 65px 65px 65px 65px 65px 65px 1fr 110px 70px"
+    : "1fr 50px 65px 65px 65px 65px 65px 65px 1fr 110px 40px";
 
   return (
     <div className="glass-card overflow-visible">
@@ -238,7 +275,6 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete, m
       <div className="bg-muted/20 px-4 py-2 grid gap-1 items-end" style={{ gridTemplateColumns: gridCols }}>
         <div className="text-[10px] font-bold uppercase text-muted-foreground">Exercícios</div>
         <div className="text-[10px] font-bold uppercase text-muted-foreground text-center">Séries</div>
-        <div className="text-[10px] font-bold uppercase text-muted-foreground text-center">Reps</div>
         {[1, 2, 3, 4, 5, 6].map((n, colIdx) => (
           <div key={n} className="flex flex-col items-center gap-0.5 relative">
             {isAdmin && (
@@ -278,67 +314,66 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete, m
       <div className="divide-y divide-border/50">
         {exercises.map((ex) => {
           const exVolume = calcExerciseVolume(ex);
+          const filledSets = countFilledSets(ex);
           return (
             <div key={ex.id} className="px-4 py-1.5 grid gap-1 items-start min-w-0" style={{ gridTemplateColumns: gridCols }}>
-              {/* Exercise Name - wraps for long text */}
+              {/* Exercise Name */}
               <div className="min-w-0 px-1 py-1">
                 <span className="text-sm font-medium break-words whitespace-normal leading-snug">{ex.name}</span>
               </div>
 
-              {/* Sets */}
+              {/* Sets - auto-calculated */}
               <div className="flex items-center justify-center py-1">
-                {isAdmin ? (
-                  <Input
-                    type="number"
-                    className="h-8 w-full text-xs text-center border-0 bg-secondary/30 px-0 focus-visible:ring-1 focus-visible:ring-primary/30 rounded"
-                    value={ex.sets}
-                    onChange={(e) => handleFieldChange(ex.id, "sets", e.target.value)}
-                    onBlur={(e) => handleFieldBlur(ex.id, "sets", e.target.value)}
-                  />
-                ) : (
-                  <span className="text-xs font-medium text-foreground">{ex.sets}</span>
-                )}
-              </div>
-
-              {/* Reps */}
-              <div className="flex items-center justify-center py-1">
-                {isAdmin ? (
-                  <Input
-                    type="text"
-                    className="h-8 w-full text-xs text-center border-0 bg-secondary/30 px-0 focus-visible:ring-1 focus-visible:ring-primary/30 rounded"
-                    value={ex.reps}
-                    onChange={(e) => handleFieldChange(ex.id, "reps", e.target.value)}
-                    onBlur={(e) => handleFieldBlur(ex.id, "reps", e.target.value)}
-                  />
-                ) : (
-                  <span className="text-xs text-muted-foreground">{ex.reps}</span>
-                )}
+                <span className="text-xs font-semibold text-foreground">{filledSets}</span>
               </div>
 
               {/* Series 1-6 */}
-              {SERIES_KEYS.map((key, idx) => (
-                <div key={key} className="py-1">
-                  {idx < ex.sets ? (
-                    <Input
-                      type="text"
-                      inputMode="decimal"
-                      className={`h-8 text-xs text-center border-0 px-0 focus-visible:ring-1 focus-visible:ring-primary/30 rounded ${
-                        isAdmin ? "bg-muted/20 text-muted-foreground/50" : "bg-secondary/30"
-                      }`}
-                      placeholder={isAdmin ? "—" : "kg"}
-                      value={(ex[key] as string) || ""}
-                      onChange={(e) => handleFieldChange(ex.id, key, e.target.value || null)}
-                      onBlur={(e) => handleFieldBlur(ex.id, key, e.target.value || null)}
-                      readOnly={isAdmin}
-                      tabIndex={isAdmin ? -1 : undefined}
-                    />
-                  ) : (
-                    <div className="h-8" />
-                  )}
-                </div>
-              ))}
+              {REPS_SERIES_KEYS.map((repsKey, idx) => {
+                const loadKey = SERIES_KEYS[idx];
+                const repsVal = ex[repsKey];
+                const isFilled = repsVal != null && repsVal > 0;
 
-              {/* Observações - wraps for long text */}
+                return (
+                  <div key={repsKey} className="py-1">
+                    {isAdmin ? (
+                      <Input
+                        type="text"
+                        inputMode="numeric"
+                        className={`h-8 text-xs text-center border-0 px-0 focus-visible:ring-1 focus-visible:ring-primary/30 rounded transition-colors ${
+                          isFilled
+                            ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-semibold"
+                            : "bg-secondary/30"
+                        }`}
+                        placeholder="–"
+                        value={repsVal != null ? String(repsVal) : ""}
+                        onChange={(e) => handleRepsSeriesChange(ex.id, repsKey, e.target.value)}
+                        onBlur={(e) => handleRepsSeriesBlur(ex.id, repsKey, e.target.value)}
+                      />
+                    ) : (
+                      <div className="flex flex-col gap-0.5">
+                        {isFilled && (
+                          <span className="text-[9px] text-muted-foreground text-center block">{repsVal} reps</span>
+                        )}
+                        {isFilled ? (
+                          <Input
+                            type="text"
+                            inputMode="decimal"
+                            className="h-7 text-xs text-center border-0 bg-secondary/30 px-0 focus-visible:ring-1 focus-visible:ring-primary/30 rounded"
+                            placeholder="kg"
+                            value={(ex[loadKey] as string) || ""}
+                            onChange={(e) => handleFieldChange(ex.id, loadKey, e.target.value || null)}
+                            onBlur={(e) => handleFieldBlur(ex.id, loadKey, e.target.value || null)}
+                          />
+                        ) : (
+                          <div className="h-7" />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+
+              {/* Observações */}
               <div className="py-1">
                 {isAdmin ? (
                   <textarea
@@ -425,7 +460,7 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete, m
                 }}
               />
             </div>
-            <div className={`col-span-${colCount - 2}`}></div>
+            <div className="col-span-9"></div>
             <div></div>
           </div>
         )}
