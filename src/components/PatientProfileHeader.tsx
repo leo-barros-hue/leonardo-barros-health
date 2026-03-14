@@ -111,6 +111,7 @@ export default function PatientProfileHeader({ patient, activeTab, onTabChange }
     fetchPlan();
     fetchLatestMeasurements();
     fetchEnergyProfile();
+    fetchNextScheduleDate();
   }, [patient.id]);
 
   const fetchPlan = async () => {
