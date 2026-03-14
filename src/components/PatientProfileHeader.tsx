@@ -337,7 +337,7 @@ export default function PatientProfileHeader({ patient, activeTab, onTabChange }
                   }`}
                 >
                   {daysRemaining !== null && daysRemaining >= 0
-                    ? `${daysRemaining} dias p/ atualização`
+                    ? `${daysRemaining} dias para próxima atualização`
                     : "Atualização pendente"}
                 </Badge>
               )}
