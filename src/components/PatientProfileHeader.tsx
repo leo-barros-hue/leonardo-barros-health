@@ -7,6 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import {
   ArrowLeft,
@@ -400,7 +401,7 @@ export default function PatientProfileHeader({ patient, activeTab, onTabChange }
                         <CalendarIcon className="w-4 h-4" />
                       </Button>
                     </PopoverTrigger>
-              <PopoverContent className="w-auto p-4 space-y-4" align="end">
+              <PopoverContent className="w-72 p-4 space-y-4" align="end">
                 <div>
                   <p className="text-xs font-semibold text-foreground mb-2">Início do plano</p>
                   <Popover>
@@ -415,27 +416,6 @@ export default function PatientProfileHeader({ patient, activeTab, onTabChange }
                         mode="single"
                         selected={startsDate}
                         onSelect={handleStartsChange}
-                        locale={ptBR}
-                        initialFocus
-                        className="pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-foreground mb-2">Validade do plano</p>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-start text-left font-normal h-9 text-sm">
-                        <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
-                        {expiresDate ? format(expiresDate, "dd/MM/yyyy") : "Selecionar data..."}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={expiresDate}
-                        onSelect={handleExpiresChange}
                         locale={ptBR}
                         initialFocus
                         className="pointer-events-auto"
@@ -463,6 +443,33 @@ export default function PatientProfileHeader({ patient, activeTab, onTabChange }
                       />
                     </PopoverContent>
                   </Popover>
+                </div>
+                <div className="border-t border-border pt-3">
+                  <p className="text-xs font-semibold text-foreground mb-2">Atualização automática</p>
+                  <p className="text-[11px] text-muted-foreground mb-2">Calcular a partir do início do plano</p>
+                  <Select
+                    onValueChange={(val) => {
+                      if (!startsDate) {
+                        toast({ title: "Defina a data de início do plano primeiro", variant: "destructive" });
+                        return;
+                      }
+                      const days = parseInt(val);
+                      const date = new Date(startsDate);
+                      date.setDate(date.getDate() + days);
+                      handleNextUpdateChange(date);
+                    }}
+                  >
+                    <SelectTrigger className="h-9 text-sm">
+                      <SelectValue placeholder="Selecionar prazo..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="30">Em 30 dias</SelectItem>
+                      <SelectItem value="45">Em 45 dias</SelectItem>
+                      <SelectItem value="60">Em 60 dias</SelectItem>
+                      <SelectItem value="90">Em 90 dias</SelectItem>
+                      <SelectItem value="120">Em 120 dias</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </PopoverContent>
                   </Popover>
