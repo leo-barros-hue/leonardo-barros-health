@@ -326,8 +326,8 @@ export default function PatientProfileHeader({ patient, activeTab, onTabChange }
                 ))}
               </div>
 
-              {/* Plan expiration */}
-              {expiresDate && (
+              {/* Days until next update */}
+              {nextUpdateDate && (
                 <Badge
                   variant="secondary"
                   className={`border-0 text-xs font-semibold ml-2 ${
@@ -337,8 +337,8 @@ export default function PatientProfileHeader({ patient, activeTab, onTabChange }
                   }`}
                 >
                   {daysRemaining !== null && daysRemaining >= 0
-                    ? `${daysRemaining} dias restantes`
-                    : "Plano expirado"}
+                    ? `${daysRemaining} dias p/ atualização`
+                    : "Atualização pendente"}
                 </Badge>
               )}
             </div>
