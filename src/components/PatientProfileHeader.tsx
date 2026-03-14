@@ -171,6 +171,55 @@ export default function PatientProfileHeader({ patient, activeTab, onTabChange }
     upsertPlan({ plan_expires_at: date ? format(date, "yyyy-MM-dd") : null });
   };
 
+  const handleStartsChange = (date: Date | undefined) => {
+    setStartsDate(date);
+    upsertPlan({ plan_starts_at: date ? format(date, "yyyy-MM-dd") : null } as any);
+  };
+
+  const fetchNextScheduleDate = async () => {
+    const { data } = await supabase
+      .from("patient_schedule_dates")
+      .select("*")
+      .eq("patient_id", patient.id)
+      .gte("scheduled_date", format(new Date(), "yyyy-MM-dd"))
+      .order("scheduled_date", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    if (data) {
+      setNextUpdateDate(new Date(data.scheduled_date));
+      setNextScheduleId(data.id);
+    }
+  };
+
+  const handleNextUpdateChange = async (date: Date | undefined) => {
+    setNextUpdateDate(date);
+    if (!date) {
+      if (nextScheduleId) {
+        await supabase.from("patient_schedule_dates").delete().eq("id", nextScheduleId);
+        setNextScheduleId(null);
+      }
+      return;
+    }
+    if (nextScheduleId) {
+      await supabase
+        .from("patient_schedule_dates")
+        .update({ scheduled_date: format(date, "yyyy-MM-dd") })
+        .eq("id", nextScheduleId);
+    } else {
+      const { data } = await supabase
+        .from("patient_schedule_dates")
+        .insert({
+          patient_id: patient.id,
+          scheduled_date: format(date, "yyyy-MM-dd"),
+          label: "Próxima atualização",
+        })
+        .select()
+        .single();
+      if (data) setNextScheduleId(data.id);
+    }
+    toast({ title: "Data de atualização salva" });
+  };
+
   const handleAddDays = () => {
     const days = parseInt(extraDays);
     if (isNaN(days) || days <= 0) return;
