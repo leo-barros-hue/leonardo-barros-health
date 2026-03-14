@@ -243,8 +243,8 @@ export default function PatientProfileHeader({ patient, activeTab, onTabChange }
   const age = calculateAge(patient.birth_date);
   const bmi = latestWeight && height ? (latestWeight / ((height / 100) ** 2)).toFixed(1) : null;
 
-  const daysRemaining = expiresDate
-    ? differenceInDays(expiresDate, new Date())
+  const daysRemaining = nextUpdateDate
+    ? differenceInDays(nextUpdateDate, new Date())
     : null;
 
   const whatsAppLink = getWhatsAppLink(patient.phone);
