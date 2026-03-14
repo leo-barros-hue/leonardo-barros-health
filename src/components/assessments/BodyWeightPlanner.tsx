@@ -446,7 +446,7 @@ export default function BodyWeightPlanner({
               <ul className="space-y-3">
                 <li className="flex items-start gap-3 text-sm">
                   <div className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">1</div>
-                  <p className="text-muted-foreground">Consuma <strong className="text-foreground">{results.dailyIntakeToReachGoal} kcal</strong> por dia para atingir a meta.</p>
+                  <p className="text-muted-foreground">Consuma <strong className="text-foreground">{adjustedDailyIntake} kcal</strong> por dia para atingir a meta.</p>
                 </li>
                 <li className="flex items-start gap-3 text-sm">
                   <div className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">2</div>
