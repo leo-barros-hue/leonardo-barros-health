@@ -96,8 +96,12 @@ export default function PatientProfileHeader({ patient, activeTab, onTabChange }
     workout_active: false,
     medical_active: false,
     plan_expires_at: null,
+    plan_starts_at: null,
   });
   const [expiresDate, setExpiresDate] = useState<Date | undefined>();
+  const [startsDate, setStartsDate] = useState<Date | undefined>();
+  const [nextUpdateDate, setNextUpdateDate] = useState<Date | undefined>();
+  const [nextScheduleId, setNextScheduleId] = useState<string | null>(null);
   const [latestWeight, setLatestWeight] = useState<number | null>(null);
   const [height, setHeight] = useState<number | null>(null);
   const [addDaysOpen, setAddDaysOpen] = useState(false);
