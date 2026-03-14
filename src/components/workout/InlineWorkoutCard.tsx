@@ -220,6 +220,7 @@ function SortableExerciseRow({
 }
 
 export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete, mode = "admin" }: InlineWorkoutCardProps) {
+  const isAdmin = mode === "admin";
   const isPatient = mode === "patient";
 
   const [name, setName] = useState(day.name);
