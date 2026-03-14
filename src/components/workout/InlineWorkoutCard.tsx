@@ -411,6 +411,7 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete, m
 
       {/* Sub-header */}
       <div className="bg-muted/30 px-4 py-2 flex items-center gap-1.5 text-xs">
+        <Clock className="w-3.5 h-3.5 text-muted-foreground" />
         <span className="font-medium text-muted-foreground">Intervalo entre as séries:</span>
         {isAdmin ? (
           <Input
