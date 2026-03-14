@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Calculator, Activity, Save, Loader2, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import BodyWeightPlanner from "@/components/assessments/BodyWeightPlanner";
 
 interface PatientEnergyTabProps {
   patient: {
@@ -321,6 +322,15 @@ export default function PatientEnergyTab({ patient }: PatientEnergyTabProps) {
           onClick={() => handleSelectFormula("tinsley")}
         />
       </div>
+
+      {/* Body Weight Planner */}
+      <BodyWeightPlanner
+        patientWeight={weight ? parseFloat(weight) : undefined}
+        patientHeight={height ? parseFloat(height) : undefined}
+        patientAge={age ? parseFloat(age) : undefined}
+        patientSex={sex}
+        activityFactor={parseFloat(activityFactor)}
+      />
     </div>
   );
 }
