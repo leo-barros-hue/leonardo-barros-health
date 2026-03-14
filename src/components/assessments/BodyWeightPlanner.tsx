@@ -330,12 +330,17 @@ export default function BodyWeightPlanner({
                 <span className="text-xs font-semibold uppercase tracking-wider">Manutenção Atual</span>
               </div>
               <p className="text-[10px] text-muted-foreground">
-                Para manter o peso de {userData.weight} kg:
+                {currentMaintenance
+                  ? "Baseado na fórmula selecionada:"
+                  : `Para manter o peso de ${userData.weight} kg:`}
               </p>
               <div className="flex items-baseline gap-1">
-                <span className="text-3xl font-bold text-foreground">{results.initialMaintenance}</span>
+                <span className="text-3xl font-bold text-foreground">{displayMaintenance}</span>
                 <span className="text-sm text-muted-foreground">kcal/dia</span>
               </div>
+              {currentMaintenance && (
+                <p className="text-[9px] text-primary font-medium">Sincronizado com gasto energético</p>
+              )}
             </div>
 
             <div className="bg-primary p-5 rounded-2xl shadow-lg space-y-2 text-primary-foreground">
@@ -347,7 +352,7 @@ export default function BodyWeightPlanner({
                 Para atingir {userData.goalWeight} kg em {userData.days} dias:
               </p>
               <div className="flex items-baseline gap-1">
-                <span className="text-3xl font-bold">{results.dailyIntakeToReachGoal}</span>
+                <span className="text-3xl font-bold">{adjustedDailyIntake}</span>
                 <span className="text-sm opacity-80">kcal/dia</span>
               </div>
             </div>
