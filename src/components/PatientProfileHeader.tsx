@@ -123,6 +123,7 @@ export default function PatientProfileHeader({ patient, activeTab, onTabChange }
     if (data) {
       setPlan(data as PatientPlan);
       if (data.plan_expires_at) setExpiresDate(new Date(data.plan_expires_at));
+      if (data.plan_starts_at) setStartsDate(new Date(data.plan_starts_at));
     }
   };
 
