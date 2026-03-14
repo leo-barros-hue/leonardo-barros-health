@@ -243,10 +243,31 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete, m
   const allVolumesFilled = exerciseVolumes.every((v) => v !== null) && exercises.length > 0;
   const totalVolume = allVolumesFilled ? exerciseVolumes.reduce((sum, v) => sum! + v!, 0) : null;
 
-  // Grid: Exercício | Séries | S1-S6 | Obs | Técnica | Action
+  // Grid: DragHandle(admin) | Exercício | Séries | S1-S6 | Obs | Técnica | Action
   const gridCols = isPatient
     ? "1fr 50px 65px 65px 65px 65px 65px 65px 1fr 110px 70px"
-    : "1fr 50px 65px 65px 65px 65px 65px 65px 1fr 110px 40px";
+    : "28px 1fr 50px 65px 65px 65px 65px 65px 65px 1fr 110px 40px";
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = exercises.findIndex((e) => e.id === active.id);
+    const newIndex = exercises.findIndex((e) => e.id === over.id);
+    const reordered = arrayMove(exercises, oldIndex, newIndex);
+    setExercises(reordered);
+
+    // Persist new sort_order
+    const updates = reordered.map((ex, idx) =>
+      supabase.from("workout_exercises").update({ sort_order: idx } as any).eq("id", ex.id)
+    );
+    await Promise.all(updates);
+  };
 
   return (
     <div className="glass-card overflow-visible">
