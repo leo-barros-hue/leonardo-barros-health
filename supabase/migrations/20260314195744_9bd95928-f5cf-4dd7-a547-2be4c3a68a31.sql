@@ -1,0 +1,1 @@
+ALTER TABLE public.patient_plans ADD COLUMN plan_starts_at date DEFAULT NULL;

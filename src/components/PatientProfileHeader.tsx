@@ -43,6 +43,7 @@ interface PatientPlan {
   workout_active: boolean;
   medical_active: boolean;
   plan_expires_at: string | null;
+  plan_starts_at: string | null;
 }
 
 interface ProfileHeaderProps {
@@ -95,8 +96,12 @@ export default function PatientProfileHeader({ patient, activeTab, onTabChange }
     workout_active: false,
     medical_active: false,
     plan_expires_at: null,
+    plan_starts_at: null,
   });
   const [expiresDate, setExpiresDate] = useState<Date | undefined>();
+  const [startsDate, setStartsDate] = useState<Date | undefined>();
+  const [nextUpdateDate, setNextUpdateDate] = useState<Date | undefined>();
+  const [nextScheduleId, setNextScheduleId] = useState<string | null>(null);
   const [latestWeight, setLatestWeight] = useState<number | null>(null);
   const [height, setHeight] = useState<number | null>(null);
   const [addDaysOpen, setAddDaysOpen] = useState(false);
@@ -106,6 +111,7 @@ export default function PatientProfileHeader({ patient, activeTab, onTabChange }
     fetchPlan();
     fetchLatestMeasurements();
     fetchEnergyProfile();
+    fetchNextScheduleDate();
   }, [patient.id]);
 
   const fetchPlan = async () => {
@@ -117,6 +123,7 @@ export default function PatientProfileHeader({ patient, activeTab, onTabChange }
     if (data) {
       setPlan(data as PatientPlan);
       if (data.plan_expires_at) setExpiresDate(new Date(data.plan_expires_at));
+      if (data.plan_starts_at) setStartsDate(new Date(data.plan_starts_at));
     }
   };
 
@@ -162,6 +169,55 @@ export default function PatientProfileHeader({ patient, activeTab, onTabChange }
   const handleExpiresChange = (date: Date | undefined) => {
     setExpiresDate(date);
     upsertPlan({ plan_expires_at: date ? format(date, "yyyy-MM-dd") : null });
+  };
+
+  const handleStartsChange = (date: Date | undefined) => {
+    setStartsDate(date);
+    upsertPlan({ plan_starts_at: date ? format(date, "yyyy-MM-dd") : null } as any);
+  };
+
+  const fetchNextScheduleDate = async () => {
+    const { data } = await supabase
+      .from("patient_schedule_dates")
+      .select("*")
+      .eq("patient_id", patient.id)
+      .gte("scheduled_date", format(new Date(), "yyyy-MM-dd"))
+      .order("scheduled_date", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    if (data) {
+      setNextUpdateDate(new Date(data.scheduled_date));
+      setNextScheduleId(data.id);
+    }
+  };
+
+  const handleNextUpdateChange = async (date: Date | undefined) => {
+    setNextUpdateDate(date);
+    if (!date) {
+      if (nextScheduleId) {
+        await supabase.from("patient_schedule_dates").delete().eq("id", nextScheduleId);
+        setNextScheduleId(null);
+      }
+      return;
+    }
+    if (nextScheduleId) {
+      await supabase
+        .from("patient_schedule_dates")
+        .update({ scheduled_date: format(date, "yyyy-MM-dd") })
+        .eq("id", nextScheduleId);
+    } else {
+      const { data } = await supabase
+        .from("patient_schedule_dates")
+        .insert({
+          patient_id: patient.id,
+          scheduled_date: format(date, "yyyy-MM-dd"),
+          label: "Próxima atualização",
+        })
+        .select()
+        .single();
+      if (data) setNextScheduleId(data.id);
+    }
+    toast({ title: "Data de atualização salva" });
   };
 
   const handleAddDays = () => {
@@ -346,14 +402,70 @@ export default function PatientProfileHeader({ patient, activeTab, onTabChange }
                   <TooltipContent><p className="text-xs">Vigência do plano</p></TooltipContent>
                 </Tooltip>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="end">
-                <Calendar
-                  mode="single"
-                  selected={expiresDate}
-                  onSelect={handleExpiresChange}
-                  locale={ptBR}
-                  initialFocus
-                />
+              <PopoverContent className="w-auto p-4 space-y-4" align="end">
+                <div>
+                  <p className="text-xs font-semibold text-foreground mb-2">Início do plano</p>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-full justify-start text-left font-normal h-9 text-sm">
+                        <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                        {startsDate ? format(startsDate, "dd/MM/yyyy") : "Selecionar data..."}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={startsDate}
+                        onSelect={handleStartsChange}
+                        locale={ptBR}
+                        initialFocus
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-foreground mb-2">Validade do plano</p>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-full justify-start text-left font-normal h-9 text-sm">
+                        <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                        {expiresDate ? format(expiresDate, "dd/MM/yyyy") : "Selecionar data..."}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={expiresDate}
+                        onSelect={handleExpiresChange}
+                        locale={ptBR}
+                        initialFocus
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-foreground mb-2">Próxima atualização</p>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-full justify-start text-left font-normal h-9 text-sm">
+                        <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                        {nextUpdateDate ? format(nextUpdateDate, "dd/MM/yyyy") : "Selecionar data..."}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={nextUpdateDate}
+                        onSelect={handleNextUpdateChange}
+                        locale={ptBR}
+                        initialFocus
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </PopoverContent>
             </Popover>
 
