@@ -465,7 +465,11 @@ export default function PatientProfileHeader({ patient, activeTab, onTabChange }
                   </Popover>
                 </div>
               </PopoverContent>
-            </Popover>
+                  </Popover>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent><p className="text-xs">Vigência do plano</p></TooltipContent>
+            </Tooltip>
 
             <Tooltip>
               <TooltipTrigger asChild>
