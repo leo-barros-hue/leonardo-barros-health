@@ -95,6 +95,7 @@ export default function BodyWeightPlanner({
   patientAge,
   patientSex,
   activityFactor,
+  currentMaintenance,
 }: BodyWeightPlannerProps) {
   const [userData, setUserData] = useState<UserData>({
     gender: patientSex === "F" ? "female" : "male",
@@ -107,6 +108,19 @@ export default function BodyWeightPlanner({
   });
 
   const results = useMemo(() => calculateHallTrajectory(userData), [userData]);
+
+  // Use the selected formula's TDEE if provided, otherwise use Hall model calculation
+  const displayMaintenance = currentMaintenance ?? results.initialMaintenance;
+
+  // Recalculate daily intake based on the synced maintenance
+  const adjustedDailyIntake = useMemo(() => {
+    if (!currentMaintenance) return results.dailyIntakeToReachGoal;
+    const weightDiff = userData.weight - userData.goalWeight;
+    const totalEnergyDeficitNeeded = weightDiff * 7700;
+    const adaptationFactor = 0.15;
+    const adjustedDeficit = totalEnergyDeficitNeeded / (1 - adaptationFactor);
+    return Math.round(currentMaintenance - adjustedDeficit / userData.days);
+  }, [currentMaintenance, userData.weight, userData.goalWeight, userData.days, results.dailyIntakeToReachGoal]);
 
   const handleChange = (field: keyof UserData, value: string | number) => {
     setUserData((prev) => ({
