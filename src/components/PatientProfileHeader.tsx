@@ -243,8 +243,8 @@ export default function PatientProfileHeader({ patient, activeTab, onTabChange }
   const age = calculateAge(patient.birth_date);
   const bmi = latestWeight && height ? (latestWeight / ((height / 100) ** 2)).toFixed(1) : null;
 
-  const daysRemaining = expiresDate
-    ? differenceInDays(expiresDate, new Date())
+  const daysRemaining = nextUpdateDate
+    ? differenceInDays(nextUpdateDate, new Date())
     : null;
 
   const whatsAppLink = getWhatsAppLink(patient.phone);
@@ -326,8 +326,8 @@ export default function PatientProfileHeader({ patient, activeTab, onTabChange }
                 ))}
               </div>
 
-              {/* Plan expiration */}
-              {expiresDate && (
+              {/* Days until next update */}
+              {nextUpdateDate && (
                 <Badge
                   variant="secondary"
                   className={`border-0 text-xs font-semibold ml-2 ${
@@ -337,8 +337,8 @@ export default function PatientProfileHeader({ patient, activeTab, onTabChange }
                   }`}
                 >
                   {daysRemaining !== null && daysRemaining >= 0
-                    ? `${daysRemaining} dias restantes`
-                    : "Plano expirado"}
+                    ? `${daysRemaining} dias p/ atualização`
+                    : "Atualização pendente"}
                 </Badge>
               )}
             </div>
