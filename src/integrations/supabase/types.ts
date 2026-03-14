@@ -503,6 +503,7 @@ export type Database = {
           medical_active: boolean
           patient_id: string
           plan_expires_at: string | null
+          plan_starts_at: string | null
           updated_at: string
           workout_active: boolean
         }
@@ -512,6 +513,7 @@ export type Database = {
           medical_active?: boolean
           patient_id: string
           plan_expires_at?: string | null
+          plan_starts_at?: string | null
           updated_at?: string
           workout_active?: boolean
         }
@@ -521,6 +523,7 @@ export type Database = {
           medical_active?: boolean
           patient_id?: string
           plan_expires_at?: string | null
+          plan_starts_at?: string | null
           updated_at?: string
           workout_active?: boolean
         }
