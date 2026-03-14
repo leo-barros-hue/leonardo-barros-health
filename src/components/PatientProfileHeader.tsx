@@ -43,6 +43,7 @@ interface PatientPlan {
   workout_active: boolean;
   medical_active: boolean;
   plan_expires_at: string | null;
+  plan_starts_at: string | null;
 }
 
 interface ProfileHeaderProps {
