@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2, Plus, Dumbbell, BarChart3, GripVertical } from "lucide-react";
+import { Trash2, Plus, Dumbbell, BarChart3, GripVertical, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import ExerciseAutocomplete from "./ExerciseAutocomplete";
@@ -411,6 +411,7 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete, m
 
       {/* Sub-header */}
       <div className="bg-muted/30 px-4 py-2 flex items-center gap-1.5 text-xs">
+        <Clock className="w-3.5 h-3.5 text-muted-foreground" />
         <span className="font-medium text-muted-foreground">Intervalo entre as séries:</span>
         {isAdmin ? (
           <Input
