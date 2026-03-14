@@ -1,4 +1,4 @@
-import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { Outlet, NavLink, useNavigate, useSearchParams } from "react-router-dom";
 import {
   Activity,
   LayoutDashboard,
@@ -22,11 +22,24 @@ const navItems = [
 
 const PatientLayout = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isPreview = searchParams.get("preview") === "true";
 
   const handleLogout = () => {
     localStorage.removeItem("userRole");
     navigate("/");
   };
+
+  // In preview mode, render a minimal layout without nav
+  if (isPreview) {
+    return (
+      <div className="min-h-screen bg-background">
+        <main className="px-3 py-4">
+          <Outlet />
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">

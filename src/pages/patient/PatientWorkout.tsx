@@ -1,5 +1,5 @@
 import { ArrowLeft, Loader2, Dumbbell } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import InlineWorkoutCard from "@/components/workout/InlineWorkoutCard";
@@ -38,36 +38,52 @@ interface WorkoutProgram {
 
 const PatientWorkout = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [program, setProgram] = useState<WorkoutProgram | null>(null);
   const [days, setDays] = useState<WorkoutDay[]>([]);
 
+  const isPreview = searchParams.get("preview") === "true";
+  const previewPatientId = searchParams.get("patientId");
+
   useEffect(() => {
     fetchWorkout();
-  }, []);
+  }, [previewPatientId]);
 
   const fetchWorkout = async () => {
-    // Get current user's patient record
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setLoading(false); return; }
+    let patientId: string | null = null;
 
-    const { data: patient } = await supabase
-      .from("patients")
-      .select("id")
-      .eq("user_id", user.id)
-      .single();
+    if (isPreview && previewPatientId) {
+      // Preview mode: use patient ID from query params
+      patientId = previewPatientId;
+    } else {
+      // Normal mode: get current user's patient record
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setLoading(false); return; }
 
-    if (!patient) { setLoading(false); return; }
+      const { data: patient } = await supabase
+        .from("patients")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (!patient) { setLoading(false); return; }
+      patientId = patient.id;
+    }
+
+    if (!patientId) { setLoading(false); return; }
 
     // Get latest program
     const { data: programs } = await supabase
       .from("workout_programs")
       .select("*")
-      .eq("patient_id", patient.id)
+      .eq("patient_id", patientId)
       .order("created_at", { ascending: false })
       .limit(1);
 
     if (!programs || programs.length === 0) {
+      setProgram(null);
+      setDays([]);
       setLoading(false);
       return;
     }
@@ -121,9 +137,11 @@ const PatientWorkout = () => {
   if (!program) {
     return (
       <div className="space-y-6 stagger-fade-in">
-        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm">
-          <ArrowLeft className="w-4 h-4" /> Voltar
-        </button>
+        {!isPreview && (
+          <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm">
+            <ArrowLeft className="w-4 h-4" /> Voltar
+          </button>
+        )}
         <div className="glass-card p-8 text-center">
           <Dumbbell className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-lg font-semibold text-foreground mb-2">Nenhum treino prescrito</h3>
@@ -135,12 +153,14 @@ const PatientWorkout = () => {
 
   return (
     <div className="space-y-6 stagger-fade-in">
-      <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm">
-        <ArrowLeft className="w-4 h-4" /> Voltar
-      </button>
+      {!isPreview && (
+        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm">
+          <ArrowLeft className="w-4 h-4" /> Voltar
+        </button>
+      )}
 
       <div>
-        <h1 className="text-2xl font-bold text-foreground">{program.name}</h1>
+        <h1 className={`font-bold text-foreground ${isPreview ? "text-lg" : "text-2xl"}`}>{program.name}</h1>
         {program.description && (
           <p className="text-muted-foreground text-sm mt-1">{program.description}</p>
         )}
