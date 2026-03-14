@@ -33,6 +33,7 @@ interface BodyWeightPlannerProps {
   patientAge?: number;
   patientSex?: string;
   activityFactor?: number;
+  currentMaintenance?: number;
 }
 
 interface UserData {
