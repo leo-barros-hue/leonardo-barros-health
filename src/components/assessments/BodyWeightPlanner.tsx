@@ -33,6 +33,7 @@ interface BodyWeightPlannerProps {
   patientAge?: number;
   patientSex?: string;
   activityFactor?: number;
+  currentMaintenance?: number;
 }
 
 interface UserData {
@@ -94,6 +95,7 @@ export default function BodyWeightPlanner({
   patientAge,
   patientSex,
   activityFactor,
+  currentMaintenance,
 }: BodyWeightPlannerProps) {
   const [userData, setUserData] = useState<UserData>({
     gender: patientSex === "F" ? "female" : "male",
@@ -106,6 +108,19 @@ export default function BodyWeightPlanner({
   });
 
   const results = useMemo(() => calculateHallTrajectory(userData), [userData]);
+
+  // Use the selected formula's TDEE if provided, otherwise use Hall model calculation
+  const displayMaintenance = currentMaintenance ?? results.initialMaintenance;
+
+  // Recalculate daily intake based on the synced maintenance
+  const adjustedDailyIntake = useMemo(() => {
+    if (!currentMaintenance) return results.dailyIntakeToReachGoal;
+    const weightDiff = userData.weight - userData.goalWeight;
+    const totalEnergyDeficitNeeded = weightDiff * 7700;
+    const adaptationFactor = 0.15;
+    const adjustedDeficit = totalEnergyDeficitNeeded / (1 - adaptationFactor);
+    return Math.round(currentMaintenance - adjustedDeficit / userData.days);
+  }, [currentMaintenance, userData.weight, userData.goalWeight, userData.days, results.dailyIntakeToReachGoal]);
 
   const handleChange = (field: keyof UserData, value: string | number) => {
     setUserData((prev) => ({
@@ -133,8 +148,8 @@ export default function BodyWeightPlanner({
       ["Atividade (PAL)", userData.pal],
       [""],
       ["RESULTADOS ESTIMADOS"],
-      ["Manutenção Atual (kcal)", results.initialMaintenance],
-      ["Meta Diária (kcal)", results.dailyIntakeToReachGoal],
+      ["Manutenção Atual (kcal)", displayMaintenance],
+      ["Meta Diária (kcal)", adjustedDailyIntake],
     ];
     const csvContent = [...[headers], ...rows, ...metadata]
       .map((e) => e.join(";"))
@@ -315,12 +330,17 @@ export default function BodyWeightPlanner({
                 <span className="text-xs font-semibold uppercase tracking-wider">Manutenção Atual</span>
               </div>
               <p className="text-[10px] text-muted-foreground">
-                Para manter o peso de {userData.weight} kg:
+                {currentMaintenance
+                  ? "Baseado na fórmula selecionada:"
+                  : `Para manter o peso de ${userData.weight} kg:`}
               </p>
               <div className="flex items-baseline gap-1">
-                <span className="text-3xl font-bold text-foreground">{results.initialMaintenance}</span>
+                <span className="text-3xl font-bold text-foreground">{displayMaintenance}</span>
                 <span className="text-sm text-muted-foreground">kcal/dia</span>
               </div>
+              {currentMaintenance && (
+                <p className="text-[9px] text-primary font-medium">Sincronizado com gasto energético</p>
+              )}
             </div>
 
             <div className="bg-primary p-5 rounded-2xl shadow-lg space-y-2 text-primary-foreground">
@@ -332,7 +352,7 @@ export default function BodyWeightPlanner({
                 Para atingir {userData.goalWeight} kg em {userData.days} dias:
               </p>
               <div className="flex items-baseline gap-1">
-                <span className="text-3xl font-bold">{results.dailyIntakeToReachGoal}</span>
+                <span className="text-3xl font-bold">{adjustedDailyIntake}</span>
                 <span className="text-sm opacity-80">kcal/dia</span>
               </div>
             </div>
@@ -426,7 +446,7 @@ export default function BodyWeightPlanner({
               <ul className="space-y-3">
                 <li className="flex items-start gap-3 text-sm">
                   <div className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">1</div>
-                  <p className="text-muted-foreground">Consuma <strong className="text-foreground">{results.dailyIntakeToReachGoal} kcal</strong> por dia para atingir a meta.</p>
+                  <p className="text-muted-foreground">Consuma <strong className="text-foreground">{adjustedDailyIntake} kcal</strong> por dia para atingir a meta.</p>
                 </li>
                 <li className="flex items-start gap-3 text-sm">
                   <div className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">2</div>

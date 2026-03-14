@@ -330,6 +330,11 @@ export default function PatientEnergyTab({ patient }: PatientEnergyTabProps) {
         patientAge={age ? parseFloat(age) : undefined}
         patientSex={sex}
         activityFactor={parseFloat(activityFactor)}
+        currentMaintenance={
+          selectedFormula
+            ? results.tdee[selectedFormula as keyof typeof results.tdee] ?? undefined
+            : undefined
+        }
       />
     </div>
   );
