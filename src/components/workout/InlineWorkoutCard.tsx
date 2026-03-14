@@ -138,7 +138,7 @@ function SortableExerciseRow({
     <div
       ref={setNodeRef}
       style={{ ...style, gridTemplateColumns: gridCols }}
-      className={`px-4 py-1.5 grid gap-1 items-start min-w-0 ${isDragging ? "bg-accent/50 shadow-lg rounded" : ""}`}
+      className={`px-4 py-1.5 grid gap-1 items-center min-w-0 ${isDragging ? "bg-accent/50 shadow-lg rounded" : ""}`}
       {...attributes}
     >
       {/* Drag Handle */}
