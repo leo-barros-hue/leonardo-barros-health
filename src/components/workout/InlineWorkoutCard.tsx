@@ -138,7 +138,7 @@ function SortableExerciseRow({
     <div
       ref={setNodeRef}
       style={{ ...style, gridTemplateColumns: gridCols }}
-      className={`px-4 py-1.5 grid gap-1 items-start min-w-0 ${isDragging ? "bg-accent/50 shadow-lg rounded" : ""}`}
+      className={`px-4 py-1.5 grid gap-1 items-center min-w-0 ${isDragging ? "bg-accent/50 shadow-lg rounded" : ""}`}
       {...attributes}
     >
       {/* Drag Handle */}
@@ -492,7 +492,7 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete, m
             const exVolume = calcExerciseVolume(ex);
             const filledSets = countFilledSets(ex);
             return (
-              <div key={ex.id} className="px-4 py-1.5 grid gap-1 items-start min-w-0" style={{ gridTemplateColumns: gridCols }}>
+              <div key={ex.id} className="px-4 py-1.5 grid gap-1 items-center min-w-0" style={{ gridTemplateColumns: gridCols }}>
                 <div className="min-w-0 px-1 py-1">
                   <span className="text-sm font-medium break-words whitespace-normal leading-snug">{ex.name}</span>
                 </div>
