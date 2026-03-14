@@ -148,8 +148,8 @@ export default function BodyWeightPlanner({
       ["Atividade (PAL)", userData.pal],
       [""],
       ["RESULTADOS ESTIMADOS"],
-      ["Manutenção Atual (kcal)", results.initialMaintenance],
-      ["Meta Diária (kcal)", results.dailyIntakeToReachGoal],
+      ["Manutenção Atual (kcal)", displayMaintenance],
+      ["Meta Diária (kcal)", adjustedDailyIntake],
     ];
     const csvContent = [...[headers], ...rows, ...metadata]
       .map((e) => e.join(";"))
