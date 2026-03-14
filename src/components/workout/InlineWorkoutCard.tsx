@@ -104,8 +104,122 @@ function countFilledSets(ex: WorkoutExercise): number {
   }
   return count;
 }
+interface SortableExerciseRowProps {
+  ex: WorkoutExercise;
+  gridCols: string;
+  isAdmin: boolean;
+  isPatient: boolean;
+  handleRepsSeriesChange: (exerciseId: string, key: string, rawValue: string) => void;
+  handleRepsSeriesBlur: (exerciseId: string, key: string, rawValue: string) => void;
+  handleFieldChange: (exerciseId: string, field: string, value: any) => void;
+  handleFieldBlur: (exerciseId: string, field: string, value: any) => void;
+  handleDeleteExercise: (exerciseId: string) => void;
+  techniqueCatalog: TechniqueCatalogItem[];
+  setTechniqueDetail: (t: TechniqueCatalogItem | null) => void;
+}
 
-export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete, mode = "admin" }: InlineWorkoutCardProps) {
+function SortableExerciseRow({
+  ex, gridCols, isAdmin, isPatient,
+  handleRepsSeriesChange, handleRepsSeriesBlur,
+  handleFieldChange, handleFieldBlur,
+  handleDeleteExercise, techniqueCatalog, setTechniqueDetail,
+}: SortableExerciseRowProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: ex.id });
+  const filledSets = countFilledSets(ex);
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : undefined,
+    opacity: isDragging ? 0.8 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ ...style, gridTemplateColumns: gridCols }}
+      className={`px-4 py-1.5 grid gap-1 items-start min-w-0 ${isDragging ? "bg-accent/50 shadow-lg rounded" : ""}`}
+      {...attributes}
+    >
+      {/* Drag Handle */}
+      <div className="flex items-center justify-center py-1 cursor-grab active:cursor-grabbing" {...listeners}>
+        <GripVertical className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
+      </div>
+
+      {/* Exercise Name */}
+      <div className="min-w-0 px-1 py-1">
+        <span className="text-sm font-medium break-words whitespace-normal leading-snug">{ex.name}</span>
+      </div>
+
+      {/* Sets */}
+      <div className="flex items-center justify-center py-1">
+        <span className="text-xs font-semibold text-foreground">{filledSets}</span>
+      </div>
+
+      {/* Series 1-6 */}
+      {REPS_SERIES_KEYS.map((repsKey, idx) => {
+        const repsVal = ex[repsKey];
+        const isFilled = repsVal != null && repsVal > 0;
+        return (
+          <div key={repsKey} className="py-1">
+            <Input
+              type="text"
+              inputMode="numeric"
+              className={`h-8 text-xs text-center border-0 px-0 focus-visible:ring-1 focus-visible:ring-primary/30 rounded transition-colors ${
+                isFilled
+                  ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-semibold"
+                  : "bg-secondary/30"
+              }`}
+              placeholder="–"
+              value={repsVal != null ? String(repsVal) : ""}
+              onChange={(e) => handleRepsSeriesChange(ex.id, repsKey, e.target.value)}
+              onBlur={(e) => handleRepsSeriesBlur(ex.id, repsKey, e.target.value)}
+            />
+          </div>
+        );
+      })}
+
+      {/* Observações */}
+      <div className="py-1">
+        <textarea
+          className="w-full text-xs bg-transparent px-1 py-1 resize-none min-h-[32px] border-0 focus:outline-none focus:ring-1 focus:ring-primary/30 rounded text-foreground placeholder:text-muted-foreground"
+          placeholder="—"
+          value={ex.notes || ""}
+          rows={1}
+          onChange={(e) => {
+            handleFieldChange(ex.id, "notes", e.target.value || null);
+            e.target.style.height = "auto";
+            e.target.style.height = e.target.scrollHeight + "px";
+          }}
+          onBlur={(e) => handleFieldBlur(ex.id, "notes", e.target.value || null)}
+        />
+      </div>
+
+      {/* Técnica */}
+      <div className="py-1">
+        <TechniqueAutocomplete
+          value={ex.technique}
+          onSelect={async (technique) => {
+            const newVal = technique?.name || null;
+            handleFieldChange(ex.id, "technique", newVal);
+            await supabase.from("workout_exercises").update({ technique: newVal } as any).eq("id", ex.id);
+          }}
+          techniqueCatalog={techniqueCatalog}
+          onDescriptionClick={(t) => setTechniqueDetail(t)}
+        />
+      </div>
+
+      {/* Delete */}
+      <div className="flex items-center justify-center py-1">
+        <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => handleDeleteExercise(ex.id)}>
+          <Trash2 className="w-3 h-3" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+
   const isAdmin = mode === "admin";
   const isPatient = mode === "patient";
 
