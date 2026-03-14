@@ -62,6 +62,7 @@ const tabs = [
   { id: "workout", label: "Treinos" },
   { id: "cardio", label: "Cardio" },
   { id: "exams", label: "Exames" },
+  { id: "prescriptions", label: "Prescrições" },
   { id: "photos", label: "Fotos" },
   { id: "notes", label: "Notas" },
 ];
