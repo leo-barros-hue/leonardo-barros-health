@@ -387,21 +387,19 @@ export default function PatientProfileHeader({ patient, activeTab, onTabChange }
               <TooltipContent><p className="text-xs">Salvar alterações</p></TooltipContent>
             </Tooltip>
 
-            <Popover>
-              <PopoverTrigger asChild>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-9 w-9 bg-white/10 hover:bg-white/20 text-white rounded-xl"
-                    >
-                      <CalendarIcon className="w-4 h-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent><p className="text-xs">Vigência do plano</p></TooltipContent>
-                </Tooltip>
-              </PopoverTrigger>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-9 w-9 bg-white/10 hover:bg-white/20 text-white rounded-xl"
+                      >
+                        <CalendarIcon className="w-4 h-4" />
+                      </Button>
+                    </PopoverTrigger>
               <PopoverContent className="w-auto p-4 space-y-4" align="end">
                 <div>
                   <p className="text-xs font-semibold text-foreground mb-2">Início do plano</p>
