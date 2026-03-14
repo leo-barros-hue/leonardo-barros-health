@@ -402,14 +402,70 @@ export default function PatientProfileHeader({ patient, activeTab, onTabChange }
                   <TooltipContent><p className="text-xs">Vigência do plano</p></TooltipContent>
                 </Tooltip>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="end">
-                <Calendar
-                  mode="single"
-                  selected={expiresDate}
-                  onSelect={handleExpiresChange}
-                  locale={ptBR}
-                  initialFocus
-                />
+              <PopoverContent className="w-auto p-4 space-y-4" align="end">
+                <div>
+                  <p className="text-xs font-semibold text-foreground mb-2">Início do plano</p>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-full justify-start text-left font-normal h-9 text-sm">
+                        <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                        {startsDate ? format(startsDate, "dd/MM/yyyy") : "Selecionar data..."}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={startsDate}
+                        onSelect={handleStartsChange}
+                        locale={ptBR}
+                        initialFocus
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-foreground mb-2">Validade do plano</p>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-full justify-start text-left font-normal h-9 text-sm">
+                        <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                        {expiresDate ? format(expiresDate, "dd/MM/yyyy") : "Selecionar data..."}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={expiresDate}
+                        onSelect={handleExpiresChange}
+                        locale={ptBR}
+                        initialFocus
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-foreground mb-2">Próxima atualização</p>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-full justify-start text-left font-normal h-9 text-sm">
+                        <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                        {nextUpdateDate ? format(nextUpdateDate, "dd/MM/yyyy") : "Selecionar data..."}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={nextUpdateDate}
+                        onSelect={handleNextUpdateChange}
+                        locale={ptBR}
+                        initialFocus
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </PopoverContent>
             </Popover>
 
