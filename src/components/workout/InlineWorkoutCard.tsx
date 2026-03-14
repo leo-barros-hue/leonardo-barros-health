@@ -223,6 +223,7 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete, m
   const isAdmin = mode === "admin";
   const isPatient = mode === "patient";
 
+
   const [name, setName] = useState(day.name);
   const [restInterval, setRestInterval] = useState(day.rest_interval || "");
   const [exercises, setExercises] = useState<WorkoutExercise[]>(day.exercises);
