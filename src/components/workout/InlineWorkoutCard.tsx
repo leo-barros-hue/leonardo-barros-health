@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2, Plus, Dumbbell, BarChart3, GripVertical } from "lucide-react";
+import { Trash2, Plus, Dumbbell, BarChart3, GripVertical, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import ExerciseAutocomplete from "./ExerciseAutocomplete";
