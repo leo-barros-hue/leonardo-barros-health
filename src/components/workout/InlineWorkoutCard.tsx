@@ -311,6 +311,7 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete, m
 
       {/* Table Header */}
       <div className="bg-muted/20 px-4 py-2 grid gap-1 items-end" style={{ gridTemplateColumns: gridCols }}>
+        {isAdmin && <div />}
         <div className="text-[10px] font-bold uppercase text-muted-foreground">Exercícios</div>
         <div className="text-[10px] font-bold uppercase text-muted-foreground text-center">Séries</div>
         {[1, 2, 3, 4, 5, 6].map((n, colIdx) => (
@@ -350,44 +351,45 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete, m
 
       {/* Exercise Rows */}
       <div className="divide-y divide-border/50">
-        {exercises.map((ex) => {
-          const exVolume = calcExerciseVolume(ex);
-          const filledSets = countFilledSets(ex);
-          return (
-            <div key={ex.id} className="px-4 py-1.5 grid gap-1 items-start min-w-0" style={{ gridTemplateColumns: gridCols }}>
-              {/* Exercise Name */}
-              <div className="min-w-0 px-1 py-1">
-                <span className="text-sm font-medium break-words whitespace-normal leading-snug">{ex.name}</span>
-              </div>
-
-              {/* Sets - auto-calculated */}
-              <div className="flex items-center justify-center py-1">
-                <span className="text-xs font-semibold text-foreground">{filledSets}</span>
-              </div>
-
-              {/* Series 1-6 */}
-              {REPS_SERIES_KEYS.map((repsKey, idx) => {
-                const loadKey = SERIES_KEYS[idx];
-                const repsVal = ex[repsKey];
-                const isFilled = repsVal != null && repsVal > 0;
-
-                return (
-                  <div key={repsKey} className="py-1">
-                    {isAdmin ? (
-                      <Input
-                        type="text"
-                        inputMode="numeric"
-                        className={`h-8 text-xs text-center border-0 px-0 focus-visible:ring-1 focus-visible:ring-primary/30 rounded transition-colors ${
-                          isFilled
-                            ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-semibold"
-                            : "bg-secondary/30"
-                        }`}
-                        placeholder="–"
-                        value={repsVal != null ? String(repsVal) : ""}
-                        onChange={(e) => handleRepsSeriesChange(ex.id, repsKey, e.target.value)}
-                        onBlur={(e) => handleRepsSeriesBlur(ex.id, repsKey, e.target.value)}
-                      />
-                    ) : (
+        {isAdmin ? (
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={exercises.map((e) => e.id)} strategy={verticalListSortingStrategy}>
+              {exercises.map((ex) => (
+                <SortableExerciseRow
+                  key={ex.id}
+                  ex={ex}
+                  gridCols={gridCols}
+                  isAdmin={isAdmin}
+                  isPatient={isPatient}
+                  handleRepsSeriesChange={handleRepsSeriesChange}
+                  handleRepsSeriesBlur={handleRepsSeriesBlur}
+                  handleFieldChange={handleFieldChange}
+                  handleFieldBlur={handleFieldBlur}
+                  handleDeleteExercise={handleDeleteExercise}
+                  techniqueCatalog={techniqueCatalog}
+                  setTechniqueDetail={setTechniqueDetail}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
+        ) : (
+          exercises.map((ex) => {
+            const exVolume = calcExerciseVolume(ex);
+            const filledSets = countFilledSets(ex);
+            return (
+              <div key={ex.id} className="px-4 py-1.5 grid gap-1 items-start min-w-0" style={{ gridTemplateColumns: gridCols }}>
+                <div className="min-w-0 px-1 py-1">
+                  <span className="text-sm font-medium break-words whitespace-normal leading-snug">{ex.name}</span>
+                </div>
+                <div className="flex items-center justify-center py-1">
+                  <span className="text-xs font-semibold text-foreground">{filledSets}</span>
+                </div>
+                {REPS_SERIES_KEYS.map((repsKey, idx) => {
+                  const loadKey = SERIES_KEYS[idx];
+                  const repsVal = ex[repsKey];
+                  const isFilled = repsVal != null && repsVal > 0;
+                  return (
+                    <div key={repsKey} className="py-1">
                       <div className="flex flex-col gap-0.5">
                         {isFilled && (
                           <span className="text-[9px] text-muted-foreground text-center block">{repsVal} reps</span>
@@ -406,48 +408,16 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete, m
                           <div className="h-7" />
                         )}
                       </div>
-                    )}
-                  </div>
-                );
-              })}
-
-              {/* Observações */}
-              <div className="py-1">
-                {isAdmin ? (
-                  <textarea
-                    className="w-full text-xs bg-transparent px-1 py-1 resize-none min-h-[32px] border-0 focus:outline-none focus:ring-1 focus:ring-primary/30 rounded text-foreground placeholder:text-muted-foreground"
-                    placeholder="—"
-                    value={ex.notes || ""}
-                    rows={1}
-                    onChange={(e) => {
-                      handleFieldChange(ex.id, "notes", e.target.value || null);
-                      e.target.style.height = "auto";
-                      e.target.style.height = e.target.scrollHeight + "px";
-                    }}
-                    onBlur={(e) => handleFieldBlur(ex.id, "notes", e.target.value || null)}
-                  />
-                ) : (
+                    </div>
+                  );
+                })}
+                <div className="py-1">
                   <span className="text-xs text-muted-foreground break-words whitespace-normal leading-snug block px-1 py-1">
                     {ex.notes || "—"}
                   </span>
-                )}
-              </div>
-
-              {/* Técnica */}
-              <div className="py-1">
-                {isAdmin ? (
-                  <TechniqueAutocomplete
-                    value={ex.technique}
-                    onSelect={async (technique) => {
-                      const newVal = technique?.name || null;
-                      handleFieldChange(ex.id, "technique", newVal);
-                      await supabase.from("workout_exercises").update({ technique: newVal } as any).eq("id", ex.id);
-                    }}
-                    techniqueCatalog={techniqueCatalog}
-                    onDescriptionClick={(t) => setTechniqueDetail(t)}
-                  />
-                ) : (
-                  ex.technique ? (
+                </div>
+                <div className="py-1">
+                  {ex.technique ? (
                     <button
                       type="button"
                       className="text-xs text-primary font-medium hover:underline cursor-pointer truncate block w-full text-center"
@@ -460,29 +430,22 @@ export default function InlineWorkoutCard({ day, dayIndex, onUpdate, onDelete, m
                     </button>
                   ) : (
                     <span className="text-xs text-muted-foreground text-center block">—</span>
-                  )
-                )}
-              </div>
-
-              {/* Delete (admin) / Volume (patient) */}
-              <div className="flex items-center justify-center py-1">
-                {isAdmin ? (
-                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => handleDeleteExercise(ex.id)}>
-                    <Trash2 className="w-3 h-3" />
-                  </Button>
-                ) : (
+                  )}
+                </div>
+                <div className="flex items-center justify-center py-1">
                   <span className={`text-xs font-semibold ${exVolume !== null ? "text-primary" : "text-muted-foreground/40"}`}>
                     {exVolume !== null ? `${exVolume.toLocaleString("pt-BR")}` : "—"}
                   </span>
-                )}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
 
         {/* Add Exercise Row (admin only) */}
         {isAdmin && (
           <div className="px-4 py-2 grid gap-1 items-center bg-secondary/20" style={{ gridTemplateColumns: gridCols }}>
+            <div />
             <div>
               <ExerciseAutocomplete
                 value={newExerciseName}
