@@ -711,6 +711,12 @@ export type Database = {
           name: string
           notes: string | null
           reps: string
+          reps_s1: number | null
+          reps_s2: number | null
+          reps_s3: number | null
+          reps_s4: number | null
+          reps_s5: number | null
+          reps_s6: number | null
           rest_seconds: number | null
           sets: number
           sort_order: number
@@ -728,6 +734,12 @@ export type Database = {
           name: string
           notes?: string | null
           reps?: string
+          reps_s1?: number | null
+          reps_s2?: number | null
+          reps_s3?: number | null
+          reps_s4?: number | null
+          reps_s5?: number | null
+          reps_s6?: number | null
           rest_seconds?: number | null
           sets?: number
           sort_order?: number
@@ -745,6 +757,12 @@ export type Database = {
           name?: string
           notes?: string | null
           reps?: string
+          reps_s1?: number | null
+          reps_s2?: number | null
+          reps_s3?: number | null
+          reps_s4?: number | null
+          reps_s5?: number | null
+          reps_s6?: number | null
           rest_seconds?: number | null
           sets?: number
           sort_order?: number
