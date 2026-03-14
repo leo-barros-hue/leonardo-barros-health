@@ -322,6 +322,15 @@ export default function PatientEnergyTab({ patient }: PatientEnergyTabProps) {
           onClick={() => handleSelectFormula("tinsley")}
         />
       </div>
+
+      {/* Body Weight Planner */}
+      <BodyWeightPlanner
+        patientWeight={weight ? parseFloat(weight) : undefined}
+        patientHeight={height ? parseFloat(height) : undefined}
+        patientAge={age ? parseFloat(age) : undefined}
+        patientSex={sex}
+        activityFactor={parseFloat(activityFactor)}
+      />
     </div>
   );
 }
