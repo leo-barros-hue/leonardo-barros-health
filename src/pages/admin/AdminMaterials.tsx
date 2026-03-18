@@ -120,6 +120,14 @@ const AdminMaterials = () => {
                       <Button
                         variant="ghost"
                         size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-primary"
+                        onClick={() => setEditingPdf(pdf)}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="ml-auto h-8 w-8 text-muted-foreground hover:text-destructive"
                         onClick={() => deletePdf(pdf.id, pdf.file_name)}
                       >
