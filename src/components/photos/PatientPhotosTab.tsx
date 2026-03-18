@@ -218,11 +218,7 @@ export default function PatientPhotosTab({ patientId }: { patientId: string }) {
                 onFileChange={(f) => handleFileChange(slot.key, f)}
                 onRemove={() => removePhoto(slot.key)}
                 onDrop={(e) => handleDrop(slot.key, e)}
-                onEdit={() => {
-                  if (previews[slot.key]) {
-                    setEditingSlot({ url: previews[slot.key], key: slot.key, label: slot.label });
-                  }
-                }}
+                onCropChange={(crop) => setCropData((prev) => ({ ...prev, [slot.key]: crop }))}
               />
             ))}
           </div>
