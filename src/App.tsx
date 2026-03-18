@@ -14,6 +14,7 @@ import AdminFoods from "./pages/admin/AdminFoods";
 import AdminExercises from "./pages/admin/AdminExercises";
 import AdminTechniques from "./pages/admin/AdminTechniques";
 import AdminForms from "./pages/admin/AdminForms";
+import AdminMaterials from "./pages/admin/AdminMaterials";
 import PatientDashboard from "./pages/patient/PatientDashboard";
 import PatientDiet from "./pages/patient/PatientDiet";
 import PatientWorkout from "./pages/patient/PatientWorkout";
