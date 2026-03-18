@@ -133,9 +133,32 @@ const AnamnesisTab = ({ patientId }: AnamnesisTabProps) => {
     toast.success("Nova anamnese criada");
   };
 
+  const updateRecordDate = async (recordId: string, newDate: Date) => {
+    const record = records.find((r) => r.id === recordId);
+    if (!record) return;
+    // Preserve original time, change only date
+    const original = new Date(record.created_at);
+    newDate.setHours(original.getHours(), original.getMinutes(), original.getSeconds());
+    const iso = newDate.toISOString();
+    const { error } = await supabase
+      .from("anamneses")
+      .update({ created_at: iso })
+      .eq("id", recordId);
+    if (error) {
+      toast.error("Erro ao atualizar data");
+      return;
+    }
+    setRecords((prev) =>
+      prev
+        .map((r) => (r.id === recordId ? { ...r, created_at: iso } : r))
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    );
+    setEditingDateId(null);
+    toast.success("Data atualizada");
+  };
+
   const switchRecord = (record: Anamnesis) => {
     if (dirty && activeId) {
-      // Save current before switching
       if (editor) {
         saveContent(activeId, editor.getHTML());
       }
