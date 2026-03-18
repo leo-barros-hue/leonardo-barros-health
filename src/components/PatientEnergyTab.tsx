@@ -337,6 +337,9 @@ export default function PatientEnergyTab({ patient }: PatientEnergyTabProps) {
             : undefined
         }
       />
+
+      {/* Physical Assessment Module */}
+      <PhysicalAssessmentModule patientId={patient.id} />
     </div>
   );
 }
