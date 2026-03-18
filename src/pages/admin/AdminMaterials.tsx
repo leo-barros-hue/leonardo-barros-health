@@ -199,6 +199,8 @@ const AdminMaterials = () => {
 
       <PdfUploadDialog open={pdfDialogOpen} onOpenChange={setPdfDialogOpen} onSuccess={invalidate} />
       <VideoAddDialog open={videoDialogOpen} onOpenChange={setVideoDialogOpen} onSuccess={invalidate} />
+      <EditPdfDialog pdf={editingPdf} onOpenChange={(open) => !open && setEditingPdf(null)} onSuccess={invalidate} />
+      <EditVideoDialog video={editingVideo} onOpenChange={(open) => !open && setEditingVideo(null)} onSuccess={invalidate} />
     </div>
   );
 };
