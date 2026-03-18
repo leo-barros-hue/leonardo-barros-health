@@ -76,7 +76,7 @@ const AdminPatientDetail = () => {
         )}
 
         {activeTab === "anamnesis" && (
-          <PlaceholderTab title="Anamnese" description="Módulo de anamnese em desenvolvimento." />
+          <AnamnesisTab patientId={patient.id} />
         )}
 
         {activeTab === "assessments" && (
