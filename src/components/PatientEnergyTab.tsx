@@ -7,6 +7,7 @@ import { Calculator, Activity, Save, Loader2, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import BodyWeightPlanner from "@/components/assessments/BodyWeightPlanner";
+import PhysicalAssessmentModule from "@/components/assessments/PhysicalAssessmentModule";
 
 interface PatientEnergyTabProps {
   patient: {
@@ -336,6 +337,9 @@ export default function PatientEnergyTab({ patient }: PatientEnergyTabProps) {
             : undefined
         }
       />
+
+      {/* Physical Assessment Module */}
+      <PhysicalAssessmentModule patientId={patient.id} />
     </div>
   );
 }
