@@ -493,6 +493,63 @@ export type Database = {
           },
         ]
       }
+      materials_pdfs: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          file_name: string
+          file_url: string
+          id: string
+          name: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string
+          file_name: string
+          file_url: string
+          id?: string
+          name: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          file_name?: string
+          file_url?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      materials_videos: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          title: string
+          youtube_id: string
+          youtube_url: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          id?: string
+          title: string
+          youtube_id: string
+          youtube_url: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          title?: string
+          youtube_id?: string
+          youtube_url?: string
+        }
+        Relationships: []
+      }
       patient_energy_profiles: {
         Row: {
           activity_factor: number
