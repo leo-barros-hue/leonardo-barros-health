@@ -106,6 +106,7 @@ export default function PatientProfileHeader({ patient, activeTab, onTabChange }
   const [nextScheduleId, setNextScheduleId] = useState<string | null>(null);
   const [latestWeight, setLatestWeight] = useState<number | null>(null);
   const [height, setHeight] = useState<number | null>(null);
+  const [autoCalcBase, setAutoCalcBase] = useState<"plan" | "today">("plan");
   const [addDaysOpen, setAddDaysOpen] = useState(false);
   const [extraDays, setExtraDays] = useState("7");
 
