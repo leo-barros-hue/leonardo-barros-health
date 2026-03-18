@@ -175,6 +175,14 @@ const AdminMaterials = () => {
                       <Button
                         variant="ghost"
                         size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-primary"
+                        onClick={() => setEditingVideo(video)}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="h-8 w-8 text-muted-foreground hover:text-destructive"
                         onClick={() => deleteVideo(video.id)}
                       >
