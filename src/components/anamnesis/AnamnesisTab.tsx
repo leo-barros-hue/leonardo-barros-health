@@ -10,7 +10,7 @@ import Heading from "@tiptap/extension-heading";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Loader2, Clock, FileText, Check } from "lucide-react";
+import { Plus, Loader2, Clock, FileText, Check, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
