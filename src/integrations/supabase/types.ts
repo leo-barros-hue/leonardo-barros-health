@@ -643,6 +643,47 @@ export type Database = {
         }
         Relationships: []
       }
+      photo_sessions: {
+        Row: {
+          back_url: string | null
+          created_at: string
+          front_url: string | null
+          id: string
+          left_url: string | null
+          patient_id: string
+          right_url: string | null
+          session_date: string
+        }
+        Insert: {
+          back_url?: string | null
+          created_at?: string
+          front_url?: string | null
+          id?: string
+          left_url?: string | null
+          patient_id: string
+          right_url?: string | null
+          session_date?: string
+        }
+        Update: {
+          back_url?: string | null
+          created_at?: string
+          front_url?: string | null
+          id?: string
+          left_url?: string | null
+          patient_id?: string
+          right_url?: string | null
+          session_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photo_sessions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       prescriptions: {
         Row: {
           content: string

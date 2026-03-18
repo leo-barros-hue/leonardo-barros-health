@@ -10,6 +10,7 @@ import PatientWorkoutTab from "@/components/PatientWorkoutTab";
 import PatientExamsTab from "@/components/PatientExamsTab";
 import PatientPrescriptionsTab from "@/components/PatientPrescriptionsTab";
 import AnamnesisTab from "@/components/anamnesis/AnamnesisTab";
+import PatientPhotosTab from "@/components/photos/PatientPhotosTab";
 
 interface Patient {
   id: string;
@@ -102,7 +103,7 @@ const AdminPatientDetail = () => {
         )}
 
         {activeTab === "photos" && (
-          <PlaceholderTab title="Fotos" description="Módulo de fotos em desenvolvimento." />
+          <PatientPhotosTab patientId={patient.id} />
         )}
 
         {activeTab === "notes" && (
