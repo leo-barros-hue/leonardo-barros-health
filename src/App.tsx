@@ -47,6 +47,7 @@ const App = () => (
             <Route path="exercises" element={<AdminExercises />} />
             <Route path="techniques" element={<AdminTechniques />} />
             <Route path="forms" element={<AdminForms />} />
+            <Route path="materials" element={<AdminMaterials />} />
           </Route>
 
           {/* Patient Routes */}
