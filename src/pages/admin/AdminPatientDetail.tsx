@@ -9,6 +9,7 @@ import PatientDietTab from "@/components/PatientDietTab";
 import PatientWorkoutTab from "@/components/PatientWorkoutTab";
 import PatientExamsTab from "@/components/PatientExamsTab";
 import PatientPrescriptionsTab from "@/components/PatientPrescriptionsTab";
+import AnamnesisTab from "@/components/anamnesis/AnamnesisTab";
 
 interface Patient {
   id: string;
