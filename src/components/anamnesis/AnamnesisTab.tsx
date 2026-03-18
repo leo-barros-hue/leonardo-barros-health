@@ -316,6 +316,21 @@ const AnamnesisTab = ({ patientId }: AnamnesisTabProps) => {
                 <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-secondary/10 text-xs text-muted-foreground">
                   <CalendarDays className="w-3.5 h-3.5" />
                   <span>Data de registro: <span className="font-medium text-foreground">{format(new Date(activeRecord.created_at), "dd/MM/yyyy")}</span></span>
+                  <Popover open={editingDateId === activeRecord.id} onOpenChange={(open) => { if (!open) setEditingDateId(null); }}>
+                    <PopoverTrigger asChild>
+                      <button onClick={() => setEditingDateId(activeRecord.id)} className="ml-1 text-muted-foreground hover:text-primary transition-colors">
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={new Date(activeRecord.created_at)}
+                        onSelect={(date) => date && updateRecordDate(activeRecord.id, date)}
+                        className="p-3 pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
               ) : null;
             })()}
