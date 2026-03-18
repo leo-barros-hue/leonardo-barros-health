@@ -447,15 +447,42 @@ export default function PatientProfileHeader({ patient, activeTab, onTabChange }
                 </div>
                 <div className="border-t border-border pt-3">
                   <p className="text-xs font-semibold text-foreground mb-2">Atualização automática</p>
-                  <p className="text-[11px] text-muted-foreground mb-2">Calcular a partir do início do plano</p>
+                  <div className="flex items-center gap-1 mb-2">
+                    <button
+                      onClick={() => setAutoCalcBase("plan")}
+                      className={`text-[11px] px-2 py-0.5 rounded-md transition-colors ${
+                        autoCalcBase === "plan"
+                          ? "bg-primary text-primary-foreground font-medium"
+                          : "text-muted-foreground hover:bg-muted"
+                      }`}
+                    >
+                      A partir do início do plano
+                    </button>
+                    <button
+                      onClick={() => setAutoCalcBase("today")}
+                      className={`text-[11px] px-2 py-0.5 rounded-md transition-colors ${
+                        autoCalcBase === "today"
+                          ? "bg-primary text-primary-foreground font-medium"
+                          : "text-muted-foreground hover:bg-muted"
+                      }`}
+                    >
+                      A partir de hoje
+                    </button>
+                  </div>
                   <Select
                     onValueChange={(val) => {
-                      if (!startsDate) {
-                        toast({ title: "Defina a data de início do plano primeiro", variant: "destructive" });
-                        return;
-                      }
                       const days = parseInt(val);
-                      const date = new Date(startsDate);
+                      let baseDate: Date;
+                      if (autoCalcBase === "plan") {
+                        if (!startsDate) {
+                          toast({ title: "Defina a data de início do plano primeiro", variant: "destructive" });
+                          return;
+                        }
+                        baseDate = new Date(startsDate);
+                      } else {
+                        baseDate = new Date();
+                      }
+                      const date = new Date(baseDate);
                       date.setDate(date.getDate() + days);
                       handleNextUpdateChange(date);
                     }}
