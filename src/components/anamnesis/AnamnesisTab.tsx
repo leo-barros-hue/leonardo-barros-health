@@ -283,6 +283,7 @@ const AnamnesisTab = ({ patientId }: AnamnesisTabProps) => {
                             mode="single"
                             selected={new Date(record.created_at)}
                             onSelect={(date) => date && updateRecordDate(record.id, date)}
+                            locale={ptBR}
                             className="p-3 pointer-events-auto"
                           />
                         </PopoverContent>
