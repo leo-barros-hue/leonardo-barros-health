@@ -264,6 +264,16 @@ const AnamnesisTab = ({ patientId }: AnamnesisTabProps) => {
           </div>
         ) : editor ? (
           <div className="glass-card border border-border rounded-xl overflow-hidden flex flex-col">
+            {/* Registration date */}
+            {activeId && (() => {
+              const activeRecord = records.find(r => r.id === activeId);
+              return activeRecord ? (
+                <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-secondary/10 text-xs text-muted-foreground">
+                  <CalendarDays className="w-3.5 h-3.5" />
+                  <span>Data de registro: <span className="font-medium text-foreground">{format(new Date(activeRecord.created_at), "dd/MM/yyyy")}</span></span>
+                </div>
+              ) : null;
+            })()}
             <AnamnesisToolbar editor={editor} />
             <EditorContent
               editor={editor}
