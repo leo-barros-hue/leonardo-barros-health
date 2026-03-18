@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import { format } from "date-fns";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import Color from "@tiptap/extension-color";
@@ -9,7 +10,7 @@ import Heading from "@tiptap/extension-heading";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Loader2, Clock, FileText, Check } from "lucide-react";
+import { Plus, Loader2, Clock, FileText, Check, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
@@ -263,6 +264,16 @@ const AnamnesisTab = ({ patientId }: AnamnesisTabProps) => {
           </div>
         ) : editor ? (
           <div className="glass-card border border-border rounded-xl overflow-hidden flex flex-col">
+            {/* Registration date */}
+            {activeId && (() => {
+              const activeRecord = records.find(r => r.id === activeId);
+              return activeRecord ? (
+                <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-secondary/10 text-xs text-muted-foreground">
+                  <CalendarDays className="w-3.5 h-3.5" />
+                  <span>Data de registro: <span className="font-medium text-foreground">{format(new Date(activeRecord.created_at), "dd/MM/yyyy")}</span></span>
+                </div>
+              ) : null;
+            })()}
             <AnamnesisToolbar editor={editor} />
             <EditorContent
               editor={editor}
