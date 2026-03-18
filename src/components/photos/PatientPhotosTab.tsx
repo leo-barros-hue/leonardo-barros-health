@@ -11,7 +11,9 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CalendarIcon, Camera, Plus, Trash2, Eye, GitCompareArrows, X, Upload, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import ImageCropEditor, { type CropState } from "./ImageCropEditor";
+import ImageCropEditor from "./ImageCropEditor";
+import InlineCropArea from "./InlineCropArea";
+import type { CropState } from "./InlineCropArea";
 
 interface CropData {
   [slotKey: string]: CropState;
@@ -216,11 +218,7 @@ export default function PatientPhotosTab({ patientId }: { patientId: string }) {
                 onFileChange={(f) => handleFileChange(slot.key, f)}
                 onRemove={() => removePhoto(slot.key)}
                 onDrop={(e) => handleDrop(slot.key, e)}
-                onEdit={() => {
-                  if (previews[slot.key]) {
-                    setEditingSlot({ url: previews[slot.key], key: slot.key, label: slot.label });
-                  }
-                }}
+                onCropChange={(crop) => setCropData((prev) => ({ ...prev, [slot.key]: crop }))}
               />
             ))}
           </div>
@@ -483,7 +481,7 @@ function PhotoUploadSlot({
   onFileChange,
   onRemove,
   onDrop,
-  onEdit,
+  onCropChange,
 }: {
   label: string;
   preview?: string;
@@ -491,26 +489,41 @@ function PhotoUploadSlot({
   onFileChange: (f: File | null) => void;
   onRemove: () => void;
   onDrop: (e: React.DragEvent) => void;
-  onEdit: () => void;
+  onCropChange: (crop: CropState) => void;
 }) {
+  const [editing, setEditing] = useState(false);
+
   return (
     <div className="space-y-1.5">
       <span className="text-xs font-medium text-muted-foreground">{label}</span>
       {preview ? (
-        <div className="relative aspect-[3/4] rounded-xl border overflow-hidden group cursor-pointer" onClick={onEdit}>
-          <CroppedImage src={preview} alt={label} crop={cropState} className="w-full h-full" />
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-            <span className="text-white text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 px-2 py-1 rounded">
-              Ajustar
-            </span>
+        editing ? (
+          <InlineCropArea
+            imageUrl={preview}
+            label={label}
+            initialCrop={cropState}
+            onConfirm={(crop) => {
+              onCropChange(crop);
+              setEditing(false);
+            }}
+            onCancel={() => setEditing(false)}
+          />
+        ) : (
+          <div className="relative aspect-[3/4] rounded-xl border overflow-hidden group cursor-pointer" onClick={() => setEditing(true)}>
+            <CroppedImage src={preview} alt={label} crop={cropState} className="w-full h-full" />
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+              <span className="text-white text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 px-2 py-1 rounded">
+                Ajustar
+              </span>
+            </div>
+            <button
+              onClick={(e) => { e.stopPropagation(); onRemove(); }}
+              className="absolute top-1.5 right-1.5 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
           </div>
-          <button
-            onClick={(e) => { e.stopPropagation(); onRemove(); }}
-            className="absolute top-1.5 right-1.5 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        </div>
+        )
       ) : (
         <label
           className="flex flex-col items-center justify-center aspect-[3/4] rounded-xl border-2 border-dashed border-muted-foreground/30 bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors"
