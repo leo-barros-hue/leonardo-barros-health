@@ -216,7 +216,7 @@ const AnamnesisTab = ({ patientId }: AnamnesisTabProps) => {
   }
 
   return (
-    <div className="relative flex gap-0 min-h-[600px]">
+    <div className="relative flex gap-3 min-h-[600px]">
       {/* History Sidebar */}
       <div
         onMouseEnter={() => setHistoryOpen(true)}
@@ -330,7 +330,7 @@ const AnamnesisTab = ({ patientId }: AnamnesisTabProps) => {
       {/* Main Editor Area */}
       <div className={cn(
         "flex-1 flex flex-col transition-all duration-300",
-        historyOpen ? "ml-72" : "ml-10"
+        historyOpen ? "ml-[19.5rem]" : "ml-[3.25rem]"
       )}>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
