@@ -10,11 +10,13 @@ import Heading from "@tiptap/extension-heading";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Loader2, Clock, FileText, Check, CalendarDays } from "lucide-react";
+import { Plus, Loader2, Clock, FileText, Check, CalendarDays, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import AnamnesisToolbar from "./AnamnesisToolbar";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 
 interface Anamnesis {
   id: string;
@@ -34,6 +36,7 @@ const AnamnesisTab = ({ patientId }: AnamnesisTabProps) => {
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [editingDateId, setEditingDateId] = useState<string | null>(null);
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const editor = useEditor({
@@ -130,9 +133,32 @@ const AnamnesisTab = ({ patientId }: AnamnesisTabProps) => {
     toast.success("Nova anamnese criada");
   };
 
+  const updateRecordDate = async (recordId: string, newDate: Date) => {
+    const record = records.find((r) => r.id === recordId);
+    if (!record) return;
+    // Preserve original time, change only date
+    const original = new Date(record.created_at);
+    newDate.setHours(original.getHours(), original.getMinutes(), original.getSeconds());
+    const iso = newDate.toISOString();
+    const { error } = await supabase
+      .from("anamneses")
+      .update({ created_at: iso })
+      .eq("id", recordId);
+    if (error) {
+      toast.error("Erro ao atualizar data");
+      return;
+    }
+    setRecords((prev) =>
+      prev
+        .map((r) => (r.id === recordId ? { ...r, created_at: iso } : r))
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    );
+    setEditingDateId(null);
+    toast.success("Data atualizada");
+  };
+
   const switchRecord = (record: Anamnesis) => {
     if (dirty && activeId) {
-      // Save current before switching
       if (editor) {
         saveContent(activeId, editor.getHTML());
       }
@@ -208,7 +234,26 @@ const AnamnesisTab = ({ patientId }: AnamnesisTabProps) => {
                   >
                     <div className="flex items-center gap-2">
                       <FileText className="w-3.5 h-3.5 shrink-0" />
-                      <span className="text-xs font-medium">{formatDate(record.created_at)}</span>
+                      <span className="text-xs font-medium flex-1">{formatDate(record.created_at)}</span>
+                      <Popover open={editingDateId === record.id} onOpenChange={(open) => { if (!open) setEditingDateId(null); }}>
+                        <PopoverTrigger asChild>
+                          <span
+                            role="button"
+                            onClick={(e) => { e.stopPropagation(); setEditingDateId(record.id); }}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:text-primary"
+                          >
+                            <Pencil className="w-3 h-3" />
+                          </span>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start" onClick={(e) => e.stopPropagation()}>
+                          <Calendar
+                            mode="single"
+                            selected={new Date(record.created_at)}
+                            onSelect={(date) => date && updateRecordDate(record.id, date)}
+                            className="p-3 pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
                     </div>
                     {record.content && (
                       <p className="text-[11px] mt-1 ml-5.5 line-clamp-1 opacity-60">
@@ -271,6 +316,21 @@ const AnamnesisTab = ({ patientId }: AnamnesisTabProps) => {
                 <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-secondary/10 text-xs text-muted-foreground">
                   <CalendarDays className="w-3.5 h-3.5" />
                   <span>Data de registro: <span className="font-medium text-foreground">{format(new Date(activeRecord.created_at), "dd/MM/yyyy")}</span></span>
+                  <Popover open={editingDateId === activeRecord.id} onOpenChange={(open) => { if (!open) setEditingDateId(null); }}>
+                    <PopoverTrigger asChild>
+                      <button onClick={() => setEditingDateId(activeRecord.id)} className="ml-1 text-muted-foreground hover:text-primary transition-colors">
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={new Date(activeRecord.created_at)}
+                        onSelect={(date) => date && updateRecordDate(activeRecord.id, date)}
+                        className="p-3 pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
               ) : null;
             })()}
