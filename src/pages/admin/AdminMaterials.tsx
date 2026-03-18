@@ -4,9 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, FileText, Video, Download, ExternalLink, Trash2 } from "lucide-react";
+import { Plus, FileText, Video, Download, ExternalLink, Trash2, Pencil } from "lucide-react";
 import PdfUploadDialog from "@/components/materials/PdfUploadDialog";
 import VideoAddDialog from "@/components/materials/VideoAddDialog";
+import EditPdfDialog from "@/components/materials/EditPdfDialog";
+import EditVideoDialog from "@/components/materials/EditVideoDialog";
 import { toast } from "@/components/ui/sonner";
 
 const AdminMaterials = () => {
