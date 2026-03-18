@@ -11,6 +11,11 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CalendarIcon, Camera, Plus, Trash2, Eye, GitCompareArrows, X, Upload, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import ImageCropEditor, { type CropState } from "./ImageCropEditor";
+
+interface CropData {
+  [slotKey: string]: CropState;
+}
 
 interface PhotoSession {
   id: string;
@@ -20,6 +25,7 @@ interface PhotoSession {
   back_url: string | null;
   left_url: string | null;
   right_url: string | null;
+  crop_data: CropData | null;
   created_at: string;
 }
 
@@ -39,12 +45,13 @@ export default function PatientPhotosTab({ patientId }: { patientId: string }) {
   const [sessionDate, setSessionDate] = useState<Date>(new Date());
   const [dateOpen, setDateOpen] = useState(false);
   const [photos, setPhotos] = useState<Record<string, File | null>>({
-    front_url: null,
-    back_url: null,
-    left_url: null,
-    right_url: null,
+    front_url: null, back_url: null, left_url: null, right_url: null,
   });
   const [previews, setPreviews] = useState<Record<string, string>>({});
+  const [cropData, setCropData] = useState<CropData>({});
+
+  // Crop editor state
+  const [editingSlot, setEditingSlot] = useState<{ url: string; key: string; label: string; sessionId?: string } | null>(null);
 
   // View/compare state
   const [viewSession, setViewSession] = useState<PhotoSession | null>(null);
@@ -58,13 +65,11 @@ export default function PatientPhotosTab({ patientId }: { patientId: string }) {
       .select("*")
       .eq("patient_id", patientId)
       .order("session_date", { ascending: false });
-    setSessions((data as PhotoSession[]) || []);
+    setSessions((data as unknown as PhotoSession[]) || []);
     setLoading(false);
   }, [patientId]);
 
-  useEffect(() => {
-    fetchSessions();
-  }, [fetchSessions]);
+  useEffect(() => { fetchSessions(); }, [fetchSessions]);
 
   const handleFileChange = (slotKey: string, file: File | null) => {
     if (!file) return;
@@ -75,6 +80,8 @@ export default function PatientPhotosTab({ patientId }: { patientId: string }) {
     setPhotos((prev) => ({ ...prev, [slotKey]: file }));
     const url = URL.createObjectURL(file);
     setPreviews((prev) => ({ ...prev, [slotKey]: url }));
+    // Reset crop when new file is added
+    setCropData((prev) => { const c = { ...prev }; delete c[slotKey]; return c; });
   };
 
   const removePhoto = (slotKey: string) => {
@@ -85,6 +92,7 @@ export default function PatientPhotosTab({ patientId }: { patientId: string }) {
       delete copy[slotKey];
       return copy;
     });
+    setCropData((prev) => { const c = { ...prev }; delete c[slotKey]; return c; });
   };
 
   const handleDrop = (slotKey: string, e: React.DragEvent) => {
@@ -103,10 +111,7 @@ export default function PatientPhotosTab({ patientId }: { patientId: string }) {
     setSaving(true);
     try {
       const urls: Record<string, string | null> = {
-        front_url: null,
-        back_url: null,
-        left_url: null,
-        right_url: null,
+        front_url: null, back_url: null, left_url: null, right_url: null,
       };
 
       for (const slot of PHOTO_SLOTS) {
@@ -124,12 +129,14 @@ export default function PatientPhotosTab({ patientId }: { patientId: string }) {
         patient_id: patientId,
         session_date: format(sessionDate, "yyyy-MM-dd"),
         ...urls,
-      });
+        crop_data: Object.keys(cropData).length > 0 ? cropData : null,
+      } as any);
       if (error) throw error;
 
       toast({ title: "Sessão salva com sucesso!" });
       setPhotos({ front_url: null, back_url: null, left_url: null, right_url: null });
       setPreviews({});
+      setCropData({});
       setSessionDate(new Date());
       fetchSessions();
     } catch (err: any) {
@@ -140,7 +147,6 @@ export default function PatientPhotosTab({ patientId }: { patientId: string }) {
   };
 
   const deleteSession = async (session: PhotoSession) => {
-    // Delete storage files
     for (const slot of PHOTO_SLOTS) {
       const url = session[slot.key];
       if (!url) continue;
@@ -152,6 +158,17 @@ export default function PatientPhotosTab({ patientId }: { patientId: string }) {
     await supabase.from("photo_sessions").delete().eq("id", session.id);
     toast({ title: "Sessão excluída" });
     fetchSessions();
+  };
+
+  // Save crop for an existing session
+  const saveCropForSession = async (sessionId: string, slotKey: string, crop: CropState) => {
+    const session = sessions.find((s) => s.id === sessionId);
+    if (!session) return;
+    const existing = (session.crop_data as CropData) || {};
+    const updated = { ...existing, [slotKey]: crop };
+    await supabase.from("photo_sessions").update({ crop_data: updated } as any).eq("id", sessionId);
+    fetchSessions();
+    toast({ title: "Enquadramento salvo!" });
   };
 
   const compareSessionA = sessions.find((s) => s.id === compareA);
@@ -168,7 +185,6 @@ export default function PatientPhotosTab({ patientId }: { patientId: string }) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Date picker */}
           <div className="flex items-center gap-3">
             <span className="text-sm font-medium text-foreground">Data da avaliação:</span>
             <Popover open={dateOpen} onOpenChange={setDateOpen}>
@@ -190,16 +206,21 @@ export default function PatientPhotosTab({ patientId }: { patientId: string }) {
             </Popover>
           </div>
 
-          {/* Photo grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {PHOTO_SLOTS.map((slot) => (
               <PhotoUploadSlot
                 key={slot.key}
                 label={slot.label}
                 preview={previews[slot.key]}
+                cropState={cropData[slot.key]}
                 onFileChange={(f) => handleFileChange(slot.key, f)}
                 onRemove={() => removePhoto(slot.key)}
                 onDrop={(e) => handleDrop(slot.key, e)}
+                onEdit={() => {
+                  if (previews[slot.key]) {
+                    setEditingSlot({ url: previews[slot.key], key: slot.key, label: slot.label });
+                  }
+                }}
               />
             ))}
           </div>
@@ -265,7 +286,12 @@ export default function PatientPhotosTab({ patientId }: { patientId: string }) {
                     {PHOTO_SLOTS.map((slot) => (
                       <div key={slot.key} className="w-12 h-12 rounded-lg border bg-muted overflow-hidden shrink-0">
                         {session[slot.key] ? (
-                          <img src={session[slot.key]!} alt={slot.label} className="w-full h-full object-cover" />
+                          <CroppedImage
+                            src={session[slot.key]!}
+                            alt={slot.label}
+                            crop={session.crop_data?.[slot.key]}
+                            className="w-full h-full"
+                          />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
                             <Camera className="w-3 h-3 text-muted-foreground" />
@@ -320,16 +346,8 @@ export default function PatientPhotosTab({ patientId }: { patientId: string }) {
                   <div key={slot.key}>
                     <h4 className="text-sm font-semibold text-foreground mb-2">{slot.label}</h4>
                     <div className="grid grid-cols-2 gap-4">
-                      <ComparePhoto
-                        url={compareSessionA[slot.key]}
-                        date={compareSessionA.session_date}
-                        label="A"
-                      />
-                      <ComparePhoto
-                        url={compareSessionB[slot.key]}
-                        date={compareSessionB.session_date}
-                        label="B"
-                      />
+                      <ComparePhoto url={compareSessionA[slot.key]} date={compareSessionA.session_date} label="A" crop={compareSessionA.crop_data?.[slot.key]} />
+                      <ComparePhoto url={compareSessionB[slot.key]} date={compareSessionB.session_date} label="B" crop={compareSessionB.crop_data?.[slot.key]} />
                     </div>
                   </div>
                 ))}
@@ -355,10 +373,34 @@ export default function PatientPhotosTab({ patientId }: { patientId: string }) {
             <div className="grid grid-cols-2 gap-4">
               {PHOTO_SLOTS.map((slot) => (
                 <div key={slot.key} className="space-y-1">
-                  <span className="text-xs font-medium text-muted-foreground">{slot.label}</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-muted-foreground">{slot.label}</span>
+                    {viewSession[slot.key] && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 text-xs px-2"
+                        onClick={() => {
+                          setEditingSlot({
+                            url: viewSession[slot.key]!,
+                            key: slot.key,
+                            label: slot.label,
+                            sessionId: viewSession.id,
+                          });
+                        }}
+                      >
+                        Ajustar
+                      </Button>
+                    )}
+                  </div>
                   <div className="aspect-[3/4] rounded-xl border bg-muted overflow-hidden">
                     {viewSession[slot.key] ? (
-                      <img src={viewSession[slot.key]!} alt={slot.label} className="w-full h-full object-cover" />
+                      <CroppedImage
+                        src={viewSession[slot.key]!}
+                        alt={slot.label}
+                        crop={viewSession.crop_data?.[slot.key]}
+                        className="w-full h-full"
+                      />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                         <Camera className="w-8 h-8" />
@@ -371,11 +413,51 @@ export default function PatientPhotosTab({ patientId }: { patientId: string }) {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Crop editor */}
+      {editingSlot && (
+        <ImageCropEditor
+          open={!!editingSlot}
+          onOpenChange={(open) => { if (!open) setEditingSlot(null); }}
+          imageUrl={editingSlot.url}
+          label={editingSlot.label}
+          initialCrop={
+            editingSlot.sessionId
+              ? sessions.find((s) => s.id === editingSlot.sessionId)?.crop_data?.[editingSlot.key]
+              : cropData[editingSlot.key]
+          }
+          onSave={(crop) => {
+            if (editingSlot.sessionId) {
+              saveCropForSession(editingSlot.sessionId, editingSlot.key, crop);
+              // Also update viewSession locally
+              setViewSession((prev) => {
+                if (!prev) return prev;
+                return { ...prev, crop_data: { ...(prev.crop_data || {}), [editingSlot.key]: crop } };
+              });
+            } else {
+              setCropData((prev) => ({ ...prev, [editingSlot.key]: crop }));
+            }
+            setEditingSlot(null);
+          }}
+        />
+      )}
     </div>
   );
 }
 
-function ComparePhoto({ url, date, label }: { url: string | null; date: string; label: string }) {
+// Reusable component to display a photo with saved crop transforms
+function CroppedImage({ src, alt, crop, className }: { src: string; alt: string; crop?: CropState; className?: string }) {
+  const style: React.CSSProperties = {
+    objectFit: "cover",
+  };
+  if (crop) {
+    style.transform = `translate(${crop.x}px, ${crop.y}px) scale(${crop.zoom})`;
+    style.transformOrigin = "center center";
+  }
+  return <img src={src} alt={alt} className={cn("pointer-events-none", className)} style={style} />;
+}
+
+function ComparePhoto({ url, date, label, crop }: { url: string | null; date: string; label: string; crop?: CropState }) {
   return (
     <div className="space-y-1">
       <span className="text-xs text-muted-foreground">
@@ -383,7 +465,7 @@ function ComparePhoto({ url, date, label }: { url: string | null; date: string; 
       </span>
       <div className="aspect-[3/4] rounded-xl border bg-muted overflow-hidden">
         {url ? (
-          <img src={url} alt={label} className="w-full h-full object-cover" />
+          <CroppedImage src={url} alt={label} crop={crop} className="w-full h-full" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-muted-foreground">
             <Camera className="w-6 h-6" />
@@ -397,24 +479,33 @@ function ComparePhoto({ url, date, label }: { url: string | null; date: string; 
 function PhotoUploadSlot({
   label,
   preview,
+  cropState,
   onFileChange,
   onRemove,
   onDrop,
+  onEdit,
 }: {
   label: string;
   preview?: string;
+  cropState?: CropState;
   onFileChange: (f: File | null) => void;
   onRemove: () => void;
   onDrop: (e: React.DragEvent) => void;
+  onEdit: () => void;
 }) {
   return (
     <div className="space-y-1.5">
       <span className="text-xs font-medium text-muted-foreground">{label}</span>
       {preview ? (
-        <div className="relative aspect-[3/4] rounded-xl border overflow-hidden group">
-          <img src={preview} alt={label} className="w-full h-full object-cover" />
+        <div className="relative aspect-[3/4] rounded-xl border overflow-hidden group cursor-pointer" onClick={onEdit}>
+          <CroppedImage src={preview} alt={label} crop={cropState} className="w-full h-full" />
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+            <span className="text-white text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 px-2 py-1 rounded">
+              Ajustar
+            </span>
+          </div>
           <button
-            onClick={onRemove}
+            onClick={(e) => { e.stopPropagation(); onRemove(); }}
             className="absolute top-1.5 right-1.5 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
           >
             <X className="w-3.5 h-3.5" />

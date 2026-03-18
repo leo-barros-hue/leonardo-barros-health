@@ -1,0 +1,1 @@
+ALTER TABLE public.photo_sessions ADD COLUMN crop_data jsonb DEFAULT '{}'::jsonb;

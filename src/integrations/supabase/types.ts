@@ -647,6 +647,7 @@ export type Database = {
         Row: {
           back_url: string | null
           created_at: string
+          crop_data: Json | null
           front_url: string | null
           id: string
           left_url: string | null
@@ -657,6 +658,7 @@ export type Database = {
         Insert: {
           back_url?: string | null
           created_at?: string
+          crop_data?: Json | null
           front_url?: string | null
           id?: string
           left_url?: string | null
@@ -667,6 +669,7 @@ export type Database = {
         Update: {
           back_url?: string | null
           created_at?: string
+          crop_data?: Json | null
           front_url?: string | null
           id?: string
           left_url?: string | null
