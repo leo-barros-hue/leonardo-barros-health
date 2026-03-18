@@ -473,7 +473,7 @@ const PatientDietTab = ({ patientId }: PatientDietTabProps) => {
                       paddingAngle={3}
                       dataKey="value"
                       stroke="none"
-                      label={({ cx, cy, midAngle, outerRadius, pct }) => {
+                      label={({ cx, cy, midAngle, outerRadius, pct }: any) => {
                         const RADIAN = Math.PI / 180;
                         const radius = outerRadius + 20;
                         const x = cx + radius * Math.cos(-midAngle * RADIAN);
