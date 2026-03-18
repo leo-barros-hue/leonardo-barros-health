@@ -10,13 +10,24 @@ import Heading from "@tiptap/extension-heading";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Loader2, Clock, FileText, Check, CalendarDays, Pencil } from "lucide-react";
+import { Plus, Loader2, Clock, FileText, Check, CalendarDays, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import AnamnesisToolbar from "./AnamnesisToolbar";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Anamnesis {
   id: string;
@@ -36,7 +47,9 @@ const AnamnesisTab = ({ patientId }: AnamnesisTabProps) => {
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
-  const [editingDateId, setEditingDateId] = useState<string | null>(null);
+  // "sidebar-<id>" or "header-<id>" to distinguish which popover is open
+  const [editingDateKey, setEditingDateKey] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const editor = useEditor({
@@ -61,7 +74,6 @@ const AnamnesisTab = ({ patientId }: AnamnesisTabProps) => {
     },
   });
 
-  // Fetch all anamneses
   useEffect(() => {
     const fetchRecords = async () => {
       const { data } = await supabase
@@ -80,7 +92,6 @@ const AnamnesisTab = ({ patientId }: AnamnesisTabProps) => {
     fetchRecords();
   }, [patientId]);
 
-  // Load content when activeId changes
   useEffect(() => {
     if (!activeId || !editor) return;
     const record = records.find((r) => r.id === activeId);
@@ -136,7 +147,6 @@ const AnamnesisTab = ({ patientId }: AnamnesisTabProps) => {
   const updateRecordDate = async (recordId: string, newDate: Date) => {
     const record = records.find((r) => r.id === recordId);
     if (!record) return;
-    // Preserve original time, change only date
     const original = new Date(record.created_at);
     newDate.setHours(original.getHours(), original.getMinutes(), original.getSeconds());
     const iso = newDate.toISOString();
@@ -153,8 +163,29 @@ const AnamnesisTab = ({ patientId }: AnamnesisTabProps) => {
         .map((r) => (r.id === recordId ? { ...r, created_at: iso } : r))
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     );
-    setEditingDateId(null);
+    setEditingDateKey(null);
     toast.success("Data atualizada");
+  };
+
+  const deleteRecord = async (recordId: string) => {
+    const { error } = await supabase.from("anamneses").delete().eq("id", recordId);
+    if (error) {
+      toast.error("Erro ao excluir anamnese");
+      return;
+    }
+    const remaining = records.filter((r) => r.id !== recordId);
+    setRecords(remaining);
+    if (activeId === recordId) {
+      if (remaining.length > 0) {
+        setActiveId(remaining[0].id);
+        editor?.commands.setContent(remaining[0].content || "");
+      } else {
+        setActiveId(null);
+        editor?.commands.setContent("");
+      }
+    }
+    setDeletingId(null);
+    toast.success("Anamnese excluída");
   };
 
   const switchRecord = (record: Anamnesis) => {
@@ -194,7 +225,6 @@ const AnamnesisTab = ({ patientId }: AnamnesisTabProps) => {
           historyOpen ? "w-72 opacity-100 shadow-xl" : "w-10 opacity-80"
         )}
       >
-        {/* Collapsed indicator */}
         <div className={cn(
           "flex items-center justify-center py-4 transition-opacity duration-200",
           historyOpen ? "hidden" : "flex flex-col gap-2"
@@ -205,7 +235,6 @@ const AnamnesisTab = ({ patientId }: AnamnesisTabProps) => {
           </span>
         </div>
 
-        {/* Expanded content */}
         <div className={cn(
           "flex flex-col h-full transition-opacity duration-200",
           historyOpen ? "opacity-100" : "opacity-0 pointer-events-none"
@@ -235,11 +264,14 @@ const AnamnesisTab = ({ patientId }: AnamnesisTabProps) => {
                     <div className="flex items-center gap-2">
                       <FileText className="w-3.5 h-3.5 shrink-0" />
                       <span className="text-xs font-medium flex-1">{formatDate(record.created_at)}</span>
-                      <Popover open={editingDateId === record.id} onOpenChange={(open) => { if (!open) setEditingDateId(null); }}>
+                      <Popover
+                        open={editingDateKey === `sidebar-${record.id}`}
+                        onOpenChange={(open) => { if (!open) setEditingDateKey(null); }}
+                      >
                         <PopoverTrigger asChild>
                           <span
                             role="button"
-                            onClick={(e) => { e.stopPropagation(); setEditingDateId(record.id); }}
+                            onClick={(e) => { e.stopPropagation(); setEditingDateKey(`sidebar-${record.id}`); }}
                             className="opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:text-primary"
                           >
                             <Pencil className="w-3 h-3" />
@@ -254,6 +286,31 @@ const AnamnesisTab = ({ patientId }: AnamnesisTabProps) => {
                           />
                         </PopoverContent>
                       </Popover>
+                      <AlertDialog open={deletingId === record.id} onOpenChange={(open) => { if (!open) setDeletingId(null); }}>
+                        <AlertDialogTrigger asChild>
+                          <span
+                            role="button"
+                            onClick={(e) => { e.stopPropagation(); setDeletingId(record.id); }}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:text-destructive"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </span>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Excluir anamnese?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Esta ação não pode ser desfeita. A anamnese de {formatDate(record.created_at)} será excluída permanentemente.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deleteRecord(record.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                              Excluir
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                     {record.content && (
                       <p className="text-[11px] mt-1 ml-5.5 line-clamp-1 opacity-60">
@@ -273,7 +330,6 @@ const AnamnesisTab = ({ patientId }: AnamnesisTabProps) => {
         "flex-1 flex flex-col transition-all duration-300",
         historyOpen ? "ml-72" : "ml-10"
       )}>
-        {/* Header */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
             <h2 className="text-lg font-semibold text-foreground">Anamnese</h2>
@@ -309,16 +365,21 @@ const AnamnesisTab = ({ patientId }: AnamnesisTabProps) => {
           </div>
         ) : editor ? (
           <div className="glass-card border border-border rounded-xl overflow-hidden flex flex-col">
-            {/* Registration date */}
             {activeId && (() => {
               const activeRecord = records.find(r => r.id === activeId);
               return activeRecord ? (
                 <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-secondary/10 text-xs text-muted-foreground">
                   <CalendarDays className="w-3.5 h-3.5" />
                   <span>Data de registro: <span className="font-medium text-foreground">{format(new Date(activeRecord.created_at), "dd/MM/yyyy")}</span></span>
-                  <Popover open={editingDateId === activeRecord.id} onOpenChange={(open) => { if (!open) setEditingDateId(null); }}>
+                  <Popover
+                    open={editingDateKey === `header-${activeRecord.id}`}
+                    onOpenChange={(open) => { if (!open) setEditingDateKey(null); }}
+                  >
                     <PopoverTrigger asChild>
-                      <button onClick={() => setEditingDateId(activeRecord.id)} className="ml-1 text-muted-foreground hover:text-primary transition-colors">
+                      <button
+                        onClick={() => setEditingDateKey(`header-${activeRecord.id}`)}
+                        className="ml-1 text-muted-foreground hover:text-primary transition-colors"
+                      >
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
                     </PopoverTrigger>
@@ -331,6 +392,27 @@ const AnamnesisTab = ({ patientId }: AnamnesisTabProps) => {
                       />
                     </PopoverContent>
                   </Popover>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <button className="ml-auto text-muted-foreground hover:text-destructive transition-colors">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Excluir anamnese?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Esta ação não pode ser desfeita. A anamnese será excluída permanentemente.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => deleteRecord(activeRecord.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          Excluir
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               ) : null;
             })()}
