@@ -216,7 +216,7 @@ const AnamnesisTab = ({ patientId }: AnamnesisTabProps) => {
   }
 
   return (
-    <div className="relative flex gap-0 min-h-[600px]">
+    <div className="relative flex gap-3 min-h-[600px]">
       {/* History Sidebar */}
       <div
         onMouseEnter={() => setHistoryOpen(true)}
