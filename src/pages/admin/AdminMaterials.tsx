@@ -4,14 +4,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, FileText, Video, Download, ExternalLink, Trash2 } from "lucide-react";
+import { Plus, FileText, Video, Download, ExternalLink, Trash2, Pencil } from "lucide-react";
 import PdfUploadDialog from "@/components/materials/PdfUploadDialog";
 import VideoAddDialog from "@/components/materials/VideoAddDialog";
+import EditPdfDialog from "@/components/materials/EditPdfDialog";
+import EditVideoDialog from "@/components/materials/EditVideoDialog";
 import { toast } from "@/components/ui/sonner";
 
 const AdminMaterials = () => {
   const [pdfDialogOpen, setPdfDialogOpen] = useState(false);
   const [videoDialogOpen, setVideoDialogOpen] = useState(false);
+  const [editingPdf, setEditingPdf] = useState<any>(null);
+  const [editingVideo, setEditingVideo] = useState<any>(null);
   const queryClient = useQueryClient();
 
   const { data: pdfs = [] } = useQuery({
@@ -116,6 +120,14 @@ const AdminMaterials = () => {
                       <Button
                         variant="ghost"
                         size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-primary"
+                        onClick={() => setEditingPdf(pdf)}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="ml-auto h-8 w-8 text-muted-foreground hover:text-destructive"
                         onClick={() => deletePdf(pdf.id, pdf.file_name)}
                       >
@@ -163,6 +175,14 @@ const AdminMaterials = () => {
                       <Button
                         variant="ghost"
                         size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-primary"
+                        onClick={() => setEditingVideo(video)}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="h-8 w-8 text-muted-foreground hover:text-destructive"
                         onClick={() => deleteVideo(video.id)}
                       >
@@ -179,6 +199,8 @@ const AdminMaterials = () => {
 
       <PdfUploadDialog open={pdfDialogOpen} onOpenChange={setPdfDialogOpen} onSuccess={invalidate} />
       <VideoAddDialog open={videoDialogOpen} onOpenChange={setVideoDialogOpen} onSuccess={invalidate} />
+      <EditPdfDialog pdf={editingPdf} onOpenChange={(open) => !open && setEditingPdf(null)} onSuccess={invalidate} />
+      <EditVideoDialog video={editingVideo} onOpenChange={(open) => !open && setEditingVideo(null)} onSuccess={invalidate} />
     </div>
   );
 };
