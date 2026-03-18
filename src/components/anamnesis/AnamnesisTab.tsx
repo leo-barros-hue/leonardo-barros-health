@@ -36,6 +36,7 @@ const AnamnesisTab = ({ patientId }: AnamnesisTabProps) => {
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [editingDateId, setEditingDateId] = useState<string | null>(null);
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const editor = useEditor({
