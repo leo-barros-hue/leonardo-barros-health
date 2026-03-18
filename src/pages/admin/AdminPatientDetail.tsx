@@ -72,9 +72,6 @@ const AdminPatientDetail = () => {
           <PatientEvolutionTab patientId={patient.id} />
         )}
 
-        {activeTab === "schedule" && (
-          <ScheduleTabPlaceholder patientId={patient.id} />
-        )}
 
         {activeTab === "anamnesis" && (
           <AnamnesisTab patientId={patient.id} />
