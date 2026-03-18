@@ -16,6 +16,7 @@ import {
   PackageOpen,
   ClipboardList,
   Zap,
+  BookOpen,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -27,6 +28,7 @@ const navItems = [
   { to: "/admin/workouts", icon: Dumbbell, label: "Treinos" },
   { to: "/admin/exams", icon: FlaskConical, label: "Exames" },
   { to: "/admin/prescriptions", icon: FileText, label: "Prescrições" },
+  { to: "/admin/materials", icon: BookOpen, label: "Materiais" },
 ];
 
 const cadastroItems = [
