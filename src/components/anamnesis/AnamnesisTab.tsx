@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import Color from "@tiptap/extension-color";
@@ -282,6 +283,7 @@ const AnamnesisTab = ({ patientId }: AnamnesisTabProps) => {
                             mode="single"
                             selected={new Date(record.created_at)}
                             onSelect={(date) => date && updateRecordDate(record.id, date)}
+                            locale={ptBR}
                             className="p-3 pointer-events-auto"
                           />
                         </PopoverContent>
@@ -388,6 +390,7 @@ const AnamnesisTab = ({ patientId }: AnamnesisTabProps) => {
                         mode="single"
                         selected={new Date(activeRecord.created_at)}
                         onSelect={(date) => date && updateRecordDate(activeRecord.id, date)}
+                        locale={ptBR}
                         className="p-3 pointer-events-auto"
                       />
                     </PopoverContent>
