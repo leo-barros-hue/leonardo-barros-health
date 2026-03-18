@@ -14,6 +14,8 @@ import { toast } from "@/components/ui/sonner";
 const AdminMaterials = () => {
   const [pdfDialogOpen, setPdfDialogOpen] = useState(false);
   const [videoDialogOpen, setVideoDialogOpen] = useState(false);
+  const [editingPdf, setEditingPdf] = useState<any>(null);
+  const [editingVideo, setEditingVideo] = useState<any>(null);
   const queryClient = useQueryClient();
 
   const { data: pdfs = [] } = useQuery({
