@@ -55,7 +55,7 @@ interface ProfileHeaderProps {
 
 const tabs = [
   { id: "evolution", label: "Evolução" },
-  { id: "schedule", label: "Agendamentos" },
+  
   { id: "anamnesis", label: "Anamnese" },
   { id: "assessments", label: "Avaliações" },
   { id: "diet", label: "Dietas" },

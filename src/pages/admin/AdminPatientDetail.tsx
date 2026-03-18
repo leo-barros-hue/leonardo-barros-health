@@ -72,9 +72,6 @@ const AdminPatientDetail = () => {
           <PatientEvolutionTab patientId={patient.id} />
         )}
 
-        {activeTab === "schedule" && (
-          <ScheduleTabPlaceholder patientId={patient.id} />
-        )}
 
         {activeTab === "anamnesis" && (
           <AnamnesisTab patientId={patient.id} />
@@ -125,44 +122,5 @@ function PlaceholderTab({ title, description }: { title: string; description: st
   );
 }
 
-function ScheduleTabPlaceholder({ patientId }: { patientId: string }) {
-  const [dates, setDates] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetch = async () => {
-      const { data } = await supabase
-        .from("patient_schedule_dates")
-        .select("*")
-        .eq("patient_id", patientId)
-        .order("scheduled_date", { ascending: true });
-      setDates(data || []);
-      setLoading(false);
-    };
-    fetch();
-  }, [patientId]);
-
-  if (loading) return <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>;
-
-  return (
-    <div className="glass-card p-6">
-      <h3 className="text-lg font-semibold text-foreground mb-4">Próximas Atualizações</h3>
-      {dates.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Nenhuma data agendada.</p>
-      ) : (
-        <div className="space-y-2">
-          {dates.map((d: any) => (
-            <div key={d.id} className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30">
-              <span className="text-sm font-medium text-foreground">
-                {new Date(d.scheduled_date).toLocaleDateString("pt-BR")}
-              </span>
-              <span className="text-xs text-muted-foreground">{d.label}</span>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
 
 export default AdminPatientDetail;
