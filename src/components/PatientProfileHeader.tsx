@@ -272,19 +272,23 @@ export default function PatientProfileHeader({ patient, activeTab, onTabChange }
           {/* Patient Info */}
           <div className="flex-1 min-w-0">
             <h1 className="text-2xl font-bold text-primary-foreground truncate">{patient.name}</h1>
-            {patient.email && (
-              <div className="flex items-center gap-1.5 mt-1">
-                <span className="text-sm text-white/70">{patient.email}</span>
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(patient.email!);
-                    toast({ title: "E-mail copiado" });
-                  }}
-                  className="text-white/50 hover:text-white/80 transition-colors"
-                >
-                  <Copy className="w-3.5 h-3.5" />
-                </button>
-              </div>
+            {patient.phone && whatsAppLink && (
+              <a
+                href={whatsAppLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 mt-1 group"
+              >
+                <span className="text-sm text-white/70 group-hover:text-white/90 transition-colors">
+                  {(() => {
+                    const d = patient.phone!.replace(/\D/g, "");
+                    if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+                    if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+                    return patient.phone;
+                  })()}
+                </span>
+                <MessageCircle className="w-4 h-4 text-green-400 group-hover:text-green-300 transition-colors" />
+              </a>
             )}
 
             {/* Info badges */}
