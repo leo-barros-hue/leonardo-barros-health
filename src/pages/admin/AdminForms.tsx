@@ -18,10 +18,9 @@ interface FormTemplate {
 }
 
 const AdminForms = () => {
+  const navigate = useNavigate();
   const [templates, setTemplates] = useState<FormTemplate[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<FormTemplate | null>(null);
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [assignTemplate, setAssignTemplate] = useState<{ id: string; name: string } | null>(null);
   const [responsesTemplate, setResponsesTemplate] = useState<{ id: string; name: string } | null>(null);
