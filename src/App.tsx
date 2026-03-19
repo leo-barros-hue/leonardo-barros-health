@@ -12,6 +12,7 @@ import AdminPatientDetail from "./pages/admin/AdminPatientDetail";
 import AdminDiets from "./pages/admin/AdminDiets";
 import AdminFoods from "./pages/admin/AdminFoods";
 import AdminExercises from "./pages/admin/AdminExercises";
+import AdminFormEditor from "./pages/admin/AdminFormEditor";
 import AdminTechniques from "./pages/admin/AdminTechniques";
 import AdminForms from "./pages/admin/AdminForms";
 import AdminMaterials from "./pages/admin/AdminMaterials";
@@ -51,6 +52,8 @@ const App = () => (
             <Route path="exercises" element={<AdminExercises />} />
             <Route path="techniques" element={<AdminTechniques />} />
             <Route path="forms" element={<AdminForms />} />
+            <Route path="forms/new" element={<AdminFormEditor />} />
+            <Route path="forms/:id/edit" element={<AdminFormEditor />} />
             <Route path="materials" element={<AdminMaterials />} />
           </Route>
 

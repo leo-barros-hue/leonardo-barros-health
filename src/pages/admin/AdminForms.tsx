@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Plus, Trash2, Pencil, FileText, Eye, Send, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import FormTemplateDialog from "@/components/forms/FormTemplateDialog";
 import FormPreviewDialog from "@/components/forms/FormPreviewDialog";
 import FormAssignDialog from "@/components/forms/FormAssignDialog";
 import FormResponsesDialog from "@/components/forms/FormResponsesDialog";
@@ -18,10 +18,9 @@ interface FormTemplate {
 }
 
 const AdminForms = () => {
+  const navigate = useNavigate();
   const [templates, setTemplates] = useState<FormTemplate[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<FormTemplate | null>(null);
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [assignTemplate, setAssignTemplate] = useState<{ id: string; name: string } | null>(null);
   const [responsesTemplate, setResponsesTemplate] = useState<{ id: string; name: string } | null>(null);
@@ -64,7 +63,7 @@ const AdminForms = () => {
           <h1 className="text-2xl font-bold text-foreground">Formulários</h1>
           <p className="text-muted-foreground text-sm mt-1">Crie e envie formulários personalizados para os pacientes</p>
         </div>
-        <Button onClick={() => { setEditingTemplate(null); setDialogOpen(true); }} className="gap-2">
+        <Button onClick={() => navigate("/admin/forms/new")} className="gap-2">
           <Plus className="w-4 h-4" /> Novo Formulário
         </Button>
       </div>
@@ -96,7 +95,7 @@ const AdminForms = () => {
                 <Button variant="ghost" size="sm" onClick={() => setPreviewId(t.id)} className="gap-1.5 text-muted-foreground text-xs h-8">
                   <Eye className="w-3.5 h-3.5" /> Visualizar
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => { setEditingTemplate(t); setDialogOpen(true); }} className="gap-1.5 text-muted-foreground text-xs h-8">
+                <Button variant="ghost" size="sm" onClick={() => navigate(`/admin/forms/${t.id}/edit`)} className="gap-1.5 text-muted-foreground text-xs h-8">
                   <Pencil className="w-3.5 h-3.5" /> Editar
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => setAssignTemplate({ id: t.id, name: t.name })} className="gap-1.5 text-muted-foreground text-xs h-8">
@@ -114,7 +113,7 @@ const AdminForms = () => {
         </div>
       )}
 
-      <FormTemplateDialog open={dialogOpen} onOpenChange={setDialogOpen} template={editingTemplate} onSaved={fetchTemplates} />
+      
       <FormPreviewDialog open={!!previewId} onOpenChange={() => setPreviewId(null)} templateId={previewId} />
       <FormAssignDialog open={!!assignTemplate} onOpenChange={() => setAssignTemplate(null)} templateId={assignTemplate?.id || null} templateName={assignTemplate?.name || ""} />
       <FormResponsesDialog open={!!responsesTemplate} onOpenChange={() => setResponsesTemplate(null)} templateId={responsesTemplate?.id || null} templateName={responsesTemplate?.name || ""} />
