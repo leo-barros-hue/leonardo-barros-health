@@ -276,6 +276,7 @@ export type Database = {
       }
       form_assignments: {
         Row: {
+          access_token: string | null
           assigned_at: string
           completed_at: string | null
           form_template_id: string
@@ -283,6 +284,7 @@ export type Database = {
           patient_id: string
         }
         Insert: {
+          access_token?: string | null
           assigned_at?: string
           completed_at?: string | null
           form_template_id: string
@@ -290,6 +292,7 @@ export type Database = {
           patient_id: string
         }
         Update: {
+          access_token?: string | null
           assigned_at?: string
           completed_at?: string | null
           form_template_id?: string
@@ -315,31 +318,49 @@ export type Database = {
       }
       form_questions: {
         Row: {
+          description: string
           form_template_id: string
           id: string
+          image_url: string | null
+          multi_select: boolean
           options: Json | null
           question_text: string
           question_type: string
+          required: boolean
+          scale_label_max: string
+          scale_label_min: string
           scale_max: number | null
           scale_min: number | null
           sort_order: number
         }
         Insert: {
+          description?: string
           form_template_id: string
           id?: string
+          image_url?: string | null
+          multi_select?: boolean
           options?: Json | null
           question_text: string
           question_type?: string
+          required?: boolean
+          scale_label_max?: string
+          scale_label_min?: string
           scale_max?: number | null
           scale_min?: number | null
           sort_order?: number
         }
         Update: {
+          description?: string
           form_template_id?: string
           id?: string
+          image_url?: string | null
+          multi_select?: boolean
           options?: Json | null
           question_text?: string
           question_type?: string
+          required?: boolean
+          scale_label_max?: string
+          scale_label_min?: string
           scale_max?: number | null
           scale_min?: number | null
           sort_order?: number
