@@ -63,7 +63,7 @@ const AdminForms = () => {
           <h1 className="text-2xl font-bold text-foreground">Formulários</h1>
           <p className="text-muted-foreground text-sm mt-1">Crie e envie formulários personalizados para os pacientes</p>
         </div>
-        <Button onClick={() => { setEditingTemplate(null); setDialogOpen(true); }} className="gap-2">
+        <Button onClick={() => navigate("/admin/forms/new")} className="gap-2">
           <Plus className="w-4 h-4" /> Novo Formulário
         </Button>
       </div>
