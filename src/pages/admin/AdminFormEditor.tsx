@@ -460,6 +460,10 @@ const AdminFormEditor = () => {
         <Button variant="outline" onClick={addQuestion} className="gap-1.5">
           <Plus className="w-4 h-4" /> Adicionar Pergunta
         </Button>
+        <Button onClick={handleSave} disabled={saving} className="gap-2">
+          <Save className="w-4 h-4" />
+          {saving ? "Salvando..." : "Salvar Formulário"}
+        </Button>
       </div>
     </div>
   );
