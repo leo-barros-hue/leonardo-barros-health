@@ -250,7 +250,7 @@ const AdminFormEditor = () => {
   return (
     <div className="space-y-6 pb-12">
       {/* Header */}
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-4 sticky top-0 z-10 bg-background py-4 -mt-4">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate("/admin/forms")} className="shrink-0">
             <ArrowLeft className="w-5 h-5" />
@@ -459,6 +459,10 @@ const AdminFormEditor = () => {
         </Button>
         <Button variant="outline" onClick={addQuestion} className="gap-1.5">
           <Plus className="w-4 h-4" /> Adicionar Pergunta
+        </Button>
+        <Button onClick={handleSave} disabled={saving} className="gap-2">
+          <Save className="w-4 h-4" />
+          {saving ? "Salvando..." : "Salvar Formulário"}
         </Button>
       </div>
     </div>
