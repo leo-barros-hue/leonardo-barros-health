@@ -95,7 +95,7 @@ const AdminForms = () => {
                 <Button variant="ghost" size="sm" onClick={() => setPreviewId(t.id)} className="gap-1.5 text-muted-foreground text-xs h-8">
                   <Eye className="w-3.5 h-3.5" /> Visualizar
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => { setEditingTemplate(t); setDialogOpen(true); }} className="gap-1.5 text-muted-foreground text-xs h-8">
+                <Button variant="ghost" size="sm" onClick={() => navigate(`/admin/forms/${t.id}/edit`)} className="gap-1.5 text-muted-foreground text-xs h-8">
                   <Pencil className="w-3.5 h-3.5" /> Editar
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => setAssignTemplate({ id: t.id, name: t.name })} className="gap-1.5 text-muted-foreground text-xs h-8">
