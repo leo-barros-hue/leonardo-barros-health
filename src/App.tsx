@@ -21,6 +21,7 @@ import PatientWorkout from "./pages/patient/PatientWorkout";
 import PatientEvolution from "./pages/patient/PatientEvolution";
 import PatientExams from "./pages/patient/PatientExams";
 import PatientPrescriptions from "./pages/patient/PatientPrescriptions";
+import FormFill from "./pages/FormFill";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,9 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Login />} />
+          
+          {/* Public form fill route */}
+          <Route path="/form/:token" element={<FormFill />} />
           
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminLayout />}>
