@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Plus, Trash2, Pencil, FileText, Eye, Send, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import FormTemplateDialog from "@/components/forms/FormTemplateDialog";
 import FormPreviewDialog from "@/components/forms/FormPreviewDialog";
 import FormAssignDialog from "@/components/forms/FormAssignDialog";
 import FormResponsesDialog from "@/components/forms/FormResponsesDialog";
