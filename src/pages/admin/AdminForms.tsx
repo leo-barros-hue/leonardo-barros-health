@@ -113,7 +113,7 @@ const AdminForms = () => {
         </div>
       )}
 
-      
+
       <FormPreviewDialog open={!!previewId} onOpenChange={() => setPreviewId(null)} templateId={previewId} />
       <FormAssignDialog open={!!assignTemplate} onOpenChange={() => setAssignTemplate(null)} templateId={assignTemplate?.id || null} templateName={assignTemplate?.name || ""} />
       <FormResponsesDialog open={!!responsesTemplate} onOpenChange={() => setResponsesTemplate(null)} templateId={responsesTemplate?.id || null} templateName={responsesTemplate?.name || ""} />
