@@ -8,8 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
 import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
 import { Activity, Loader2, CheckCircle2 } from "lucide-react";
 
 interface Question {
@@ -42,7 +42,6 @@ const FormFill = () => {
   useEffect(() => {
     if (!token) return;
     const load = async () => {
-      // Find assignment by token
       const { data: assignment } = await supabase
         .from("form_assignments")
         .select("id, form_template_id, completed_at")
@@ -54,7 +53,6 @@ const FormFill = () => {
 
       setAssignmentId(assignment.id);
 
-      // Load template
       const { data: tmpl } = await supabase
         .from("form_templates")
         .select("name, description")
@@ -62,7 +60,6 @@ const FormFill = () => {
         .single();
       if (tmpl) { setFormName(tmpl.name); setFormDescription(tmpl.description || ""); }
 
-      // Load questions
       const { data: qs } = await supabase
         .from("form_questions")
         .select("*")
@@ -91,18 +88,19 @@ const FormFill = () => {
     load();
   }, [token]);
 
-  const answeredCount = questions.filter((q) => {
+  const answerableQuestions = questions.filter(q => q.question_type !== "section");
+
+  const answeredCount = answerableQuestions.filter((q) => {
     const a = answers[q.id];
     if (a === undefined || a === null || a === "") return false;
     if (Array.isArray(a) && a.length === 0) return false;
     return true;
   }).length;
 
-  const progress = questions.length > 0 ? (answeredCount / questions.length) * 100 : 0;
+  const progress = answerableQuestions.length > 0 ? (answeredCount / answerableQuestions.length) * 100 : 0;
 
   const handleSubmit = async () => {
-    // Validate required
-    for (const q of questions) {
+    for (const q of answerableQuestions) {
       if (q.required) {
         const a = answers[q.id];
         if (a === undefined || a === null || a === "" || (Array.isArray(a) && a.length === 0)) {
@@ -113,7 +111,7 @@ const FormFill = () => {
     }
 
     setSubmitting(true);
-    const rows = questions.map((q) => {
+    const rows = answerableQuestions.map((q) => {
       const a = answers[q.id];
       let answer_text: string | null = null;
       let answer_number: number | null = null;
@@ -178,6 +176,8 @@ const FormFill = () => {
     );
   }
 
+  let questionCounter = 0;
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -203,7 +203,7 @@ const FormFill = () => {
         {/* Progress */}
         <div className="space-y-1">
           <div className="flex justify-between text-xs text-muted-foreground">
-            <span>{answeredCount} de {questions.length} respondidas</span>
+            <span>{answeredCount} de {answerableQuestions.length} respondidas</span>
             <span>{Math.round(progress)}%</span>
           </div>
           <Progress value={progress} className="h-2" />
@@ -211,92 +211,109 @@ const FormFill = () => {
 
         {/* Questions */}
         <div className="space-y-6">
-          {questions.map((q, idx) => (
-            <div key={q.id} className="border border-border rounded-xl p-5 space-y-3 bg-card">
-              <div className="space-y-1">
-                <Label className="text-sm font-semibold">
-                  {idx + 1}. {q.question_text}
-                  {q.required && <span className="text-destructive ml-1">*</span>}
-                </Label>
-                {q.description && <p className="text-xs text-muted-foreground">{q.description}</p>}
-              </div>
-              {q.image_url && <img src={q.image_url} alt="" className="max-h-48 rounded-lg border border-border" />}
-
-              {q.question_type === "text" && (
-                <Textarea placeholder="Sua resposta..." value={(answers[q.id] as string) || ""} onChange={(e) => setAnswers((p) => ({ ...p, [q.id]: e.target.value }))} className="bg-secondary/30" rows={3} />
-              )}
-
-              {q.question_type === "number" && (
-                <Input type="number" placeholder="0" value={(answers[q.id] as string) || ""} onChange={(e) => setAnswers((p) => ({ ...p, [q.id]: e.target.value }))} className="bg-secondary/30 w-40" />
-              )}
-
-              {q.question_type === "yes_no" && (
-                <div className="flex gap-3">
-                  {["Sim", "Não"].map((opt) => (
-                    <Button key={opt} variant={answers[q.id] === opt ? "default" : "outline"} onClick={() => setAnswers((p) => ({ ...p, [q.id]: opt }))}>{opt}</Button>
-                  ))}
+          {questions.map((q) => {
+            if (q.question_type === "section") {
+              return (
+                <div key={q.id} className="pt-2">
+                  <div className="border-l-4 border-l-primary pl-4 py-2">
+                    <h2 className="text-lg font-bold text-foreground">{q.question_text}</h2>
+                    {q.description && <p className="text-sm text-muted-foreground mt-1">{q.description}</p>}
+                  </div>
+                  <Separator className="mt-4" />
                 </div>
-              )}
+              );
+            }
 
-              {q.question_type === "multiple_choice" && (
-                <RadioGroup value={(answers[q.id] as string) || ""} onValueChange={(v) => setAnswers((p) => ({ ...p, [q.id]: v }))} className="space-y-2">
-                  {q.options.map((opt, oi) => (
-                    <div key={oi} className="flex items-center gap-2">
-                      <RadioGroupItem value={opt} id={`fill-${q.id}-${oi}`} />
-                      <Label htmlFor={`fill-${q.id}-${oi}`} className="text-sm font-normal cursor-pointer">{opt}</Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              )}
+            questionCounter++;
+            const num = questionCounter;
 
-              {q.question_type === "multi_select" && (
-                <div className="space-y-2">
-                  {q.options.map((opt, oi) => {
-                    const selected: string[] = (answers[q.id] as string[]) || [];
-                    return (
-                      <div key={oi} className="flex items-center gap-2">
-                        <Checkbox
-                          checked={selected.includes(opt)}
-                          onCheckedChange={(checked) => {
-                            setAnswers((p) => ({
-                              ...p,
-                              [q.id]: checked ? [...selected, opt] : selected.filter((s) => s !== opt),
-                            }));
-                          }}
-                          id={`fill-${q.id}-${oi}`}
-                        />
-                        <Label htmlFor={`fill-${q.id}-${oi}`} className="text-sm font-normal cursor-pointer">{opt}</Label>
-                      </div>
-                    );
-                  })}
+            return (
+              <div key={q.id} className="border border-border rounded-xl p-5 space-y-3 bg-card">
+                <div className="space-y-1">
+                  <Label className="text-sm font-semibold">
+                    {num}. {q.question_text}
+                    {q.required && <span className="text-destructive ml-1">*</span>}
+                  </Label>
+                  {q.description && <p className="text-xs text-muted-foreground">{q.description}</p>}
                 </div>
-              )}
+                {q.image_url && <img src={q.image_url} alt="" className="max-h-48 rounded-lg border border-border" />}
 
-              {q.question_type === "scale" && (
-                <div className="space-y-3 pt-2">
-                  <div className="flex gap-1 justify-center flex-wrap">
-                    {Array.from({ length: q.scale_max - q.scale_min + 1 }, (_, i) => q.scale_min + i).map((n) => (
-                      <button
-                        key={n}
-                        onClick={() => setAnswers((p) => ({ ...p, [q.id]: n }))}
-                        className={`w-9 h-9 rounded-lg text-sm font-medium border transition-all ${
-                          answers[q.id] === n
-                            ? "bg-primary text-primary-foreground border-primary"
-                            : "border-border text-foreground hover:bg-secondary"
-                        }`}
-                      >
-                        {n}
-                      </button>
+                {q.question_type === "text" && (
+                  <Textarea placeholder="Sua resposta..." value={(answers[q.id] as string) || ""} onChange={(e) => setAnswers((p) => ({ ...p, [q.id]: e.target.value }))} className="bg-secondary/30" rows={3} />
+                )}
+
+                {q.question_type === "number" && (
+                  <Input type="number" placeholder="0" value={(answers[q.id] as string) || ""} onChange={(e) => setAnswers((p) => ({ ...p, [q.id]: e.target.value }))} className="bg-secondary/30 w-40" />
+                )}
+
+                {q.question_type === "yes_no" && (
+                  <div className="flex gap-3">
+                    {["Sim", "Não"].map((opt) => (
+                      <Button key={opt} variant={answers[q.id] === opt ? "default" : "outline"} onClick={() => setAnswers((p) => ({ ...p, [q.id]: opt }))}>{opt}</Button>
                     ))}
                   </div>
-                  <div className="flex justify-between text-xs text-muted-foreground px-1">
-                    <span>{q.scale_label_min || q.scale_min}</span>
-                    <span>{q.scale_label_max || q.scale_max}</span>
+                )}
+
+                {q.question_type === "multiple_choice" && (
+                  <RadioGroup value={(answers[q.id] as string) || ""} onValueChange={(v) => setAnswers((p) => ({ ...p, [q.id]: v }))} className="space-y-2">
+                    {q.options.map((opt, oi) => (
+                      <div key={oi} className="flex items-center gap-2">
+                        <RadioGroupItem value={opt} id={`fill-${q.id}-${oi}`} />
+                        <Label htmlFor={`fill-${q.id}-${oi}`} className="text-sm font-normal cursor-pointer">{opt}</Label>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                )}
+
+                {q.question_type === "multi_select" && (
+                  <div className="space-y-2">
+                    {q.options.map((opt, oi) => {
+                      const selected: string[] = (answers[q.id] as string[]) || [];
+                      return (
+                        <div key={oi} className="flex items-center gap-2">
+                          <Checkbox
+                            checked={selected.includes(opt)}
+                            onCheckedChange={(checked) => {
+                              setAnswers((p) => ({
+                                ...p,
+                                [q.id]: checked ? [...selected, opt] : selected.filter((s) => s !== opt),
+                              }));
+                            }}
+                            id={`fill-${q.id}-${oi}`}
+                          />
+                          <Label htmlFor={`fill-${q.id}-${oi}`} className="text-sm font-normal cursor-pointer">{opt}</Label>
+                        </div>
+                      );
+                    })}
                   </div>
-                </div>
-              )}
-            </div>
-          ))}
+                )}
+
+                {q.question_type === "scale" && (
+                  <div className="space-y-3 pt-2">
+                    <div className="flex gap-1 justify-center flex-wrap">
+                      {Array.from({ length: q.scale_max - q.scale_min + 1 }, (_, i) => q.scale_min + i).map((n) => (
+                        <button
+                          key={n}
+                          onClick={() => setAnswers((p) => ({ ...p, [q.id]: n }))}
+                          className={`w-9 h-9 rounded-lg text-sm font-medium border transition-all ${
+                            answers[q.id] === n
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "border-border text-foreground hover:bg-secondary"
+                          }`}
+                        >
+                          {n}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex justify-between text-xs text-muted-foreground px-1">
+                      <span>{q.scale_label_min || q.scale_min}</span>
+                      <span>{q.scale_label_max || q.scale_max}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         <div className="pt-4">

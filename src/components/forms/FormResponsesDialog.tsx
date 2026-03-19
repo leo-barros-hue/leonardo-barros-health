@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -35,10 +36,17 @@ interface ResponseDetail {
   sort_order: number;
 }
 
+interface SectionItem {
+  question_text: string;
+  description: string;
+  sort_order: number;
+}
+
 const FormResponsesDialog = ({ open, onOpenChange, templateId, templateName }: FormResponsesDialogProps) => {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [selectedAssignment, setSelectedAssignment] = useState<string | null>(null);
   const [responses, setResponses] = useState<ResponseDetail[]>([]);
+  const [sections, setSections] = useState<SectionItem[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -64,6 +72,18 @@ const FormResponsesDialog = ({ open, onOpenChange, templateId, templateName }: F
           }))
         );
       }
+
+      // Load sections for this template
+      const { data: qs } = await supabase
+        .from("form_questions")
+        .select("question_text, question_type, description, sort_order")
+        .eq("form_template_id", templateId)
+        .eq("question_type", "section")
+        .order("sort_order");
+      if (qs) {
+        setSections(qs.map((q: any) => ({ question_text: q.question_text, description: q.description || "", sort_order: q.sort_order })));
+      }
+
       setLoading(false);
     };
     load();
@@ -89,6 +109,15 @@ const FormResponsesDialog = ({ open, onOpenChange, templateId, templateName }: F
           .sort((a: ResponseDetail, b: ResponseDetail) => a.sort_order - b.sort_order)
       );
     }
+  };
+
+  // Merge sections and responses for display
+  const buildResponseView = () => {
+    const items: { type: "section" | "response"; data: any; sort_order: number }[] = [];
+    sections.forEach(s => items.push({ type: "section", data: s, sort_order: s.sort_order }));
+    responses.forEach(r => items.push({ type: "response", data: r, sort_order: r.sort_order }));
+    items.sort((a, b) => a.sort_order - b.sort_order);
+    return items;
   };
 
   return (
@@ -142,14 +171,28 @@ const FormResponsesDialog = ({ open, onOpenChange, templateId, templateName }: F
             </button>
             <ScrollArea className="flex-1 max-h-[500px]">
               <div className="space-y-4 py-2">
-                {responses.map((r, idx) => (
-                  <div key={idx} className="space-y-1">
-                    <p className="text-sm font-medium text-foreground">{idx + 1}. {r.question_text}</p>
-                    <p className="text-sm text-muted-foreground bg-secondary/50 rounded-lg px-3 py-2">
-                      {r.answer_text || (r.answer_number !== null ? String(r.answer_number) : "—")}
-                    </p>
-                  </div>
-                ))}
+                {buildResponseView().map((item, idx) => {
+                  if (item.type === "section") {
+                    return (
+                      <div key={`s-${idx}`} className="pt-2 first:pt-0">
+                        <div className="border-l-4 border-l-primary pl-3 py-1">
+                          <h3 className="text-sm font-bold text-foreground">{item.data.question_text}</h3>
+                          {item.data.description && <p className="text-xs text-muted-foreground">{item.data.description}</p>}
+                        </div>
+                        <Separator className="mt-2" />
+                      </div>
+                    );
+                  }
+                  const r = item.data as ResponseDetail;
+                  return (
+                    <div key={`r-${idx}`} className="space-y-1">
+                      <p className="text-sm font-medium text-foreground">{r.question_text}</p>
+                      <p className="text-sm text-muted-foreground bg-secondary/50 rounded-lg px-3 py-2">
+                        {r.answer_text || (r.answer_number !== null ? String(r.answer_number) : "—")}
+                      </p>
+                    </div>
+                  );
+                })}
               </div>
             </ScrollArea>
           </>
