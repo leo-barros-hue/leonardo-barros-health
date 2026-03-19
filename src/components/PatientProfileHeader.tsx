@@ -64,6 +64,7 @@ const tabs = [
   { id: "exams", label: "Exames" },
   { id: "prescriptions", label: "Prescrições" },
   { id: "photos", label: "Fotos" },
+  { id: "forms", label: "Formulários" },
   { id: "notes", label: "Notas" },
 ];
 
