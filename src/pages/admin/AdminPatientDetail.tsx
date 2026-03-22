@@ -100,7 +100,7 @@ const AdminPatientDetail = () => {
         )}
 
         {activeTab === "prescriptions" && (
-          <PlaceholderTab title="Prescrições" description="Módulo de prescrições em desenvolvimento." />
+          <PatientPrescriptionsTab patientId={patient.id} />
         )}
 
         {activeTab === "photos" && (

@@ -1,33 +1,60 @@
-import { ArrowLeft, Download, FileText } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowLeft, Download, FileText, File, Eye, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-const mockPrescriptions = [
-  {
-    id: "1",
-    date: "2026-03-01",
-    title: "Suplementação Geral",
-    content: "1. Vitamina D3 — 10.000 UI/dia por 8 semanas, depois 5.000 UI/dia manutenção\n2. Ômega 3 — 2g/dia (EPA + DHA)\n3. Magnésio Dimalato — 300mg antes de dormir\n4. Creatina monohidratada — 5g/dia",
-    hasPdf: true,
-  },
-  {
-    id: "2",
-    date: "2026-02-15",
-    title: "Ajuste Hormonal",
-    content: "1. Manter acompanhamento laboratorial a cada 3 meses\n2. Vitamina D abaixo do ideal — suplementar conforme prescrição\n3. Perfil lipídico melhorou — manter conduta alimentar",
-    hasPdf: false,
-  },
-  {
-    id: "3",
-    date: "2026-01-10",
-    title: "Orientações Terapêuticas",
-    content: "1. Priorizar sono de 7-9h por noite\n2. Reduzir cafeína após 14h\n3. Manter hidratação de 35ml/kg/dia\n4. Incluir alimentos ricos em fibras (>30g/dia)",
-    hasPdf: true,
-  },
-];
+interface Prescription {
+  id: string;
+  title: string;
+  content: string;
+  prescribed_at: string;
+  type: string;
+  pdf_url: string | null;
+  pdf_file_name: string | null;
+}
 
 const PatientPrescriptions = () => {
   const navigate = useNavigate();
+  const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [viewPdfUrl, setViewPdfUrl] = useState<string | null>(null);
+  const [viewManual, setViewManual] = useState<Prescription | null>(null);
+
+  useEffect(() => {
+    const fetchPrescriptions = async () => {
+      // Get patient ID from current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: patient } = await supabase
+        .from("patients")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (!patient) return;
+
+      const { data } = await supabase
+        .from("prescriptions")
+        .select("*")
+        .eq("patient_id", patient.id)
+        .order("prescribed_at", { ascending: false });
+
+      setPrescriptions((data as Prescription[]) || []);
+      setLoading(false);
+    };
+    fetchPrescriptions();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 stagger-fade-in">
@@ -37,31 +64,106 @@ const PatientPrescriptions = () => {
 
       <h1 className="text-2xl font-bold text-foreground">Prescrições Médicas</h1>
 
-      {mockPrescriptions.map((rx) => (
-        <div key={rx.id} className="glass-card p-6">
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-                <FileText className="w-5 h-5 text-primary" />
+      {prescriptions.length === 0 ? (
+        <div className="glass-card p-8 text-center">
+          <FileText className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold text-foreground mb-2">Nenhuma prescrição</h3>
+          <p className="text-sm text-muted-foreground">Você ainda não possui prescrições registradas.</p>
+        </div>
+      ) : (
+        prescriptions.map((rx) => (
+          <div key={rx.id} className="glass-card p-6">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-start gap-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                  rx.type === "pdf" ? "bg-red-500/10 border border-red-500/20" : "bg-primary/10 border border-primary/20"
+                }`}>
+                  {rx.type === "pdf" ? (
+                    <File className="w-5 h-5 text-red-500" />
+                  ) : (
+                    <FileText className="w-5 h-5 text-primary" />
+                  )}
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-foreground">{rx.title}</h2>
+                  <p className="text-sm text-muted-foreground">
+                    {new Date(rx.prescribed_at + "T12:00:00").toLocaleDateString("pt-BR")}
+                    {rx.type === "pdf" && " • Receita PDF"}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-lg font-bold text-foreground">{rx.title}</h2>
-                <p className="text-sm text-muted-foreground">{new Date(rx.date).toLocaleDateString("pt-BR")}</p>
-              </div>
+              {rx.type === "pdf" && rx.pdf_url && (
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" className="gap-2" onClick={() => setViewPdfUrl(rx.pdf_url)}>
+                    <Eye className="w-4 h-4" />
+                    Ver
+                  </Button>
+                  <Button variant="outline" size="sm" className="gap-2" asChild>
+                    <a href={rx.pdf_url} target="_blank" rel="noopener noreferrer" download>
+                      <Download className="w-4 h-4" />
+                      PDF
+                    </a>
+                  </Button>
+                </div>
+              )}
+              {rx.type === "manual" && (
+                <Button variant="outline" size="sm" className="gap-2" onClick={() => setViewManual(rx)}>
+                  <Eye className="w-4 h-4" />
+                  Ver completo
+                </Button>
+              )}
             </div>
-            {rx.hasPdf && (
-              <Button variant="outline" size="sm" className="gap-2 border-glass-border text-muted-foreground hover:text-foreground">
-                <Download className="w-4 h-4" />
-                PDF
-              </Button>
+
+            {rx.type === "manual" && rx.content && (
+              <div className="bg-secondary/30 rounded-xl p-4">
+                <div
+                  className="text-sm text-foreground prose prose-sm max-w-none line-clamp-4"
+                  dangerouslySetInnerHTML={{ __html: rx.content }}
+                />
+              </div>
+            )}
+
+            {rx.type === "pdf" && rx.pdf_file_name && (
+              <div className="bg-secondary/30 rounded-xl p-4 flex items-center gap-3">
+                <File className="w-5 h-5 text-red-500 shrink-0" />
+                <span className="text-sm text-foreground">{rx.pdf_file_name}</span>
+              </div>
             )}
           </div>
+        ))
+      )}
 
-          <div className="bg-secondary/30 rounded-xl p-4">
-            <pre className="text-sm text-foreground whitespace-pre-wrap font-sans leading-relaxed">{rx.content}</pre>
-          </div>
-        </div>
-      ))}
+      {/* PDF Viewer Dialog */}
+      <Dialog open={!!viewPdfUrl} onOpenChange={() => setViewPdfUrl(null)}>
+        <DialogContent className="max-w-4xl h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>Receita Médica</DialogTitle>
+          </DialogHeader>
+          {viewPdfUrl && (
+            <iframe src={viewPdfUrl} className="w-full flex-1 rounded-lg" title="PDF Viewer" />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Manual Prescription Viewer */}
+      <Dialog open={!!viewManual} onOpenChange={() => setViewManual(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{viewManual?.title}</DialogTitle>
+          </DialogHeader>
+          {viewManual && (
+            <div className="mt-2">
+              <p className="text-xs text-muted-foreground mb-3">
+                {new Date(viewManual.prescribed_at + "T12:00:00").toLocaleDateString("pt-BR")}
+              </p>
+              <div
+                className="prose prose-sm max-w-none"
+                dangerouslySetInnerHTML={{ __html: viewManual.content }}
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
