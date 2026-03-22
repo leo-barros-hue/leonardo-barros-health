@@ -24,9 +24,6 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { to: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/admin/patients", icon: Users, label: "Pacientes" },
-  { to: "/admin/diets", icon: Utensils, label: "Dietas" },
-  { to: "/admin/workouts", icon: Dumbbell, label: "Treinos" },
-  { to: "/admin/exams", icon: FlaskConical, label: "Exames" },
   { to: "/admin/prescriptions", icon: FileText, label: "Prescrições" },
   { to: "/admin/materials", icon: BookOpen, label: "Materiais" },
 ];
