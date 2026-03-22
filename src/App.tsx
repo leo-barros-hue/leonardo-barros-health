@@ -57,6 +57,7 @@ const App = () => (
             <Route path="forms/new" element={<AdminFormEditor />} />
             <Route path="forms/:id/edit" element={<AdminFormEditor />} />
             <Route path="materials" element={<AdminMaterials />} />
+            <Route path="agenda" element={<AdminAgenda />} />
           </Route>
 
           {/* Patient Routes */}
