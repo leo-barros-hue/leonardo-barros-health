@@ -30,7 +30,6 @@ const PatientLayout = () => {
     navigate("/");
   };
 
-  // In preview mode, render a minimal layout without nav
   if (isPreview) {
     return (
       <div className="min-h-screen bg-background">
@@ -44,10 +43,10 @@ const PatientLayout = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Top bar */}
-      <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-xl">
         <div className="container flex items-center justify-between h-16 max-w-5xl">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
               <Activity className="w-4 h-4 text-primary" />
             </div>
             <span className="font-bold text-sm text-foreground">LB Saúde</span>
@@ -62,12 +61,12 @@ const PatientLayout = () => {
       </header>
 
       {/* Content */}
-      <main className="container py-6 max-w-5xl pb-24">
+      <main className="container py-6 max-w-5xl pb-24 page-enter">
         <Outlet />
       </main>
 
       {/* Bottom nav (mobile) */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/90 backdrop-blur-xl md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur-xl md:hidden">
         <div className="flex items-center justify-around h-16">
           {navItems.slice(0, 5).map((item) => (
             <NavLink

@@ -3,10 +3,6 @@ import {
   Activity,
   Users,
   LayoutDashboard,
-  Utensils,
-  Dumbbell,
-  FlaskConical,
-  FileText,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -16,6 +12,7 @@ import {
   PackageOpen,
   ClipboardList,
   Zap,
+  Dumbbell,
   BookOpen,
   CalendarDays,
 } from "lucide-react";
@@ -55,13 +52,14 @@ const AdminSidebar = () => {
   return (
     <aside
       className={cn(
-        "h-screen sticky top-0 flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-300",
+        "h-screen sticky top-0 flex flex-col border-r border-border transition-all duration-300",
+        "bg-background",
         collapsed ? "w-[72px]" : "w-64"
       )}
     >
       {/* Logo */}
-      <div className="p-4 flex items-center gap-3 border-b border-sidebar-border">
-        <div className="w-10 h-10 min-w-[40px] rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+      <div className="p-4 flex items-center gap-3 border-b border-border">
+        <div className="w-10 h-10 min-w-[40px] rounded-xl bg-primary/10 flex items-center justify-center">
           <Activity className="w-5 h-5 text-primary" />
         </div>
         {!collapsed && (
@@ -81,15 +79,18 @@ const AdminSidebar = () => {
             end={item.to === "/admin"}
             className={({ isActive }) =>
               cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group",
                 isActive
-                  ? "bg-primary/10 text-primary border border-primary/20"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                  ? "bg-primary/10 text-primary border-l-[3px] border-primary"
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent hover:translate-x-1"
               )
             }
           >
-            <item.icon className="w-5 h-5 min-w-[20px] text-secondary-foreground" />
-            {!collapsed && <span className="text-secondary-foreground">{item.label}</span>}
+            <item.icon className={cn(
+              "w-5 h-5 min-w-[20px] transition-colors",
+              "group-hover:text-primary"
+            )} />
+            {!collapsed && <span>{item.label}</span>}
           </NavLink>
         ))}
 
@@ -98,16 +99,16 @@ const AdminSidebar = () => {
           <button
             onClick={() => setCadastroOpen(!cadastroOpen)}
             className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 w-full",
+              "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 w-full group",
               isCadastroActive
-                ? "bg-primary/10 text-primary border border-primary/20"
-                : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                ? "bg-primary/10 text-primary border-l-[3px] border-primary"
+                : "text-muted-foreground hover:text-foreground hover:bg-accent hover:translate-x-1"
             )}
           >
-            <Database className="w-5 h-5 min-w-[20px] text-secondary-foreground" />
+            <Database className="w-5 h-5 min-w-[20px] group-hover:text-primary transition-colors" />
             {!collapsed && (
               <>
-                <span className="text-secondary-foreground flex-1 text-left">Cadastros</span>
+                <span className="flex-1 text-left">Cadastros</span>
                 <ChevronDown
                   className={cn(
                     "w-4 h-4 text-muted-foreground transition-transform duration-200",
@@ -126,15 +127,15 @@ const AdminSidebar = () => {
                   to={item.to}
                   className={({ isActive }) =>
                     cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200",
+                      "flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 group",
                       isActive
-                        ? "bg-primary/10 text-primary border border-primary/20"
-                        : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent hover:translate-x-1"
                     )
                   }
                 >
-                  <item.icon className="w-4 h-4 min-w-[16px] text-secondary-foreground" />
-                  <span className="text-secondary-foreground">{item.label}</span>
+                  <item.icon className="w-4 h-4 min-w-[16px] group-hover:text-primary transition-colors" />
+                  <span>{item.label}</span>
                 </NavLink>
               ))}
             </div>
@@ -143,17 +144,17 @@ const AdminSidebar = () => {
       </nav>
 
       {/* Footer */}
-      <div className="p-3 border-t border-sidebar-border space-y-1">
+      <div className="p-3 border-t border-border space-y-1">
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/50 w-full transition-colors"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-muted-foreground hover:text-foreground hover:bg-accent w-full transition-all duration-200"
         >
           {collapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
           {!collapsed && <span>Recolher</span>}
         </button>
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-destructive hover:bg-destructive/10 w-full transition-colors"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-destructive hover:bg-destructive/10 w-full transition-all duration-200"
         >
           <LogOut className="w-5 h-5 min-w-[20px]" />
           {!collapsed && <span>Sair</span>}

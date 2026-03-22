@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Activity, Lock, Mail, CreditCard } from "lucide-react";
+import { Activity, Lock, CreditCard } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -19,11 +19,8 @@ const Login = () => {
 
     try {
       let authEmail = loginId.trim();
-
-      // If input looks like CPF (digits only or formatted), look up the patient's auth email
       const digits = loginId.replace(/\D/g, "");
       if (digits.length === 11 && !loginId.includes("@")) {
-        // It's a CPF - look up patient to get user_id, then build auth email
         const { data: patient } = await supabase
           .from("patients")
           .select("email, cpf")
@@ -33,7 +30,6 @@ const Login = () => {
         if (patient?.email) {
           authEmail = patient.email;
         } else {
-          // Use the generated fake email pattern
           authEmail = `${digits}@patient.local`;
         }
       }
@@ -63,14 +59,14 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
       {/* Background glow effects */}
-      <div className="absolute top-1/4 -left-32 w-96 h-96 bg-primary/10 rounded-full blur-[120px]" />
-      <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-primary/5 rounded-full blur-[120px]" />
+      <div className="absolute top-1/4 -left-32 w-96 h-96 bg-primary/5 rounded-full blur-[150px]" />
+      <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-primary/3 rounded-full blur-[150px]" />
       
       <div className="w-full max-w-md px-6 animate-fade-in">
         {/* Logo */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
               <Activity className="w-6 h-6 text-primary" />
             </div>
             <div className="text-left">
@@ -98,7 +94,7 @@ const Login = () => {
                   placeholder="000.000.000-00 ou seu@email.com"
                   value={loginId}
                   onChange={(e) => setLoginId(e.target.value)}
-                  className="pl-10 bg-secondary/50 border-glass-border focus:border-primary/50 h-12"
+                  className="pl-10 bg-accent border-border focus:border-primary h-12"
                   required
                 />
               </div>
@@ -114,7 +110,7 @@ const Login = () => {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 bg-secondary/50 border-glass-border focus:border-primary/50 h-12"
+                  className="pl-10 bg-accent border-border focus:border-primary h-12"
                   required
                 />
               </div>
@@ -122,7 +118,7 @@ const Login = () => {
 
             <Button
               type="submit"
-              className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-base"
+              className="w-full h-12 font-semibold text-base rounded-[10px] transition-all duration-200 hover:brightness-110 active:scale-[0.97]"
               disabled={isLoading}
             >
               {isLoading ? "Entrando..." : "Entrar"}
