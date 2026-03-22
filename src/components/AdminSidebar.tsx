@@ -17,6 +17,7 @@ import {
   ClipboardList,
   Zap,
   BookOpen,
+  CalendarDays,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -24,6 +25,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { to: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/admin/patients", icon: Users, label: "Pacientes" },
+  { to: "/admin/agenda", icon: CalendarDays, label: "Agenda" },
   { to: "/admin/materials", icon: BookOpen, label: "Materiais" },
 ];
 
