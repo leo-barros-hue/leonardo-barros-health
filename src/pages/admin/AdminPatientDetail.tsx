@@ -93,7 +93,7 @@ const AdminPatientDetail = () => {
         )}
 
         {activeTab === "cardio" && (
-          <PlaceholderTab title="Cardio" description="Módulo de cardio em desenvolvimento." />
+          <PatientCardioTab patientId={patient.id} />
         )}
 
         {activeTab === "exams" && (
