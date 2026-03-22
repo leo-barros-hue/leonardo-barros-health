@@ -2,7 +2,7 @@ import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
   Activity,
   Users,
-  LayoutDashboard,
+  
   Utensils,
   Dumbbell,
   FlaskConical,
@@ -22,7 +22,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { to: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true },
+  
   { to: "/admin/patients", icon: Users, label: "Pacientes" },
   { to: "/admin/diets", icon: Utensils, label: "Dietas" },
   { to: "/admin/workouts", icon: Dumbbell, label: "Treinos" },
@@ -80,7 +80,7 @@ const AdminSidebar = () => {
           <NavLink
             key={item.to}
             to={item.to}
-            end={item.end}
+            end={item.to === "/admin"}
             className={({ isActive }) =>
               cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
