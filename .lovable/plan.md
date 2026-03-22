@@ -1,17 +1,69 @@
 
 
-# Plano: Adicionar botão "Salvar Formulário" visível ao rolar
+# Plano: Toggle Dark/Light Theme
 
-O botão de salvar já existe no topo da página, mas ao rolar para baixo com muitas perguntas ele fica fora de vista. A solução é torná-lo mais acessível.
+## Resumo
 
-## Alterações em `src/pages/admin/AdminFormEditor.tsx`
+Adicionar um botão de alternância entre tema escuro (atual) e tema claro na sidebar e no layout do paciente, persistindo a preferência no `localStorage`.
 
-1. **Botão de salvar fixo (sticky)** -- Tornar o header com o botão "Salvar" sticky no topo da página, para que fique sempre visível mesmo ao rolar para baixo.
+## Alterações
 
-2. **Botão de salvar também no rodapé** -- Adicionar um segundo botão "Salvar Formulário" ao lado dos botões "Adicionar Bloco" e "Adicionar Pergunta" na parte inferior da página, para acesso rápido quando o usuário está no final do formulário.
+### 1. `src/index.css` — Adicionar variáveis do tema claro
 
-## Detalhes técnicos
+Criar um bloco `.light` (ou `:root` para light, `.dark` para dark) com a paleta clara:
+- Background: `0 0% 98%` (branco suave)
+- Foreground: `0 0% 10%` (texto escuro)
+- Card: `0 0% 100%` (branco)
+- Border: `0 0% 88%`
+- Muted: `0 0% 94%`
+- Primary permanece `210 100% 56%` (azul elétrico)
+- Sidebar: fundo branco, texto escuro
+- Sombras mais leves
+- Scrollbar adaptada
 
-- Adicionar `sticky top-0 z-10 bg-background py-4` ao container do header para fixá-lo durante a rolagem
-- Adicionar um `Button` com `handleSave` na seção inferior ao lado dos botões de adicionar
+Manter `:root` como dark (padrão), e definir `.light` que sobrescreve as variáveis.
+
+### 2. `src/hooks/useTheme.ts` — Novo hook de tema
+
+- Lê/salva preferência em `localStorage` (chave `theme`)
+- Aplica/remove classe `light` no `document.documentElement`
+- Retorna `{ theme, toggleTheme }`
+
+### 3. `src/components/AdminSidebar.tsx` — Botão de toggle
+
+- Adicionar botão com ícone `Sun`/`Moon` no footer da sidebar (ao lado de "Recolher")
+- Ao clicar, alterna o tema
+
+### 4. `src/layouts/PatientLayout.tsx` — Botão de toggle
+
+- Adicionar ícone `Sun`/`Moon` no header do paciente
+
+### 5. `src/pages/Login.tsx` — Botão de toggle
+
+- Adicionar no canto superior direito da tela de login
+
+### 6. `tailwind.config.ts`
+
+- Alterar `darkMode` de `["class"]` para `["class"]` (já está correto, funciona com classe no html)
+
+## Paleta Light (valores principais)
+
+| Token | Dark (atual) | Light |
+|-------|-------------|-------|
+| background | 0 0% 0% | 0 0% 98% |
+| foreground | 0 0% 95% | 0 0% 10% |
+| card | 0 0% 5% | 0 0% 100% |
+| card-foreground | 0 0% 95% | 0 0% 10% |
+| border | 0 0% 14% | 0 0% 88% |
+| muted | 0 0% 15% | 0 0% 94% |
+| muted-foreground | 0 0% 50% | 0 0% 45% |
+| accent | 0 0% 12% | 210 20% 96% |
+| popover | 0 0% 7% | 0 0% 100% |
+| sidebar-background | 0 0% 0% | 0 0% 100% |
+
+## Comportamento
+
+- Dark é o padrão (se nenhuma preferência salva)
+- Toggle persiste em `localStorage`
+- Transição suave de 200ms ao alternar
 
