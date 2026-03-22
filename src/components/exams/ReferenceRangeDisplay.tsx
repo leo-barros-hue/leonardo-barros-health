@@ -1,7 +1,11 @@
 import { ReferenceRange } from './types';
 
 interface ReferenceRangeDisplayProps {
-  referenceRange: ReferenceRange;
+  referenceRange: {
+    unisex?: ReferenceRange;
+    male?: ReferenceRange;
+    female?: ReferenceRange;
+  };
   className?: string;
   labelClassName?: string;
   valueClassName?: string;

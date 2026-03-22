@@ -1,11 +1,11 @@
-export type Category =
+export type Category = 
   | 'Perfil lipídico'
+  | 'Hematologia'
   | 'Metabolismo da glicose'
   | 'Função hepática'
   | 'Função renal'
-  | 'Eletrólitos'
-  | 'Hematologia'
   | 'Painel hormonal'
+  | 'Eletrólitos'
   | 'Vitaminas'
   | 'Minerais e oligoelementos'
   | 'Marcadores inflamatórios'
@@ -13,27 +13,21 @@ export type Category =
 
 export const CATEGORIES: Category[] = [
   'Perfil lipídico',
+  'Hematologia',
   'Metabolismo da glicose',
   'Função hepática',
   'Função renal',
-  'Eletrólitos',
-  'Hematologia',
   'Painel hormonal',
+  'Eletrólitos',
   'Vitaminas',
   'Minerais e oligoelementos',
   'Marcadores inflamatórios',
-  'Marcadores musculares',
+  'Marcadores musculares'
 ];
 
 export interface ReferenceRange {
-  unisex?: { min: number; max: number };
-  male?: { min: number; max: number };
-  female?: { min: number; max: number };
-}
-
-export interface AlternativeUnit {
-  unit: string;
-  factor: number;
+  min: number;
+  max: number;
 }
 
 export interface ExamDefinition {
@@ -41,23 +35,28 @@ export interface ExamDefinition {
   name: string;
   category: Category | string;
   unit: string;
-  alternativeUnits: AlternativeUnit[];
-  referenceRange: ReferenceRange;
+  alternativeUnits: { unit: string; factor: number }[];
+  referenceRange: {
+    unisex?: ReferenceRange;
+    male?: ReferenceRange;
+    female?: ReferenceRange;
+  };
 }
 
 export interface ExamResult {
   id: string;
   examId: string;
-  patientId: string;
   value: number;
   date: string;
-  notes?: string;
+  patientId: string;
 }
 
 export interface Patient {
   id: string;
   name: string;
   gender: 'male' | 'female';
-  weight: number;
-  height: number;
+  weight?: number;
+  height?: number;
 }
+
+export type StatusColor = 'green' | 'yellow' | 'orange' | 'red';
