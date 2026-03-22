@@ -12,6 +12,7 @@ import PatientPrescriptionsTab from "@/components/PatientPrescriptionsTab";
 import AnamnesisTab from "@/components/anamnesis/AnamnesisTab";
 import PatientPhotosTab from "@/components/photos/PatientPhotosTab";
 import PatientFormsTab from "@/components/forms/PatientFormsTab";
+import PatientCardioTab from "@/components/PatientCardioTab";
 
 interface Patient {
   id: string;
@@ -92,7 +93,7 @@ const AdminPatientDetail = () => {
         )}
 
         {activeTab === "cardio" && (
-          <PlaceholderTab title="Cardio" description="Módulo de cardio em desenvolvimento." />
+          <PatientCardioTab patientId={patient.id} />
         )}
 
         {activeTab === "exams" && (
