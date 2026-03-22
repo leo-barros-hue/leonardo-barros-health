@@ -16,6 +16,7 @@ import AdminFormEditor from "./pages/admin/AdminFormEditor";
 import AdminTechniques from "./pages/admin/AdminTechniques";
 import AdminForms from "./pages/admin/AdminForms";
 import AdminMaterials from "./pages/admin/AdminMaterials";
+import AdminAgenda from "./pages/admin/AdminAgenda";
 import PatientDashboard from "./pages/patient/PatientDashboard";
 import PatientDiet from "./pages/patient/PatientDiet";
 import PatientWorkout from "./pages/patient/PatientWorkout";
