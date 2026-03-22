@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import AdminLayout from "./layouts/AdminLayout";
 import PatientLayout from "./layouts/PatientLayout";
-
+import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminPatients from "./pages/admin/AdminPatients";
 import AdminPatientDetail from "./pages/admin/AdminPatientDetail";
 import AdminDiets from "./pages/admin/AdminDiets";
@@ -41,7 +41,8 @@ const App = () => (
           
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<Navigate to="/admin/patients" replace />} />
+            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="patients" element={<AdminPatients />} />
             <Route path="patients/:id" element={<AdminPatientDetail />} />
             <Route path="diets" element={<AdminDiets />} />

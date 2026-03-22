@@ -2,7 +2,7 @@ import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
   Activity,
   Users,
-  
+  LayoutDashboard,
   Utensils,
   Dumbbell,
   FlaskConical,
@@ -22,7 +22,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  
+  { to: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/admin/patients", icon: Users, label: "Pacientes" },
   { to: "/admin/diets", icon: Utensils, label: "Dietas" },
   { to: "/admin/workouts", icon: Dumbbell, label: "Treinos" },
