@@ -771,24 +771,33 @@ export type Database = {
           created_at: string
           id: string
           patient_id: string
+          pdf_file_name: string | null
+          pdf_url: string | null
           prescribed_at: string
           title: string
+          type: string
         }
         Insert: {
           content: string
           created_at?: string
           id?: string
           patient_id: string
+          pdf_file_name?: string | null
+          pdf_url?: string | null
           prescribed_at?: string
           title: string
+          type?: string
         }
         Update: {
           content?: string
           created_at?: string
           id?: string
           patient_id?: string
+          pdf_file_name?: string | null
+          pdf_url?: string | null
           prescribed_at?: string
           title?: string
+          type?: string
         }
         Relationships: [
           {
