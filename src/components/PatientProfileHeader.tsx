@@ -65,7 +65,6 @@ const tabs = [
   { id: "prescriptions", label: "Prescrições" },
   { id: "photos", label: "Fotos" },
   { id: "forms", label: "Formulários" },
-  { id: "notes", label: "Notas" },
 ];
 
 const calculateAge = (birthDate: string | null): number | null => {
