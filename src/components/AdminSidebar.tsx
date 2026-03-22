@@ -2,7 +2,7 @@ import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
   Activity,
   Users,
-  
+  LayoutDashboard,
   Utensils,
   Dumbbell,
   FlaskConical,
