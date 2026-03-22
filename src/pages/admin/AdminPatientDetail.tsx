@@ -111,9 +111,6 @@ const AdminPatientDetail = () => {
           <PatientFormsTab patientId={patient.id} />
         )}
 
-        {activeTab === "notes" && (
-          <PlaceholderTab title="Notas" description="Módulo de notas em desenvolvimento." />
-        )}
       </div>
     </div>
   );
