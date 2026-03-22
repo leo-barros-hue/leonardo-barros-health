@@ -41,7 +41,8 @@ const App = () => (
           
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<Navigate to="/admin/patients" replace />} />
+            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="patients" element={<AdminPatients />} />
             <Route path="patients/:id" element={<AdminPatientDetail />} />
             <Route path="diets" element={<AdminDiets />} />
